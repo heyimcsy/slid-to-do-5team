@@ -1,0 +1,169 @@
+# .coderabbit.yaml
+language: 'ko-KR'
+
+tone_instructions: |
+  Next.js 16, React 19, TypeScript 기반 프로젝트에 대해 명확하고 실행 가능한 코드 리뷰를 제공합니다.
+  건설적인 개선 제안과 함께 보안, 성능, 타입 안전성을 중점 검토합니다.
+
+early_access: false
+enable_free_tier: true
+
+reviews:
+  profile: 'chill'
+  high_level_summary: true
+  poem: false
+
+  path_filters:
+    - '!*.lock'
+    - '!*.md'
+    - '!*.log'
+    - '!.next/**'
+    - '!dist/**'
+    - '!node_modules/**'
+    - '!coverage/**'
+    - '!storybook-static/**'
+    - '!public/**'
+    - '!*.stories.*'
+    - '!*.test.*'
+    - '!*.spec.*'
+
+  path_instructions:
+    # -----------------------------------------------
+    # App Router 핵심 레이어
+    # -----------------------------------------------
+    - path: 'src/app/**/*'
+      instructions: |
+        Next.js 16 App Router 파일입니다. 다음 항목을 집중 검토하세요.
+
+        [렌더링 전략]
+        - 'Server Component / Client Component 경계가 최소화되어 있는지 확인 (use client는 leaf node에만)'
+        - 'PPR(Partial Prerendering) 적용 가능 여부 검토: 정적 셸 + 동적 Suspense 구조인지 확인'
+        - 'React 19 use() hook 사용 시 Suspense 경계 존재 여부 확인'
+        - 'React Compiler 적용 환경이라면 불필요한 useMemo/useCallback 수동 메모이제이션 제거 권장'
+
+        [캐싱 및 데이터 페칭]
+        - 'Next.js 15+ fetch 캐싱 기본값 변경(no-store) 인지 여부 확인: 의도적인 revalidate 설정인지 검토'
+        - 'use cache directive 사용 시 cacheLife, cacheTag 명시 여부 확인'
+        - '동일 레이어에서 중복 fetch 요청 없이 Request Memoization 활용하고 있는지 확인'
+        - 'generateStaticParams 적용 가능한 동적 라우트인지 검토'
+
+        [Server Actions]
+        - '"use server" directive가 파일 최상단 또는 인라인 함수에 올바르게 선언되었는지 확인'
+        - 'Server Actions 입력값에 Zod 등을 통한 서버 사이드 유효성 검사가 존재하는지 확인'
+        - 'revalidatePath / revalidateTag 호출 위치와 범위가 적절한지 검토'
+        - 'useActionState(React 19) / useFormStatus 사용 패턴 확인'
+
+        [라우팅 구조]
+        - 'Route Groups (group) 활용으로 레이아웃 공유 범위가 최소화되었는지 확인'
+        - 'Parallel Routes / Intercepting Routes 패턴이 적절히 활용되고 있는지 검토'
+        - 'not-found.tsx, error.tsx, loading.tsx 경계가 적절한 레벨에 정의되어 있는지 확인'
+        - 'middleware.ts에서 인증 처리 시 Edge Runtime 제약사항 준수 여부 확인'
+
+    # -----------------------------------------------
+    # 재사용 UI 컴포넌트
+    # -----------------------------------------------
+    - path: 'src/components/**/*'
+      instructions: |
+        재사용 가능한 UI 컴포넌트입니다. 다음을 검토하세요.
+
+        [컴포넌트 설계]
+        - '컴포넌트가 단일 책임 원칙(SRP)을 따르는지 확인'
+        - 'props drilling 대신 Compound Component 또는 Context 패턴 적용 가능 여부 검토'
+        - 'forwardRef 사용 시 React 19에서는 ref를 일반 prop으로 전달 가능함을 안내'
+        - 'children prop 타입이 ReactNode로 적절히 정의되어 있는지 확인'
+
+        [접근성]
+        - 'aria-* 속성과 시맨틱 HTML 요소 사용 여부 확인'
+        - '키보드 네비게이션과 포커스 관리가 구현되어 있는지 확인'
+        - '색상 대비, alt 텍스트 등 WCAG 2.1 AA 기준 충족 여부 검토'
+
+        [성능]
+        - 'next/image 사용 시 width/height 또는 fill prop이 명시되어 있는지 확인'
+        - 'next/font 적용 여부 및 font-display 전략 검토'
+        - '클라이언트 번들 크기에 영향을 주는 대형 라이브러리 import 최소화 확인'
+
+    # -----------------------------------------------
+    # 공통 유틸리티 / 헬퍼
+    # -----------------------------------------------
+    - path: 'src/lib/**/*'
+      instructions: |
+        공통 유틸리티 및 헬퍼 코드입니다. 다음을 검토하세요.
+
+        - '함수의 순수성과 부작용 최소화: 동일 입력 → 동일 출력 보장 여부 확인'
+        - '재사용 가능한 로직이 적절히 모듈화되어 있는지 검토'
+        - '일관된 에러 처리 패턴 적용 여부 확인 (Result 타입, try/catch 계층 등)'
+        - 'Edge Runtime 호환 필요 여부 확인 (Node.js 전용 API 사용 금지)'
+
+    # -----------------------------------------------
+    # 커스텀 훅
+    # -----------------------------------------------
+    - path: 'src/hooks/**/*'
+      instructions: |
+        커스텀 훅 파일입니다. 다음을 검토하세요.
+
+        - '훅 네이밍이 use* 컨벤션을 따르는지 확인'
+        - 'React 19 신규 훅(useOptimistic, useFormStatus, useActionState) 활용 가능 여부 검토'
+        - 'TanStack Query 사용 시 staleTime / gcTime 설정이 데이터 특성에 맞게 구성되어 있는지 확인'
+        - '의존성 배열이 올바르게 명시되어 있는지 확인 (exhaustive-deps 규칙 준수)'
+        - 'React Compiler 환경에서의 불필요한 수동 메모이제이션 제거 권장'
+
+    # -----------------------------------------------
+    # 상태 관리
+    # -----------------------------------------------
+    - path: 'src/stores/**/*'
+      instructions: |
+        전역 상태 관리 파일입니다. 다음을 검토하세요.
+
+        - 'Zustand slice 단위 분리가 적절한지 검토 (관심사 분리)'
+        - '서버 상태(TanStack Query)와 클라이언트 UI 상태(Zustand)의 역할 경계가 명확한지 확인'
+        - '비동기 액션에서 에러 및 로딩 상태가 적절히 처리되고 있는지 확인'
+        - 'Zustand persist 미들웨어 사용 시 민감 정보 포함 여부 확인'
+        - '상태 셀렉터(selector)를 통한 불필요한 리렌더링 방지 여부 검토'
+
+    # -----------------------------------------------
+    # TypeScript 타입 정의
+    # -----------------------------------------------
+    - path: 'src/types/**/*'
+      instructions: |
+        TypeScript 타입 정의 파일입니다. 다음을 검토하세요.
+
+        - '타입과 인터페이스의 사용 기준이 일관적인지 확인 (확장 가능성: interface, 유니온/유틸리티: type)'
+        - 'any 타입 사용을 unknown 또는 구체적 타입으로 대체할 수 있는지 검토'
+        - 'API 응답 타입이 Zod 스키마로부터 infer되어 단일 소스로 관리되는지 확인'
+        - 'Discriminated Union 패턴으로 런타임 안전성을 높일 수 있는지 검토'
+
+    # -----------------------------------------------
+    # API / 서버 통신 레이어
+    # -----------------------------------------------
+    - path: 'src/services/**/*'
+      instructions: |
+        API 통신 레이어 파일입니다. 다음을 검토하세요.
+
+        - 'Axios 인터셉터에서 JWT 토큰 갱신 로직의 레이스 컨디션 방지 여부 확인'
+        - '에러 응답 처리가 일관된 패턴으로 구현되어 있는지 확인'
+        - '민감 정보(토큰, API 키)가 로그에 노출되지 않는지 확인'
+        - 'TanStack Query queryKey 팩토리 패턴 적용 여부 검토 (캐시 무효화 일관성)'
+
+    # -----------------------------------------------
+    # 환경 변수 및 설정
+    # -----------------------------------------------
+    - path: '*.config.*'
+      instructions: |
+        설정 파일입니다. 다음을 검토하세요.
+
+        - '환경 변수 접근이 NEXT_PUBLIC_ 접두사 규칙을 올바르게 따르는지 확인'
+        - 'next.config.ts에서 실험적 기능(experimental) 사용 시 프로덕션 안정성 검토'
+        - 'Turbopack 사용 시 미지원 플러그인/로더 호환성 확인'
+        - 'Content Security Policy(CSP) 헤더 설정 여부 검토'
+
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - 'WIP'
+      - 'Draft'
+      - 'DO NOT MERGE'
+      - 'chore'
+
+code_generation:
+  docstrings:
+    language: 'ko-KR'
