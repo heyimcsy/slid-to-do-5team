@@ -7,13 +7,23 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "lint:fix": "eslint --fix"
-
+    "lint:fix": "eslint --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,md,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,md,json}\"",
+    "format:fix": "prettier --write --fix \"src/**/*.{ts,tsx,md,json}\"",
+    "type-check": "tsc --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:update": "jest --updateSnapshot",
+    "test:ui": "jest --watchAll",
+    "test:ci": "jest --ci"
   },
   "dependencies": {
     "next": "16.1.6",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "zustand": "^5.0.11"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.4.3",
@@ -23,8 +33,9 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "commitlint-config-gitmoji": "^2.3.1",
-    "eslint": "^10.0.3",
+    "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "jest": "^30.3.0",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "tailwindcss": "^4",
