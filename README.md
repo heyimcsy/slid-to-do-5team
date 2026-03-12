@@ -28,7 +28,7 @@
 | 애니메이션 | Motion |
 | 리치 텍스트 에디터 | Tiptap |
 | CI/CD | Github Actions |
-| 테스팅 | Jest(or Vitest) |
+| 테스팅 | Jest |
 | Quality | ESLint/Prettier |
 
 ## 요구사항
