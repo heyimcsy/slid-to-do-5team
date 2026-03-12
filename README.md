@@ -8,28 +8,28 @@
 
 ## 팀원 구성
 
-| 이름 | 역할 | Github |
-| --- | --- | --- |
+| 이름   | 역할 | Github                                   |
+| ------ | ---- | ---------------------------------------- |
 | 최서윤 | 팀장 | [@heyimcsy](https://github.com/heyimcsy) |
 | 이수지 | 팀원 | [@suwojiii](https://github.com/suwojiii) |
-| 이현우 | 팀원 | [@gealot](https://github.com/gealot) |
-| 조승기 | 팀원 | [@jojosg](https://github.com/jojosg) |
+| 이현우 | 팀원 | [@gealot](https://github.com/gealot)     |
+| 조승기 | 팀원 | [@jojosg](https://github.com/jojosg)     |
 
 ## 기술 스택
 
-| 종류 | 기술 |
-| --- | --- |
-| 언어 | Typescript |
-| 프레임워크 | NextJS 16 App Router |
-| 서버 상태 관리 | Tanstack Query 5 |
-| 클라이언트 상태 관리 | Zustand |
-| 스타일링 | Tailwind CSS 4, shadcn/ui |
-| 폼 관리 및 유효성 검사 | React Hook Form + Zod |
-| 애니메이션 | Motion |
-| 리치 텍스트 에디터 | Tiptap |
-| CI/CD | Github Actions |
-| 테스팅 | Jest(or Vitest) |
-| 코드 품질 | ESLint/Prettier, Husky, Lint-staged |
+| 종류                   | 기술                                |
+| ---------------------- | ----------------------------------- |
+| 언어                   | Typescript                          |
+| 프레임워크             | NextJS 16 App Router                |
+| 서버 상태 관리         | Tanstack Query 5                    |
+| 클라이언트 상태 관리   | Zustand                             |
+| 스타일링               | Tailwind CSS 4, shadcn/ui           |
+| 폼 관리 및 유효성 검사 | React Hook Form + Zod               |
+| 애니메이션             | Motion                              |
+| 리치 텍스트 에디터     | Tiptap                              |
+| CI/CD                  | Github Actions                      |
+| 테스팅                 | Jest                                |
+| 코드 품질              | ESLint/Prettier, Husky, Lint-staged |
 
 ## 요구사항
 
