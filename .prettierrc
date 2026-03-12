@@ -15,38 +15,24 @@
   "proseWrap": "preserve",
   "plugins": ["@ianvs/prettier-plugin-sort-imports", "prettier-plugin-tailwindcss"],
   "importOrder": [
-    "<TYPES>",                          // 타입 정의들 끌어올림 (서드파티 모듈과 섞이지 않도록 먼저 정렬)
+    "<TYPES>",
     "",
-    "^(react|react-dom)(/.*)?$",        // React 관련 코어
-    "^next(/.*)?$",                     // Next.js 관련 코어
-    "<THIRD_PARTY_MODULES>",            // 설치된 외부 라이브러리 (axios, zod 등)
-    // 1. 크로스커팅 (어디서든 참조 가능한 공통 리소스)
+    "^(react|react-dom)(/.*)?$",
+    "^next(/.*)?$",
+    "<THIRD_PARTY_MODULES>",
     "",
-    "^@/shared(/.*)?$",                  // 공통 리소스 레이어
-    "^@/constants(/.*)?$",               // 상수 레이어
-    // 2. 순수 타입 & 유틸
+    "^@/shared(/.*)?$",
+    "^@/constants(/.*)?$",
     "",
-    "^@/types(/.*)?$",                   // 타입 레이어
-    "^@/utils(/.*)?$",                   // 유틸리티 레이어
-    // 3. 외부 연동 레이어
+    "^@/types(/.*)?$",
+    "^@/utils(/.*)?$",
     "",
-    "^@/lib(/.*)?$",                     // 공통 라이브러리
-    "^@/services(/.*)?$",                // 서비스 레이어
-    // 4. 상태 관리
+    "^@/components(/.*)?$",
     "",
-    "^@/stores(/.*)?$",                  // 상태 관리 레이어
-    // 5. 훅(재사용 로직)
+    "^\\.\\.(/.*)?$",
+    "^\\./(?!.*\\.css$).*$",
     "",
-    "^@/hooks(/.*)?$",                   // 훅 레이어
-    // 6. 컴포넌트(UI 레이어)
-    "",
-    "^@/components(/.*)?$",              // 컴포넌트 레이어
-    // 상대 경로
-    "",
-    "^\\.\\.(/.*)?$",                   // 상위 디렉토리 경로
-    "^\\./(?!.*\\.css$).*$",            // 현재 디렉토리 경로 (CSS 제외)
-    "",
-    "\\.css$"                           // CSS 파일 (항상 마지막)
+    "\\.css$"
   ],
   "importOrderParserPlugins": ["typescript", "jsx"],
   "importOrderTypeScriptVersion": "5.8.2"
