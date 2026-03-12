@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
+    "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -56,6 +57,7 @@
     "@types/node": "^25.4.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "commitlint-config-gitmoji": "^2.3.1",
     "commitlint-config-gitmoji": "^2.3.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
