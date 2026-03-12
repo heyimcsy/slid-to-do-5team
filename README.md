@@ -29,7 +29,7 @@
 | 리치 텍스트 에디터 | Tiptap |
 | CI/CD | Github Actions |
 | 테스팅 | Jest |
-| Quality | ESLint/Prettier |
+| 코드 품질 | ESLint/Prettier, Husky, Lint-staged |
 
 ## 요구사항
 
