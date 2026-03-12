@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "esnext",
+    "target": "esnext",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -20,6 +21,19 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
+      // shadcn aliases와 매핑
+      "@/components/*": ["./src/components/*"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      // 현재 components.json에 없는 디렉터리들 — 누락 가능성 높음
+      "@/queries/*": ["./src/queries/*"],
+      "@/stores/*": ["./src/stores/*"],
+      "@/types/*": ["./src/types/*"],
+      "@/providers/*": ["./src/providers/*"],
+      "@/services/*": ["./src/services/*"],
+      "@/constants/*": ["./src/constants/*"],
+      "@/shared/*": ["./src/shared/*"],
+      "@/utils/*": ["./src/utils/*"]
     },
     /* 유지보수를 위한 추가 최적화 설정 */
     "forceConsistentCasingInFileNames": true,
