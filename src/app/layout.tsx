@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { pretendard } from "./fonts";
 import "./globals.css";
+import { Inter } from "next/font/google";
+import { cn } from "@/lib/utils";
+
+const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
   title: "슬리드 투두",
@@ -13,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
+    <html lang="ko" className={cn("font-sans", inter.variable)}>
       <body
         className={`${pretendard.variable} antialiased`}
       >
