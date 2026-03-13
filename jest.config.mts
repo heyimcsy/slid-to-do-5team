@@ -33,7 +33,7 @@ const config: Config = {
   // ],
 
   // Indicates which provider should be used to instrument code for coverage
-  coverageProvider: "v8",
+  coverageProvider: 'v8',
 
   // A list of reporter names that Jest uses when writing coverage reports
   // coverageReporters: [
@@ -93,12 +93,12 @@ const config: Config = {
 
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
   moduleNameMapper: {
-    "^@/(.*)$": "<rootDir>/src/$1",
+    '^@/(.*)$': '<rootDir>/src/$1',
     // CSS Modules 모킹
-    "\\.module\\.(css|scss|sass)$": "identity-obj-proxy",
+    '\\.module\\.(css|scss|sass)$': 'identity-obj-proxy',
     // 정적 파일 모킹 (이미지, SVG 등)
-    "\\.(jpg|jpeg|png|gif|webp|avif|ico)$": "<rootDir>/__mocks__/fileMock.ts",
-    "^.+\\.svg$": "<rootDir>/__mocks__/svgMock.tsx",
+    '\\.(jpg|jpeg|png|gif|webp|avif|ico)$': '<rootDir>/__mocks__/fileMock.ts',
+    '^.+\\.svg$': '<rootDir>/__mocks__/svgMock.tsx',
   },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
@@ -155,7 +155,7 @@ const config: Config = {
   // snapshotSerializers: [],
 
   // The test environment that will be used for testing
-  testEnvironment: "jsdom",
+  testEnvironment: 'jsdom',
 
   // Options that will be passed to the testEnvironment
   // testEnvironmentOptions: {},
@@ -185,7 +185,7 @@ const config: Config = {
 
   // A map from regular expressions to paths to transformers
   transform: {
-    "^.+\\.(ts|tsx)$": ["@swc/jest", {}], // babel-jest 대신 SWC 사용 권장 (속도 ↑)
+    '^.+\\.(ts|tsx)$': ['@swc/jest', {}], // babel-jest 대신 SWC 사용 권장 (속도 ↑)
   },
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
