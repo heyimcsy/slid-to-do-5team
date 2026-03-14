@@ -1,44 +1,31 @@
 {
   "compilerOptions": {
-    // 대상 자바스크립트 버전
     "target": "esnext",
-    // 라이브러리
+    "target": "esnext",
     "lib": ["dom", "dom.iterable", "esnext"],
-    // JavaScript 파일 허용
     "allowJs": true,
-    // 라이브러리 체크 건너뛰기
     "skipLibCheck": true,
-    // 엄격한 타입 검사
     "strict": true,
-    // 컴파일 시 출력 비활성화
     "noEmit": true,
-    // ES 모듈 상호 운용성(ESM, CommonJS) 활성화
     "esModuleInterop": true,
-    // 모듈 시스템
     "module": "esnext",
-    // 모듈 해석 방법
     "moduleResolution": "bundler",
-    // JSON 모듈 허용
     "resolveJsonModule": true,
-    // 각 모듈은 독립적으로 컴파일되어야 함
     "isolatedModules": true,
-    // JSX 문법 허용
     "jsx": "react-jsx",
-    // 증분 컴파일 활성화
     "incremental": true,
-    // 플러그인
     "plugins": [
       {
         "name": "next"
       }
     ],
-    // 경로 매핑
     "paths": {
       "@/*": ["./src/*"],
       // shadcn aliases와 매핑
       "@/components/*": ["./src/components/*"],
       "@/lib/*": ["./src/lib/*"],
       "@/hooks/*": ["./src/hooks/*"],
+      // 현재 components.json에 없는 디렉터리들 — 누락 가능성 높음
       "@/queries/*": ["./src/queries/*"],
       "@/stores/*": ["./src/stores/*"],
       "@/types/*": ["./src/types/*"],
@@ -48,21 +35,14 @@
       "@/shared/*": ["./src/shared/*"],
       "@/utils/*": ["./src/utils/*"]
     },
-    /* 유지보수를 위한 추가 설정 */
-    // 파일 대소문자를 엄격하게 구분하지 않는 OS(Windows)에서도 대소문자 엄격히 구분
+    /* 유지보수를 위한 추가 최적화 설정 */
     "forceConsistentCasingInFileNames": true,
-    // import/export 구문에 type 제어자가 있으면 컴파일 시 타입 정보를 런타임 환경에서 제거함으로써 명시적으로 타입 강제
     "verbatimModuleSyntax": true,
-    // 사용하지 않는 지역 변수가 있으면 컴파일 시 경고
     "noUnusedLocals": true,
-    // 사용하지 않는 매개변수가 있으면 컴파일 시 경고
     "noUnusedParameters": true,
-    // switch 문에서 비어 있는 case 문이 있으면 컴파일 시 경고
     "noFallthroughCasesInSwitch": true
   },
-  // 컴파일할 파일 목록
   "include": [
-    // Next.js 환경 파일
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
@@ -70,6 +50,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  // 컴파일에서 제외할 파일 목록
   "exclude": ["node_modules"]
 }
