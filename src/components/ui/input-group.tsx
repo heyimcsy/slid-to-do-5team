@@ -2,12 +2,12 @@
 
 import type { VariantProps } from 'class-variance-authority';
 
+import * as React from 'react';
 import { cn } from '@/lib/shadcn';
 import { cva } from 'class-variance-authority';
-import * as React from 'react';
 
+import { BaseInput } from '@/components/ui/base-input';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
 function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
@@ -114,7 +114,7 @@ function InputGroupText({ className, ...props }: React.ComponentProps<'span'>) {
 
 function InputGroupInput({ className, ...props }: React.ComponentProps<'input'>) {
   return (
-    <Input
+    <BaseInput
       data-slot="input-group-control"
       className={cn(
         'flex-1 rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent',
@@ -141,5 +141,8 @@ function InputGroupTextarea({ className, ...props }: React.ComponentProps<'texta
 export {
   InputGroup,
   InputGroupAddon,
-  InputGroupButton, InputGroupInput, InputGroupText, InputGroupTextarea
+  InputGroupButton,
+  InputGroupInput,
+  InputGroupText,
+  InputGroupTextarea,
 };

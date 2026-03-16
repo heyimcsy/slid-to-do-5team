@@ -3,13 +3,7 @@ import { cn } from '@/lib/shadcn';
 import { Search01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 
-
-
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
-
-
-
-
 
 // shadcn의 InputGroupInput을 기반으로 className과 placeholder을 커스텀하여 사용하는 컴포넌트
 type SearchInputProps = {
