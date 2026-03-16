@@ -1,68 +1,42 @@
 'use client';
 
-import type { VariantProps } from 'class-variance-authority';
-
 import * as React from 'react';
-import { cn } from '@/lib';
-import { cva } from 'class-variance-authority';
+import { cn } from '@/lib/shadcn';
+import { Input as InputPrimitive } from '@base-ui/react/input';
 
-const inputVariants = cva('border bg-white outline-none focus:ring-0', {
-  variants: {
-    size: {
-      large: 'w-[400px] h-14 rounded-2xl px-4',
-      small: 'w-[327px] h-11 rounded-xl px-3',
-    },
-    state: {
-      default: 'border-[#CCCCCC] focus:border-[#FF8442]',
-      done: 'border-[#CCCCCC] focus:border-[#FF8442]',
-      typing: 'border-[#FF8442]',
-      error: 'border-[#FF3434] focus:border-[#FF3434]',
-    },
-  },
-  defaultVariants: {
-    size: 'large',
-    state: 'default',
-  },
-});
+import { FieldDescription } from './field';
 
-type InputVariantProps = VariantProps<typeof inputVariants>;
-
-interface CustomInputProps extends Omit<React.ComponentProps<'input'>, 'size'> {
-  size?: InputVariantProps['size'];
-  state?: InputVariantProps['state'];
+interface InputProps extends React.ComponentProps<'input'> {
   errorMessage?: string;
 }
 
-export function Input({
-  size,
-  state,
-  errorMessage,
-  className,
-  onFocus,
-  onBlur,
-  ...props
-}: CustomInputProps) {
-  const [focused, setFocused] = React.useState(false);
-
-  const resolvedState = state ?? (focused ? 'typing' : 'default');
-
+function Input({ className, type, errorMessage, ...props }: InputProps) {
   return (
-    <div className="flex flex-col gap-1">
-      <input
-        className={cn(inputVariants({ size, state: resolvedState }), className)}
-        onFocus={(e) => {
-          setFocused(true);
-          onFocus?.(e);
-        }}
-        onBlur={(e) => {
-          setFocused(false);
-          onBlur?.(e);
-        }}
+    <div className="flex flex-col gap-2">
+      <InputPrimitive
+        type={type}
+        data-slot="input"
+        aria-invalid={!!errorMessage}
+        className={cn(
+          'h-11 w-81.75 rounded-xl px-3',
+          'md:h-14 md:w-100 md:rounded-2xl md:px-4',
+          'bg-white text-base transition-colors outline-none',
+          'placeholder:text-gray-400',
+          'border border-gray-300',
+          'focus:border-orange-500',
+          'aria-invalid:border-red-500 aria-invalid:focus:border-red-500',
+          'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
+          className,
+        )}
         {...props}
       />
-      {resolvedState === 'error' && errorMessage && (
-        <span className="px-1 text-sm text-[#FF3434]">{errorMessage}</span>
+      {errorMessage && (
+        <FieldDescription className="text-sm-medium px-1 text-[#FF3434]">
+          {errorMessage}
+        </FieldDescription>
       )}
     </div>
   );
 }
+
+export { Input };
