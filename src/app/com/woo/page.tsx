@@ -1,12 +1,18 @@
 'use client';
 
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { Add01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Fragment, useEffect, useRef, useState } from 'react';
+
+
 
 import { SearchInput } from '@/components/SearchInput';
 import { Button, IconButton } from '@/components/ui/button';
+
+
+
+
 
 export default function Woo() {
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -27,7 +33,7 @@ export default function Woo() {
       <h1 className="font-xl-bold sm:font-2xl-bold">버튼(아이콘 버튼 포함) 그룹</h1>
       <div className="flex min-h-14 w-full cursor-text flex-wrap items-center gap-1.5 rounded-[16px] border border-gray-200 bg-white px-3 py-2 transition-colors focus-within:border-orange-500 focus-within:ring-[1px] focus-within:ring-orange-500/30">
         {styles.map((style) => (
-          <Fragment key={crypto.randomUUID()}>
+          <Fragment key={style}>
             <Button ref={buttonRef} variant={style as 'default' | 'outline' | 'ghost'}>
               Button CTA
             </Button>
