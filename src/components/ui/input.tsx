@@ -1,20 +1,42 @@
-import * as React from "react"
-import { Input as InputPrimitive } from "@base-ui/react/input"
+'use client';
 
-import { cn } from "@/lib/shadcn"
+import * as React from 'react';
+import { cn } from '@/lib/shadcn';
+import { Input as InputPrimitive } from '@base-ui/react/input';
 
-function Input({ className, type, ...props }: React.ComponentProps<"input">) {
-  return (
-    <InputPrimitive
-      type={type}
-      data-slot="input"
-      className={cn(
-        "h-9 w-full min-w-0 rounded-4xl border border-input bg-input/30 px-3 py-1 text-base transition-colors outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/20 md:text-sm",
-        className
-      )}
-      {...props}
-    />
-  )
+import { FieldDescription } from './field';
+
+interface InputProps extends React.ComponentProps<'input'> {
+  errorMessage?: string;
 }
 
-export { Input }
+function Input({ className, type, errorMessage, ...props }: InputProps) {
+  return (
+    <div className="flex flex-col gap-2">
+      <InputPrimitive
+        type={type}
+        data-slot="input"
+        aria-invalid={!!errorMessage}
+        className={cn(
+          'h-11 w-81.75 rounded-xl px-3',
+          'md:h-14 md:w-100 md:rounded-2xl md:px-4',
+          'bg-white text-base transition-colors outline-none',
+          'placeholder:text-gray-400',
+          'border border-gray-300',
+          'focus:border-orange-500',
+          'aria-invalid:border-red-500 aria-invalid:focus:border-red-500',
+          'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
+          className,
+        )}
+        {...props}
+      />
+      {errorMessage && (
+        <FieldDescription className="text-sm-medium px-1 text-[#FF3434]">
+          {errorMessage}
+        </FieldDescription>
+      )}
+    </div>
+  );
+}
+
+export { Input };
