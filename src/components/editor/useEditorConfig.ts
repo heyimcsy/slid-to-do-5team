@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -44,4 +44,14 @@ export function useEditorConfig({ content = '', onUpdate }: UseEditorConfigProps
   }, [editor, content]);
 
   return editor;
+}
+
+export function useEditorWithContent(initialContent = '') {
+  const [inputContent] = useState(initialContent);
+  const [html, setHtml] = useState(initialContent);
+  const editor = useEditorConfig({
+    content: inputContent,
+    onUpdate: setHtml,
+  });
+  return { editor, html };
 }
