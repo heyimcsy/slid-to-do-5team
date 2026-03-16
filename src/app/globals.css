@@ -261,22 +261,22 @@ body {
 /* ───────────────────────────────
    text-xs  |  12px / 16px
 ─────────────────────────────── */
-@utility text-xs-regular {
+@utility font-xs-regular {
   font-weight: 400;
   font-size: 12px;
   line-height: 16px;
 }
-@utility text-xs-medium {
+@utility font-xs-medium {
   font-weight: 500;
   font-size: 12px;
   line-height: 16px;
 }
-@utility text-xs-semibold {
+@utility font-xs-semibold {
   font-weight: 600;
   font-size: 12px;
   line-height: 16px;
 }
-@utility text-xs-bold {
+@utility font-xs-bold {
   font-weight: 700;
   font-size: 12px;
   line-height: 16px;
@@ -285,22 +285,22 @@ body {
 /* ───────────────────────────────
    text-sm  |  14px / 20px
 ─────────────────────────────── */
-@utility text-sm-regular {
+@utility font-sm-regular {
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;
 }
-@utility text-sm-medium {
+@utility font-sm-medium {
   font-weight: 500;
   font-size: 14px;
   line-height: 20px;
 }
-@utility text-sm-semibold {
+@utility font-sm-semibold {
   font-weight: 600;
   font-size: 14px;
   line-height: 20px;
 }
-@utility text-sm-bold {
+@utility font-sm-bold {
   font-weight: 700;
   font-size: 14px;
   line-height: 20px;
@@ -309,22 +309,22 @@ body {
 /* ───────────────────────────────
    text-base  |  16px / 24px
 ─────────────────────────────── */
-@utility text-base-regular {
+@utility font-base-regular {
   font-weight: 400;
   font-size: 16px;
   line-height: 24px;
 }
-@utility text-base-medium {
+@utility font-base-medium {
   font-weight: 500;
   font-size: 16px;
   line-height: 24px;
 }
-@utility text-base-semibold {
+@utility font-base-semibold {
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
 }
-@utility text-base-bold {
+@utility font-base-bold {
   font-weight: 700;
   font-size: 16px;
   line-height: 24px;
@@ -333,22 +333,22 @@ body {
 /* ───────────────────────────────
    text-lg  |  18px / 28px
 ─────────────────────────────── */
-@utility text-lg-regular {
+@utility font-lg-regular {
   font-weight: 400;
   font-size: 18px;
   line-height: 28px;
 }
-@utility text-lg-medium {
+@utility font-lg-medium {
   font-weight: 500;
   font-size: 18px;
   line-height: 28px;
 }
-@utility text-lg-semibold {
+@utility font-lg-semibold {
   font-weight: 600;
   font-size: 18px;
   line-height: 28px;
 }
-@utility text-lg-bold {
+@utility font-lg-bold {
   font-weight: 700;
   font-size: 18px;
   line-height: 28px;
@@ -357,22 +357,22 @@ body {
 /* ───────────────────────────────
    text-xl  |  20px / 30px
 ─────────────────────────────── */
-@utility text-xl-regular {
+@utility font-xl-regular {
   font-weight: 400;
   font-size: 20px;
   line-height: 30px;
 }
-@utility text-xl-medium {
+@utility font-xl-medium {
   font-weight: 500;
   font-size: 20px;
   line-height: 30px;
 }
-@utility text-xl-semibold {
+@utility font-xl-semibold {
   font-weight: 600;
   font-size: 20px;
   line-height: 30px;
 }
-@utility text-xl-bold {
+@utility font-xl-bold {
   font-weight: 700;
   font-size: 20px;
   line-height: 30px;
@@ -381,22 +381,22 @@ body {
 /* ───────────────────────────────
    text-2xl  |  24px / 32px
 ─────────────────────────────── */
-@utility text-2xl-regular {
+@utility font-2xl-regular {
   font-weight: 400;
   font-size: 24px;
   line-height: 32px;
 }
-@utility text-2xl-medium {
+@utility font-2xl-medium {
   font-weight: 500;
   font-size: 24px;
   line-height: 32px;
 }
-@utility text-2xl-semibold {
+@utility font-2xl-semibold {
   font-weight: 600;
   font-size: 24px;
   line-height: 32px;
 }
-@utility text-2xl-bold {
+@utility font-2xl-bold {
   font-weight: 700;
   font-size: 24px;
   line-height: 32px;
@@ -405,22 +405,22 @@ body {
 /* ───────────────────────────────
    text-3xl  |  30px / 36px
 ─────────────────────────────── */
-@utility text-3xl-regular {
+@utility font-3xl-regular {
   font-weight: 400;
   font-size: 30px;
   line-height: 36px;
 }
-@utility text-3xl-medium {
+@utility font-3xl-medium {
   font-weight: 500;
   font-size: 30px;
   line-height: 36px;
 }
-@utility text-3xl-semibold {
+@utility font-3xl-semibold {
   font-weight: 600;
   font-size: 30px;
   line-height: 36px;
 }
-@utility text-3xl-bold {
+@utility font-3xl-bold {
   font-weight: 700;
   font-size: 30px;
   line-height: 36px;
