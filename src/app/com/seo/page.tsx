@@ -4,9 +4,11 @@ import type { KeyboardEvent } from 'react';
 
 import { useEffect, useRef, useState } from 'react';
 
+import { CategoryTabs } from '@/components/common/CategoryTabs';
+import { Chips } from '@/components/common/Chips';
+import { DonutProgress } from '@/components/common/DonutProgress';
 import { Badge } from '@/components/ui/badge';
-import { CategoryTabs } from '@/components/ui/CategoryTabs';
-import { Chips } from '@/components/ui/Chips';
+import { Button } from '@/components/ui/button';
 
 const COLORS = ['gray', 'green', 'yellow', 'red', 'purple'] as const;
 type TagColor = (typeof COLORS)[number];
@@ -24,8 +26,9 @@ export default function Seo() {
   ]);
 
   const [activeTab, setActiveTab] = useState('ALL');
-
   const [inputValue, setInputValue] = useState('');
+  const [count, setCount] = useState(50);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const colorIndexRef = useRef(0); // 순차 컬러용
 
@@ -104,6 +107,14 @@ export default function Seo() {
         <Chips variant="todo" />
         <Chips variant="done" />
       </div>
+
+      <h1 className="font-xl-bold sm:font-2xl-bold">donut progress</h1>
+      <div className="flex h-77 w-160 items-center justify-center space-x-4 rounded-lg bg-[#00D4BE]">
+        <Button onClick={() => setCount((count) => count + 10)}>+</Button>
+        <DonutProgress value={count} responsive />
+        <Button onClick={() => setCount((count) => count - 10)}>-</Button>
+      </div>
+      <p>반응형에 따라 크기가 변동되는 차트는 isReacted를 true로 넣어주세요</p>
     </main>
   );
 }
