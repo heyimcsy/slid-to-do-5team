@@ -1,0 +1,53 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+
+/**
+ * @description Persist store 타입
+ * @property persist - persist 미들웨어 사용 store 목록
+ * @property rehydrate - rehydrate 메서드
+ */
+export type PersistStore = { persist?: { rehydrate: () => Promise<void> } };
+
+/**
+ * @description PersistRehydrationProvider 컴포넌트 타입
+ * @param children - 자식 컴포넌트
+ * @param stores - persist 미들웨어 사용 store 목록. skipHydration 사용 시 클라이언트에서 rehydrate됨
+ * @param fallback - 데이터 로딩 중 렌더링할 대체(fallback) 컴포넌트, 없으면 null
+ */
+export type PersistRehydrationProviderProps = {
+  children: React.ReactNode;
+  /** persist 미들웨어 사용 store 목록. skipHydration 사용 시 클라이언트에서 rehydrate됨 */
+  stores?: PersistStore[];
+  /** 데이터 로딩 중 렌더링할 대체(fallback) 컴포넌트, 없으면 null */
+  fallback?: React.ReactNode;
+};
+
+export function PersistRehydrationProvider({
+  children,
+  stores = [],
+  fallback = null,
+}: PersistRehydrationProviderProps) {
+  const [hydrated, setHydrated] = useState(stores.length === 0);
+
+  useEffect(() => {
+    // stores가 비어있으면(클라이언트 저장소에 데이터 없음) 클라이언트에서 rehydrate 완료 상태로 변경
+    if (stores.length === 0) {
+      setHydrated(true);
+      return;
+    }
+    // stores가 비어있지 않으면(클라이언트 저장소에 데이터 있음) 모든 store에서 rehydrate
+    // PersistStore에 포함되어 있고, rehydrate 메서드가 있으며, rehydrate 메서드가 Promise를 반환하는 경우에만 rehydrate 실시
+    Promise.all(
+      stores
+        .filter((s): s is PersistStore & { persist: { rehydrate: () => Promise<void> } } =>
+          Boolean(s?.persist?.rehydrate),
+        )
+        .map((s) => s.persist!.rehydrate()),
+    ).then(() => setHydrated(true));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- stores는 초기 마운트 시점에만 사용
+  }, []);
+
+  if (!hydrated) return <>{fallback}</>;
+  return <>{children}</>;
+}
