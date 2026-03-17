@@ -12,7 +12,9 @@ interface UseEditorConfigProps {
   variant?: 'note' | 'post';
 }
 
+// 수정 페이지에서 사용하는 에디터
 export function useEditorConfig({ content = '', onUpdate, variant }: UseEditorConfigProps = {}) {
+  // stale closure 방지를 위해 onUpdate를 ref로 관리
   const onUpdateRef = useRef(onUpdate);
   useEffect(() => {
     onUpdateRef.current = onUpdate;
@@ -43,6 +45,7 @@ export function useEditorConfig({ content = '', onUpdate, variant }: UseEditorCo
     },
   });
 
+  // 외부에서 content가 변경되면 에디터에 반영
   useEffect(() => {
     if (!editor || editor.getHTML() === content) return;
     editor.commands.setContent(content);
@@ -51,6 +54,8 @@ export function useEditorConfig({ content = '', onUpdate, variant }: UseEditorCo
   return editor;
 }
 
+// 작성페이지에서 사용하는 에디터
+// initialContent: 특정 내용으로 시작할 때 사용
 export function useEditorWithContent({
   initialContent = '',
   variant,
@@ -60,10 +65,8 @@ export function useEditorWithContent({
 }) {
   const [inputContent] = useState(initialContent);
   const [html, setHtml] = useState(initialContent);
-  const editor = useEditorConfig({
-    content: inputContent,
-    onUpdate: setHtml,
-    variant,
-  });
+
+  const editor = useEditorConfig({ content: inputContent, onUpdate: setHtml, variant });
+
   return { editor, html };
 }

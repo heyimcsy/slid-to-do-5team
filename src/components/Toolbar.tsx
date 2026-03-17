@@ -3,7 +3,7 @@
 import { cn } from '@/lib';
 import { type Editor } from '@tiptap/react';
 
-import { useToolbar } from './useToolbar';
+import { useToolbar } from '@/hooks/editor';
 
 interface ToolbarProps {
   editor: Editor | null;
@@ -61,8 +61,6 @@ export function Toolbar({
           </button>
         ),
       )}
-
-      {/* <LinkModal open={showLinkModal} onClose={() => setShowLinkModal(false)} editor={editor} /> */}
     </div>
   );
 }
