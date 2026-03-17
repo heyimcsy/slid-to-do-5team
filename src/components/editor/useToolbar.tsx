@@ -20,13 +20,14 @@ const ALIGN_ICON = {
 
 export type ToolbarItem =
   | { type: 'gap' }
-  | { type?: never; name: string; label: React.ReactNode; onClick: () => void; isActive: boolean };
+  | { type: 'button'; name: string; label: React.ReactNode; onClick: () => void; isActive: boolean };
 
 interface UseToolbarProps {
   editor: Editor | null;
   variant: 'note' | 'post';
   onImageUpload?: (file: File) => Promise<string>;
   onImageLimitExceeded?: () => void;
+  imageLimit?: number;
 }
 
 export function useToolbar({
@@ -34,28 +35,52 @@ export function useToolbar({
   variant,
   onImageUpload,
   onImageLimitExceeded,
+  imageLimit = 2,
 }: UseToolbarProps) {
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const blobUrlsRef = useRef<string[]>([]);
+  const isUploadingRef = useRef(false);
 
   useEffect(() => {
     if (!editor) return;
 
-    const handler = () => forceUpdate();
-    editor.on('update', handler);
-    editor.on('selectionUpdate', handler);
+    const onUpdate = () => {
+      forceUpdate();
+
+      if (blobUrlsRef.current.length > 0) {
+        const docUrls = new Set<string>();
+
+        editor.state.doc.descendants((node) => {
+          if (node.type.name === 'image' && node.attrs.src) docUrls.add(node.attrs.src);
+        });
+
+        blobUrlsRef.current = blobUrlsRef.current.filter((url) => {
+          if (!docUrls.has(url)) {
+            URL.revokeObjectURL(url);
+            return false;
+          }
+          return true;
+        });
+      }
+    };
+    const onSelectionUpdate = () => forceUpdate();
+
+    editor.on('update', onUpdate);
+    editor.on('selectionUpdate', onSelectionUpdate);
 
     return () => {
-      editor.off('update', handler);
-      editor.off('selectionUpdate', handler);
+      editor.off('update', onUpdate);
+      editor.off('selectionUpdate', onSelectionUpdate);
     };
   }, [editor]);
 
   useEffect(() => {
     return () => {
-      blobUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      blobUrlsRef.current.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
     };
   }, []);
 
@@ -64,6 +89,7 @@ export function useToolbar({
     : { showLink: false, showImage: false };
 
   const makeItem = (name: IconName, isActive: boolean, onClick: () => void): ToolbarItem => ({
+    type: 'button',
     name,
     label: <Icon name={name} size={20} variant={isActive ? 'filled' : 'default'} />,
     onClick,
@@ -83,24 +109,27 @@ export function useToolbar({
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !editor) return;
-
-    let imageCount = 0;
-    editor.state.doc.descendants((node) => {
-      if (node.type.name === 'image') imageCount++;
-    });
-
-    if (imageCount >= 2) {
-      onImageLimitExceeded?.();
-      e.target.value = '';
-      return;
-    }
+    if (!file || !editor || isUploadingRef.current) return;
+    isUploadingRef.current = true;
 
     let url: string | null = null;
 
     try {
+      let imageCount = 0;
+      editor.state.doc.descendants((node) => {
+        if (node.type.name === 'image') imageCount++;
+      });
+
+      if (imageCount >= imageLimit) {
+        onImageLimitExceeded?.();
+        return;
+      }
+
+      const insertPos = editor.state.selection.to;
+
       if (onImageUpload) {
         url = await onImageUpload(file);
+        if (!url) return;
       } else {
         url = URL.createObjectURL(file);
         blobUrlsRef.current.push(url);
@@ -108,7 +137,7 @@ export function useToolbar({
       editor
         .chain()
         .focus()
-        .insertContentAt(editor.state.selection.to, { type: 'image', attrs: { src: url } })
+        .insertContentAt(insertPos, { type: 'image', attrs: { src: url } })
         .run();
     } catch {
       if (!onImageUpload && url) {
@@ -117,6 +146,7 @@ export function useToolbar({
       }
     } finally {
       e.target.value = '';
+      isUploadingRef.current = false;
     }
   };
 

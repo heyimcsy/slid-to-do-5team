@@ -9,9 +9,10 @@ import Image from '@tiptap/extension-image';
 interface UseEditorConfigProps {
   content?: string;
   onUpdate?: (html: string) => void;
+  variant?: 'note' | 'post';
 }
 
-export function useEditorConfig({ content = '', onUpdate }: UseEditorConfigProps = {}) {
+export function useEditorConfig({ content = '', onUpdate, variant }: UseEditorConfigProps = {}) {
   const onUpdateRef = useRef(onUpdate);
   useEffect(() => {
     onUpdateRef.current = onUpdate;
@@ -30,8 +31,12 @@ export function useEditorConfig({ content = '', onUpdate }: UseEditorConfigProps
       StarterKit,
       Underline,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      Image,
-      Link.configure({ openOnClick: false }),
+      ...(variant === 'note' ? [] : [Image]),
+      Link.configure({
+        openOnClick: false,
+        autolink: variant !== 'post',
+        linkOnPaste: variant !== 'post',
+      }),
     ],
     onUpdate: ({ editor }) => {
       onUpdateRef.current?.(editor.getHTML());
@@ -46,12 +51,13 @@ export function useEditorConfig({ content = '', onUpdate }: UseEditorConfigProps
   return editor;
 }
 
-export function useEditorWithContent(initialContent = '') {
+export function useEditorWithContent(initialContent = '', variant?: 'note' | 'post') {
   const [inputContent] = useState(initialContent);
   const [html, setHtml] = useState(initialContent);
   const editor = useEditorConfig({
     content: inputContent,
     onUpdate: setHtml,
+    variant,
   });
   return { editor, html };
 }
