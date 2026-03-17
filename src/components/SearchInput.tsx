@@ -17,10 +17,18 @@ function SearchInput({
   ...props
 }: SearchInputProps) {
   return (
-    <InputGroup className={cn('h-fit min-h-12 min-w-fit rounded-full bg-transparent', className)}>
+    <InputGroup
+      className={cn(
+        'h-fit min-h-12 w-full min-w-fit justify-between rounded-full bg-transparent',
+        className,
+      )}
+    >
       <InputGroupInput
         aria-label={props['aria-label'] ?? placeholder ?? '검색'}
-        className="font-base-regular px-5 py-3 text-gray-700 placeholder:text-gray-500"
+        className={cn(
+          'font-base-regular w-full px-5 py-3 text-gray-700 placeholder:text-gray-500 md:w-full',
+          className,
+        )}
         placeholder={placeholder}
         {...props}
       />
