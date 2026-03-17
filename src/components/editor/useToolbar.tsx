@@ -114,6 +114,12 @@ export function useToolbar({
 
     let url: string | null = null;
 
+    const revokeBlob = () => {
+      if (onImageUpload || !url) return;
+      blobUrlsRef.current = blobUrlsRef.current.filter((u) => u !== url);
+      URL.revokeObjectURL(url);
+    };
+
     try {
       let imageCount = 0;
       editor.state.doc.descendants((node) => {
@@ -134,16 +140,16 @@ export function useToolbar({
         url = URL.createObjectURL(file);
         blobUrlsRef.current.push(url);
       }
-      editor
+
+      const inserted = editor
         .chain()
         .focus()
         .insertContentAt(insertPos, { type: 'image', attrs: { src: url } })
         .run();
+
+      if (!inserted) revokeBlob();
     } catch {
-      if (!onImageUpload && url) {
-        blobUrlsRef.current = blobUrlsRef.current.filter((u) => u !== url);
-        URL.revokeObjectURL(url);
-      }
+      revokeBlob();
     } finally {
       e.target.value = '';
       isUploadingRef.current = false;
