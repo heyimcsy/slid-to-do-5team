@@ -5,6 +5,7 @@ interface DonutProgressProps {
   color?: string;
   trackColor?: string;
   responsive?: boolean;
+  ariaLabel?: string;
 }
 
 /**
@@ -31,13 +32,21 @@ export function DonutProgress({
   color = '#FFFFFF',
   trackColor = '#009D97',
   responsive = false,
+  ariaLabel = '진행도',
 }: Readonly<DonutProgressProps>) {
   const r = 80;
   const circumference = 2 * Math.PI * r;
   const offset = circumference * (1 - value / 100);
 
   return (
-    <div className={cn('size-38', responsive && 'lg:size-46')} aria-label="donut progress">
+    <div
+      className={cn('size-38', responsive && 'lg:size-46')}
+      role="progressbar"
+      aria-label={ariaLabel}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={value}
+    >
       <progress value={value} max={100} className="sr-only" />
       <svg viewBox="0 0 184 184" width="100%" height="100%">
         <circle cx="92" cy="92" r={r} fill="none" stroke={trackColor} strokeWidth="24" />
