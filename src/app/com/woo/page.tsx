@@ -5,14 +5,8 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { Add01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 
-
-
-import { SearchInput } from '@/components/SearchInput';
+import { SearchInput } from '@/components/common/SearchInput';
 import { Button, IconButton } from '@/components/ui/button';
-
-
-
-
 
 export default function Woo() {
   const buttonRef = useRef<HTMLButtonElement>(null);
