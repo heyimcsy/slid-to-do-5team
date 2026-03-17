@@ -1,5 +1,9 @@
 import { cn } from '@/lib';
 
+
+
+
+
 interface DonutProgressProps {
   value: number;
   color?: string;
@@ -32,7 +36,6 @@ export function DonutProgress({
   color = '#FFFFFF',
   trackColor = '#009D97',
   responsive = false,
-  ariaLabel = '진행도',
 }: Readonly<DonutProgressProps>) {
   const r = 80;
   const circumference = 2 * Math.PI * r;
@@ -42,7 +45,7 @@ export function DonutProgress({
     <div
       className={cn('size-38', responsive && 'lg:size-46')}
       role="progressbar"
-      aria-label={ariaLabel}
+      aria-label="donut progress"
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={value}
