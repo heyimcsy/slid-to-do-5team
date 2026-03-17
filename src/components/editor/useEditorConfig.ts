@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
+import Image from '@tiptap/extension-image';
+import Link from '@tiptap/extension-link';
+import TextAlign from '@tiptap/extension-text-align';
+import Underline from '@tiptap/extension-underline';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Underline from '@tiptap/extension-underline';
-import TextAlign from '@tiptap/extension-text-align';
-import Link from '@tiptap/extension-link';
-import Image from '@tiptap/extension-image';
 
 interface UseEditorConfigProps {
   content?: string;
@@ -42,7 +42,7 @@ export function useEditorConfig({ content = '', onUpdate, variant }: UseEditorCo
       onUpdateRef.current?.(editor.getHTML());
     },
   });
-  
+
   useEffect(() => {
     if (!editor || editor.getHTML() === content) return;
     editor.commands.setContent(content);
@@ -51,7 +51,13 @@ export function useEditorConfig({ content = '', onUpdate, variant }: UseEditorCo
   return editor;
 }
 
-export function useEditorWithContent(initialContent = '', variant?: 'note' | 'post') {
+export function useEditorWithContent({
+  initialContent = '',
+  variant,
+}: {
+  initialContent?: string;
+  variant: 'note' | 'post';
+}) {
   const [inputContent] = useState(initialContent);
   const [html, setHtml] = useState(initialContent);
   const editor = useEditorConfig({
