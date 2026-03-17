@@ -20,9 +20,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className={cn('font-pretendard antialiased', pretendard.variable)}>
-      <AppProviders>
-        <body>{children}</body>
-      </AppProviders>
+      <body>
+        <AppProviders>{children}</AppProviders>
+      </body>
     </html>
   );
 }
