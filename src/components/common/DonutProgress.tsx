@@ -4,7 +4,7 @@ interface DonutProgressProps {
   value: number;
   color?: string;
   trackColor?: string;
-  isReacted?: boolean;
+  responsive?: boolean;
 }
 
 /**
@@ -14,7 +14,7 @@ interface DonutProgressProps {
  * @param value - 진행률 (0 ~ 100)
  * @param color - 진행 arc 색상 (기본값: '#FFFFFF')
  * @param trackColor - 배경 트랙 색상 (기본값: '#009D97')
- * @param isReacted - true일 경우 lg 브레이크포인트에서 size-46으로 확대 (기본값: false)
+ * @param responsive - true일 경우 lg 브레이크포인트에서 size-46으로 확대 (기본값: false)
  *
  * @remarks
  * **SVG 크기 계산 공식**
@@ -30,17 +30,19 @@ export function DonutProgress({
   value,
   color = '#FFFFFF',
   trackColor = '#009D97',
-  isReacted = false,
-}: DonutProgressProps) {
+  responsive = false,
+}: Readonly<DonutProgressProps>) {
   const r = 80;
   const circumference = 2 * Math.PI * r;
   const offset = circumference * (1 - value / 100);
 
   return (
-    <div className={cn('size-38', isReacted && 'lg:size-46')}>
+    <div className={cn('size-38', responsive && 'lg:size-46')} aria-label="donut progress">
+      <progress value={value} max={100} className="sr-only" />
       <svg viewBox="0 0 184 184" width="100%" height="100%">
         <circle cx="92" cy="92" r={r} fill="none" stroke={trackColor} strokeWidth="24" />
         <circle
+          aria-hidden="true"
           cx="92"
           cy="92"
           r={r}
