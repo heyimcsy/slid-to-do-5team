@@ -2,6 +2,7 @@ import type { SVGProps } from 'react';
 
 type ArrowIconProps = SVGProps<SVGSVGElement> & {
   direction?: 'left' | 'right' | 'up' | 'down';
+  variant?: 'default' | 'white';
 };
 
 const directionStyles = {
@@ -11,7 +12,16 @@ const directionStyles = {
   down: 'rotate(-90deg)',
 };
 
-export const ArrowIcon = ({ direction = 'left', ...props }: ArrowIconProps) => {
+const variantStyles = {
+  default: 'var(--color-gray-400)',
+  white: 'white',
+};
+
+export const ArrowIcon = ({
+  direction = 'left',
+  variant = 'default',
+  ...props
+}: ArrowIconProps) => {
   return (
     <svg
       width="100%"
@@ -24,7 +34,7 @@ export const ArrowIcon = ({ direction = 'left', ...props }: ArrowIconProps) => {
     >
       <path
         d="M15 18L9 12L15 6"
-        stroke="var(--color-gray-400)"
+        stroke={variantStyles[variant]}
         strokeWidth="2.004"
         strokeLinecap="round"
         strokeLinejoin="round"
