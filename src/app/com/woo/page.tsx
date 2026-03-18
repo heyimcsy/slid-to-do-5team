@@ -26,12 +26,19 @@ export default function Woo() {
   /**
    * @description Query 테스트
    * @queryKey - 'test'
+   * @placeholderData - 데이터 페칭 이전에 보여줄 placeholder data
    * @queryFn - 임의의 테스트 데이터 페칭(이후 실제 API 호출로 변경하세요)
    * @returns data - 임의의 테스트 응답값
    * @isLoading - 로딩 상태 (true/false)
    */
   const { data, isLoading } = useQuery({
     queryKey: ['test'],
+    placeholderData: {
+      userId: 0,
+      id: 0,
+      title: 'test 투두',
+      completed: false,
+    },
     queryFn: async () => {
       const res = await fetch('https://jsonplaceholder.typicode.com/todos/1');
       return res.json();
