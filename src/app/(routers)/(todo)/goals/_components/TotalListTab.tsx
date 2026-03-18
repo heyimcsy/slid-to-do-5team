@@ -1,6 +1,6 @@
 'use client';
 
-import type { TodoListProps } from '@/app/(routers)/(todo)/goals/_components/TodoList';
+import type { TodoListProps } from '@/app/(routers)/(todo)/goals/types';
 
 import { useState } from 'react';
 import { TodoSection } from '@/app/(routers)/(todo)/goals/_components/TodoSection';
