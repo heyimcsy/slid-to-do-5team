@@ -36,7 +36,15 @@ export default function TodoList({
         clicked && 'bg-orange-alpha-20 rounded-[12px]',
         'flex h-9 min-h-9 w-full items-center justify-between space-x-[6px] px-1 md:h-11 md:px-2',
       )}
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.(e as unknown as React.MouseEvent<HTMLDivElement>);
+        }
+      }}
     >
       <div className="flex w-full min-w-0 items-center space-x-1 md:space-x-2">
         <Icon name="checkBox" size={18} className="shrink-0" checked={checked} />
