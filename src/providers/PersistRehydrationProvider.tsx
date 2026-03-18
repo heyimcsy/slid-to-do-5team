@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
  * @property persist - persist 미들웨어 사용 store 목록
  * @property rehydrate - rehydrate 메서드
  */
-export type PersistStore = { persist?: { rehydrate: () => Promise<void> } };
+export type PersistStore = { persist?: { rehydrate: () => void | Promise<void> } };
 
 /**
  * @description PersistRehydrationProvider 컴포넌트 타입
@@ -40,10 +40,10 @@ export function PersistRehydrationProvider({
     // PersistStore에 포함되어 있고, rehydrate 메서드가 있으며, rehydrate 메서드가 Promise를 반환하는 경우에만 rehydrate 실시
     Promise.all(
       stores
-        .filter((s): s is PersistStore & { persist: { rehydrate: () => Promise<void> } } =>
+        .filter((s): s is PersistStore & { persist: { rehydrate: () => void | Promise<void> } } =>
           Boolean(s?.persist?.rehydrate),
         )
-        .map((s) => s.persist!.rehydrate()),
+        .map((s) => Promise.resolve(s.persist!.rehydrate())),
     ).then(() => setHydrated(true));
     // eslint-disable-next-line react-hooks/exhaustive-deps -- stores는 초기 마운트 시점에만 사용
   }, []);

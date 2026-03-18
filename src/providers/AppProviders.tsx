@@ -4,7 +4,7 @@ import type { QueryPersistStorageType } from '@/constants/query';
 import type { PersistStore } from '@/providers/PersistRehydrationProvider';
 import type { DehydratedState } from '@tanstack/react-query';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { createQueryPersister } from '@/providers/createQueryPersister';
 import { PersistRehydrationProvider } from '@/providers/PersistRehydrationProvider';
@@ -12,6 +12,7 @@ import { HydrationBoundary, QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 
 import { QUERY_MAX_AGE, QUERY_STALE_TIME } from '@/constants/query';
+import { PERSIST_STORES } from '@/constants/store';
 
 /**
  * @description 개발환경에서만 ReactQueryDevtools 동적 임포트, 서버에서 렌더링 안하도록 ssr: false 설정.
@@ -41,7 +42,6 @@ export type AppProvidersProps = {
 export function AppProviders({
   children,
   dehydratedState,
-  persistStores = [],
   queryPersistStorage = 'localStorage',
 }: AppProvidersProps) {
   const [queryClient] = useState(
@@ -55,6 +55,16 @@ export function AppProviders({
         },
       }),
   );
+  const [persistStores, setPersistStores] = useState<PersistStore[]>([]);
+  useEffect(() => {
+    /**
+     * @abstract persistStores를 AppProviders Props에 직접 주입하지 않고 여기서 초기화하는 이유는 서버와 클라이언트의 초기 렌더링이 달라지는 것을 방지하기 위함
+     * @description 린터/React Compiler는 effect 안에서 동기적으로 호출되는 setState를 경고함
+     * @note queueMicrotask()로 감싸면 setState가 다음 마이크로태스크로 미뤄져서 비동기 호출로 취급되므로 해당 경고를 피할 수 있음
+     * @see https://react.dev/reference/react/useEffect#tip-useeffect-is-synchronous
+     */
+    queueMicrotask(() => setPersistStores(PERSIST_STORES));
+  }, []);
 
   /**
    * @description QueryClient persist용 Persister 생성.
