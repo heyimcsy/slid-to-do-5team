@@ -18,7 +18,7 @@ export function TodoSection({
   onClickItem,
 }: TodoSectionProps) {
   return (
-    <div className="flex h-fit w-full flex-col space-y-[10px]">
+    <div className="flex h-fit w-full min-w-0 flex-col space-y-[10px]">
       <div className="flex h-fit w-full items-center justify-between px-2 lg:h-10">
         <h3 className="font-base-semibold text-gray-800">{title}</h3>
         {showActions && (
