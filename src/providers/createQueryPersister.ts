@@ -4,6 +4,7 @@ import type { Persister } from '@tanstack/react-query-persist-client';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 
 import { QUERY_CACHE_KEY } from '@/constants/query';
+import { PERSIST_STORES } from '@/constants/store';
 
 /**
  * @description SSR 환경에서는 persister 동작 안함. 동일 Provider 트리로 hydration mismatch 방지.
@@ -34,7 +35,9 @@ export function createQueryPersister(
 }
 
 /**
- * @description 로그아웃·세션 만료 시 persist 저장소 전체 삭제.
+ * @description 로그아웃·세션 만료 시 모든 persist 저장소 삭제.
+ * - Tanstack Query 캐시(QUERY_CACHE_KEY) 삭제
+ * - PERSIST_STORES에 등록된 Zustand persist 저장소 삭제
  * JWT(HttpOnly) 환경에서 로그아웃 시 반드시 호출하여 사용자 데이터를 제거.
  *
  * @example
@@ -47,7 +50,17 @@ export function createQueryPersister(
  * }
  */
 export function clearQueryPersistStorage(): void {
+  // Node.js 환경에서는 호출 안함
   if (typeof window === 'undefined') return;
+  // Tanstack Query 키 삭제
   window.localStorage.removeItem(QUERY_CACHE_KEY);
   window.sessionStorage.removeItem(QUERY_CACHE_KEY);
+  // Zustand persist 저장소 키(name) 삭제
+  PERSIST_STORES.forEach((store) => {
+    const name = store.persist?.getOptions().name;
+    if (name) {
+      window.localStorage.removeItem(name);
+      window.sessionStorage.removeItem(name);
+    }
+  });
 }

@@ -1,3 +1,5 @@
+import type { PersistStore } from '@/providers/PersistRehydrationProvider';
+
 import { PersistRehydrationProvider } from '@/providers/PersistRehydrationProvider';
 import { render, screen } from '@testing-library/react';
 
@@ -13,8 +15,8 @@ describe('PersistRehydrationProvider', () => {
   });
   it('fallback이 있으면 stores rehydrate 전에 fallback 표시', async () => {
     // Arrange
-    const mockStore = {
-      persist: { rehydrate: () => Promise.resolve() },
+    const mockStore: PersistStore = {
+      persist: { rehydrate: () => Promise.resolve(), getOptions: () => ({ name: 'test-store' }) },
     };
     const fallback = <div>Loading</div>;
     const children = <span>Content</span>;

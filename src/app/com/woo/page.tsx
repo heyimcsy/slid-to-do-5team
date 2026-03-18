@@ -34,10 +34,15 @@ export default function Woo() {
   const { data, isLoading } = useQuery({
     queryKey: ['test'],
     placeholderData: {
-      userId: 0,
       id: 0,
+      teamId: process.env.NODE_ENV === 'development' ? 'silk-steel-dev' : 'silk-steel',
+      userId: 0,
+      goalId: 0,
       title: 'test 투두',
-      completed: false,
+      done: false,
+      fileUrl: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     },
     queryFn: async () => {
       const res = await fetch('https://jsonplaceholder.typicode.com/todos/1');
