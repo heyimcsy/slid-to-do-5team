@@ -1,9 +1,5 @@
 import { cn } from '@/lib';
 
-
-
-
-
 interface DonutProgressProps {
   value: number;
   color?: string;
@@ -43,7 +39,7 @@ export function DonutProgress({
 
   return (
     <div
-      className={cn('size-38', responsive && 'lg:size-46')}
+      className={cn('size-27', responsive && 'lg:size-46')}
       role="progressbar"
       aria-label="donut progress"
       aria-valuemin={0}
