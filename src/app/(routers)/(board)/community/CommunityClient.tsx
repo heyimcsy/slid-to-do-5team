@@ -38,18 +38,21 @@ export default function CommunityClient() {
     [posts],
   );
 
-  const filteredPosts = useMemo(
-    () =>
-      posts
-        .filter((post) => post.title.includes(search) || post.content.includes(search))
-        .sort((a, b) => {
-          if (sort === '최신순')
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-          if (sort === '인기순') return b.viewCount - a.viewCount;
-          return 0;
-        }),
-    [posts, search, sort],
-  );
+  const filteredPosts = useMemo(() => {
+    const lowerSearch = search.toLowerCase();
+    return posts
+      .filter(
+        (post) =>
+          post.title.toLowerCase().includes(lowerSearch) ||
+          post.content.toLowerCase().includes(lowerSearch),
+      )
+      .sort((a, b) => {
+        if (sort === '최신순')
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        if (sort === '인기순') return b.viewCount - a.viewCount;
+        return 0;
+      });
+  }, [posts, search, sort]);
 
   const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
   const paginatedPosts = filteredPosts.slice(
