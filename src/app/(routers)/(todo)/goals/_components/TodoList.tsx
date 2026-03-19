@@ -1,7 +1,7 @@
 import type { TodoListProps } from '@/app/(routers)/(todo)/goals/types';
 
 import Link from 'next/link';
-import ActionButton from '@/app/(routers)/(todo)/goals/_components/ActionButton';
+import ItemActionBar from '@/app/(routers)/(todo)/goals/_components/ItemActionBar';
 import { cn } from '@/lib';
 
 import { Icon } from '@/components/icon/Icon';
@@ -30,7 +30,7 @@ export default function TodoList({ content, checked, link, note, favorites }: To
           </p>
         </Link>
       </div>
-      <ActionButton note={note} link={link} favorites={favorites} />
+      <ItemActionBar note={note} link={link} favorites={favorites} />
     </div>
   );
 }
