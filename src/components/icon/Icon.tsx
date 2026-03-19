@@ -98,7 +98,7 @@ const icons = {
   linkEditor: LinkEditorIcon,
 };
 
-type IconName = keyof typeof icons;
+export type IconName = keyof typeof icons;
 
 type IconProps = {
   name: IconName;
