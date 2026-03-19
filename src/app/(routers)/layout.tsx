@@ -31,11 +31,6 @@ export default function RootLayout({
           </div>
           {children}
         </SidebarInset>
-
-        {/* <div className="h-dvh w-full bg-gray-100 md:flex">
-        <div className="flex h-14 w-full bg-white md:h-full md:w-15 md:rounded-r-2xl lg:w-90.5" />
-        <div className="flex h-full w-full items-center justify-center bg-gray-100">{children}</div>
-      </div> */}
       </SidebarProvider>
     </div>
   );

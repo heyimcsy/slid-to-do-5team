@@ -40,7 +40,7 @@ const bottomItems: {
 }[] = [
   {
     label: '새 목표',
-    href: '/settings',
+    href: '/goals',
     icon: 'flagLine',
     variant: 'white',
     textClassName: 'text-white',
@@ -48,7 +48,7 @@ const bottomItems: {
   },
   {
     label: '새 할일',
-    href: '/logout',
+    href: '/newtodo',
     icon: 'task',
     textClassName: 'text-orange-500',
     bgClassName: 'white',
@@ -61,8 +61,17 @@ const tempGoals = [
 ];
 
 export default function SidebarNav() {
+  console.log('SidebarNav rendered');
   const pathname = usePathname();
   const [isGoalsOpen, setIsGoalsOpen] = React.useState(false);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const handleNewGoal = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsGoalsOpen(true);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 350);
+  };
 
   return (
     <div>
@@ -113,6 +122,7 @@ export default function SidebarNav() {
                           ))}
                           <div className="mt-1 flex items-center gap-2 border border-t-0 border-r-0 border-b-2 border-l-0 border-b-orange-500 bg-orange-200 px-4 py-2 text-orange-700">
                             <input
+                              ref={inputRef}
                               type="text"
                               placeholder="입력 후 Enter"
                               className="w-full cursor-text border-none bg-transparent ring-0 outline-none placeholder:text-orange-400 focus:border-none focus:ring-0 focus:outline-none"
@@ -147,9 +157,10 @@ export default function SidebarNav() {
       <SidebarGroup className="mt-16 mb-16">
         <SidebarMenu className="flex flex-row gap-3 group-data-[collapsible=icon]:hidden">
           {bottomItems.map((item) => (
-            <SidebarMenuItem key={item.href} className="w-full">
+            <SidebarMenuItem key={item.label} className="w-full">
               <Link
                 href={item.href}
+                onClick={item.label === '새 목표' ? handleNewGoal : undefined}
                 className={`flex flex-row items-center justify-center gap-2 rounded-full border border-orange-500 px-6 py-4 md:flex-col md:rounded-xl md:py-8 ${item.bgClassName}`}
               >
                 <Icon name={item.icon} variant={item.variant} size={38} />
