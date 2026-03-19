@@ -114,7 +114,7 @@ export default function Seo() {
         <DonutProgress value={count} responsive />
         <Button onClick={() => setCount((count) => count - 10)}>-</Button>
       </div>
-      <p>반응형에 따라 크기가 변동되는 차트는 isReacted를 true로 넣어주세요</p>
+      <p>반응형에 따라 크기가 변동되는 차트는 responsive를 true로 넣어주세요</p>
     </main>
   );
 }
