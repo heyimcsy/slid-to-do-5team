@@ -16,7 +16,9 @@ export default function AppSidebarHeader() {
             <div className="flex w-full justify-end">
               <SidebarTrigger />
             </div>
-            <Image src="/images/logo-large.svg" width={335} height={48} alt="Logo" />
+            <Link href="/dashboard">
+              <Image src="/images/logo-large.svg" width={335} height={48} alt="Logo" />
+            </Link>
           </>
         ) : (
           <div className="flex w-full justify-end">
@@ -24,10 +26,10 @@ export default function AppSidebarHeader() {
           </div>
         )
       ) : (
-        <SidebarTrigger className="absolute top-0 md:right-4 lg:right-8" />
+        <SidebarTrigger className="absolute top-0 md:right-4 lg:right-6" />
       )}
       {!isMobile && (
-        <Link href="/" className="mt-8">
+        <Link href="/dashboard" className="mt-8">
           {state === 'expanded' ? (
             <Image src="/images/logo-large.svg" width={276} height={48} alt="Logo" />
           ) : (
