@@ -35,11 +35,12 @@ export default function GoalDetailModal() {
   const isMd = useMediaQuery('(min-width: 768px)');
   const onClose = () => router.back();
 
+  if (isMd === undefined) return null;
   if (isMd) {
     return (
       <Dialog open onOpenChange={onClose}>
         <DialogContent className="w-[456px] rounded-[40px] p-10 shadow-[0_0_60px_0_rgba(0,0,0,0.05)]">
-          <DialogTitle></DialogTitle>
+          <DialogTitle className="sr-only">할 일 상세 보기</DialogTitle>
           <TodoDetailContent {...mockData} />
         </DialogContent>
       </Dialog>
@@ -50,7 +51,7 @@ export default function GoalDetailModal() {
     <Drawer open onOpenChange={onClose}>
       <DrawerContent className="min-w-[311px] rounded-t-[32px] p-8 shadow-[0_0_60px_0_rgba(0,0,0,0.05)]">
         <div>
-          <DrawerTitle></DrawerTitle>
+          <DrawerTitle className="sr-only">할 일 상세 보기</DrawerTitle>
           <Button variant="icon" size="none" className="absolute right-8" onClick={onClose}>
             <Icon name="close" color="gray" size={24} />
           </Button>
