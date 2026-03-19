@@ -1,6 +1,9 @@
-import type { Post } from '../types';
+'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
+
+import type { Post } from '../types';
 
 import { PostMeta } from './PostMeta';
 
@@ -10,6 +13,7 @@ interface PostListItemProps {
 
 export function PostListItem({ post }: PostListItemProps) {
   const { id, title, content, image } = post;
+  const [imageError, setImageError] = useState(false);
 
   return (
     <Link
@@ -26,15 +30,13 @@ export function PostListItem({ post }: PostListItemProps) {
         <PostMeta post={post} variant="list" />
       </div>
 
-      {image && (
+      {image && !imageError && (
         <div className="size-[72px] shrink-0 overflow-hidden rounded-[12px] border border-gray-200 md:size-[120px] md:rounded-[16px]">
           <img
             src={image}
             alt={title}
             className="size-full object-cover"
-            onError={(e) => {
-              e.currentTarget.parentElement!.style.display = 'none';
-            }}
+            onError={() => setImageError(true)}
           />
         </div>
       )}

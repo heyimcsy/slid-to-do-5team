@@ -1,6 +1,9 @@
-import type { Post } from '../types';
+'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
+
+import type { Post } from '../types';
 
 import { PostMeta } from './PostMeta';
 
@@ -10,6 +13,7 @@ interface FeaturedPostCardProps {
 
 export function FeaturedPostCard({ post }: FeaturedPostCardProps) {
   const { id, title, image } = post;
+  const [imageError, setImageError] = useState(false);
 
   return (
     <Link
@@ -18,15 +22,13 @@ export function FeaturedPostCard({ post }: FeaturedPostCardProps) {
     >
       <div className="flex flex-col gap-3">
         <p className="font-base-semibold md:font-xl-semibold truncate text-gray-900">{title}</p>
-        {image && (
+        {image && !imageError && (
           <div className="size-[100px] shrink-0 overflow-hidden rounded-[16px] border border-gray-200">
             <img
               src={image}
               alt={title}
               className="size-full object-cover"
-              onError={(e) => {
-                e.currentTarget.parentElement!.style.display = 'none';
-              }}
+              onError={() => setImageError(true)}
             />
           </div>
         )}

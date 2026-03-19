@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { cn } from '@/lib';
 
 import { Icon } from '@/components/icon/Icon';
@@ -17,6 +17,7 @@ interface SortFilterProps {
 export function SortFilter({ value = '최신순', onChange }: SortFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const listboxId = useId();
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -40,7 +41,7 @@ export function SortFilter({ value = '최신순', onChange }: SortFilterProps) {
         onClick={() => setIsOpen((prev) => !prev)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        aria-controls="sort-filter-options"
+        aria-controls={listboxId}
         className="flex cursor-pointer items-center gap-1 text-gray-500"
       >
         <span className="font-sm-medium md:font-base-medium whitespace-nowrap">{value}</span>
@@ -49,7 +50,7 @@ export function SortFilter({ value = '최신순', onChange }: SortFilterProps) {
 
       {isOpen && (
         <div
-          id="sort-filter-options"
+          id={listboxId}
           role="listbox"
           onKeyDown={(e) => {
             if (e.key === 'Escape') setIsOpen(false);

@@ -68,7 +68,7 @@ export default function CommunityClient() {
   };
 
   if (isLoading) return <PostListSkeleton />;
-  if (isError) return <PostErrorFallback onRetry={refetch} />;
+  if (isError && !data) return <PostErrorFallback onRetry={refetch} />;
 
   return (
     <div className="relative h-full w-full">
@@ -94,8 +94,10 @@ export default function CommunityClient() {
                 onSearchChange={handleSearchChange}
               />
               <div className="flex flex-col items-start self-stretch">
-                {paginatedPosts.length === 0 ? (
+                {posts.length === 0 ? (
                   <PostEmptyState />
+                ) : filteredPosts.length === 0 ? (
+                  <PostEmptyState message="검색 결과가 없어요." />
                 ) : (
                   paginatedPosts.map((post) => <PostListItem key={post.id} post={post} />)
                 )}

@@ -79,7 +79,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
       <button
         type="button"
         onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-        disabled={currentPage === totalPages}
+        disabled={currentPage === totalPages || totalPages === 0}
         className={cn(btnBase, 'disabled:opacity-40')}
         aria-label="다음 페이지"
       >
