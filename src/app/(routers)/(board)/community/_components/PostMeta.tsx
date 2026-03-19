@@ -1,3 +1,7 @@
+'use client';
+
+import { useState } from 'react';
+
 import type { Post } from '../types';
 
 import { cn } from '@/lib';
@@ -27,6 +31,7 @@ function formatRelativeTime(isoString: string): string {
 
 export function PostMeta({ post, variant = 'list' }: PostMetaProps) {
   const { writer, createdAt, viewCount, commentCount } = post;
+  const [imageError, setImageError] = useState(false);
 
   return (
     <div
@@ -34,8 +39,13 @@ export function PostMeta({ post, variant = 'list' }: PostMetaProps) {
     >
       <div className="flex items-center gap-1">
         <div className="size-5 shrink-0 overflow-hidden rounded-full bg-gray-200">
-          {writer.image ? (
-            <img src={writer.image} alt={writer.name} className="size-full object-cover" />
+          {writer.image && !imageError ? (
+            <img
+              src={writer.image}
+              alt={writer.name}
+              className="size-full object-cover"
+              onError={() => setImageError(true)}
+            />
           ) : (
             <div className="font-xs-regular flex size-full items-center justify-center text-gray-500">
               {writer.name.charAt(0)}
