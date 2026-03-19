@@ -35,7 +35,20 @@ export function PostMeta({ post, variant = 'list' }: PostMetaProps) {
       <div className="flex items-center gap-1">
         <div className="size-5 shrink-0 overflow-hidden rounded-full bg-gray-200">
           {writer.image ? (
-            <img src={writer.image} alt={writer.name} className="size-full object-cover" />
+            <>
+              <img
+                src={writer.image}
+                alt={writer.name}
+                className="size-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
+                }}
+              />
+              <div className="font-xs-regular hidden size-full items-center justify-center text-gray-500">
+                {writer.name.charAt(0)}
+              </div>
+            </>
           ) : (
             <div className="font-xs-regular flex size-full items-center justify-center text-gray-500">
               {writer.name.charAt(0)}

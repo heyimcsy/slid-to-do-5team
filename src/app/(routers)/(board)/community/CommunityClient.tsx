@@ -1,6 +1,6 @@
 'use client';
 
-import type { SortOption } from './types';
+import type { Post, SortOption } from './types';
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -8,11 +8,15 @@ import { useQuery } from '@tanstack/react-query';
 
 import { Icon } from '@/components/icon/Icon';
 
+import { getPosts } from './_api/communityApi';
+import { communityQueryKeys } from './_api/communityQueryKeys';
 import { FeaturedPostCard } from './_components/FeaturedPostCard';
 import { Pagination } from './_components/Pagination';
+import { PostEmptyState } from './_components/PostEmptyState';
+import { PostErrorFallback } from './_components/PostErrorFallback';
 import { PostListItem } from './_components/PostListItem';
+import { PostListSkeleton } from './_components/PostListSkeleton';
 import { PostSearchBar } from './_components/PostSearchBar';
-import { getPosts } from './_api/communityApi';
 
 const POSTS_PER_PAGE = 5;
 
@@ -21,8 +25,8 @@ export default function CommunityClient() {
   const [sort, setSort] = useState<SortOption>('최신순');
   const [search, setSearch] = useState('');
 
-  const { data, isError, refetch } = useQuery({
-    queryKey: ['community', 'posts'],
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: communityQueryKeys.posts(),
     queryFn: getPosts,
     staleTime: 1000 * 60 * 5,
   });
@@ -63,15 +67,8 @@ export default function CommunityClient() {
     setCurrentPage(1);
   };
 
-  if (isError)
-    return (
-      <div className="flex flex-col items-center gap-4 py-20">
-        <p className="text-gray-500">데이터를 불러오지 못했어요.</p>
-        <button onClick={() => refetch()} className="text-orange-500">
-          다시 시도하기
-        </button>
-      </div>
-    );
+  if (isLoading) return <PostListSkeleton />;
+  if (isError) return <PostErrorFallback onRetry={refetch} />;
 
   return (
     <div className="relative h-full w-full">
@@ -81,11 +78,13 @@ export default function CommunityClient() {
             소통 게시판
           </h1>
 
-          <div className="mb-6 flex gap-4 overflow-x-auto pb-2 md:mb-8">
-            {featuredPosts.map((post) => (
-              <FeaturedPostCard key={post.id} post={post} />
-            ))}
-          </div>
+          {posts.length > 0 && (
+            <div className="mb-6 flex gap-4 overflow-x-auto pb-2 md:mb-8">
+              {featuredPosts.map((post) => (
+                <FeaturedPostCard key={post.id} post={post} />
+              ))}
+            </div>
+          )}
 
           <div className="flex w-full flex-col items-center gap-8">
             <div className="flex flex-col items-start gap-2 self-stretch">
@@ -95,9 +94,11 @@ export default function CommunityClient() {
                 onSearchChange={handleSearchChange}
               />
               <div className="flex flex-col items-start self-stretch">
-                {paginatedPosts.map((post) => (
-                  <PostListItem key={post.id} post={post} />
-                ))}
+                {paginatedPosts.length === 0 ? (
+                  <PostEmptyState />
+                ) : (
+                  paginatedPosts.map((post) => <PostListItem key={post.id} post={post} />)
+                )}
               </div>
             </div>
 
