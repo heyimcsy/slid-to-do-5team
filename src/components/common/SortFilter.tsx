@@ -38,6 +38,9 @@ export function SortFilter({ value = '최신순', onChange }: SortFilterProps) {
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-controls="sort-filter-options"
         className="flex cursor-pointer items-center gap-1 text-gray-500"
       >
         <span className="font-sm-medium md:font-base-medium whitespace-nowrap">{value}</span>
@@ -45,11 +48,20 @@ export function SortFilter({ value = '최신순', onChange }: SortFilterProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 z-10 mt-2 w-[120px] overflow-hidden rounded-2xl bg-white shadow-[0px_4px_20px_0px_rgba(0,0,0,0.1)]">
+        <div
+          id="sort-filter-options"
+          role="listbox"
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setIsOpen(false);
+          }}
+          className="absolute top-full right-0 z-10 mt-2 w-[120px] overflow-hidden rounded-2xl bg-white shadow-[0px_4px_20px_0px_rgba(0,0,0,0.1)]"
+        >
           {OPTIONS.map((option) => (
             <button
               key={option}
               type="button"
+              role="option"
+              aria-selected={value === option}
               onClick={() => handleSelect(option)}
               className={cn(
                 'font-base-medium w-full px-5 py-4 text-left hover:bg-gray-50',
