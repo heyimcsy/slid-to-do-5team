@@ -5,6 +5,7 @@ import type { IconName } from '../icon/Icon';
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { AnimatePresence, motion } from 'motion/react';
 
 import {
   SidebarGroup,
@@ -15,7 +16,6 @@ import {
 } from '@/components/ui/sidebar';
 
 import { Icon } from '../icon/Icon';
-import { Button } from '../ui/button';
 
 const navItems: { label: string; href: string; icon: IconName; hasArrow?: boolean }[] = [
   { label: '대시보드', href: '/dashboard', icon: 'dashboard' },
@@ -83,21 +83,45 @@ export default function SidebarNav() {
                 </SidebarMenuButton>
                 {item.hasArrow && (
                   <SidebarMenuAction onClick={() => setIsGoalsOpen(!isGoalsOpen)}>
-                    <Icon name="arrow" direction="down" size={36} className="mt-1 mr-4" />
+                    <Icon
+                      name="arrow"
+                      direction={isGoalsOpen ? 'up' : 'down'}
+                      size={36}
+                      className="mt-1 mr-4"
+                    />
                   </SidebarMenuAction>
                 )}
-                {item.hasArrow && isGoalsOpen && (
-                  <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-                    {tempGoals.map((goal) => (
-                      <Link
-                        key={goal.id}
-                        href={`/goals/${goal.id}`}
-                        className="font-sm-regular truncate px-4 py-2 text-gray-600 hover:text-gray-900"
+                {item.hasArrow && (
+                  <AnimatePresence>
+                    {isGoalsOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                        className="overflow-hidden"
                       >
-                        {goal.label}
-                      </Link>
-                    ))}
-                  </div>
+                        <div className="flex flex-col group-data-[collapsible=icon]:hidden">
+                          {tempGoals.map((goal) => (
+                            <Link
+                              key={goal.id}
+                              href={`/goals/${goal.id}`}
+                              className="font-sm-semibold truncate px-6 py-2 text-gray-600 hover:text-gray-900"
+                            >
+                              {goal.label}
+                            </Link>
+                          ))}
+                          <div className="mt-1 flex items-center gap-2 border border-t-0 border-r-0 border-b-2 border-l-0 border-b-orange-500 bg-orange-200 px-4 py-2 text-orange-700">
+                            <input
+                              type="text"
+                              placeholder="입력 후 Enter"
+                              className="w-full cursor-text border-none bg-transparent ring-0 outline-none placeholder:text-orange-400 focus:border-none focus:ring-0 focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 )}
               </SidebarMenuItem>
             );
