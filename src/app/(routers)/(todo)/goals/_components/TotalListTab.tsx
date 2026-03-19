@@ -1,13 +1,8 @@
-'use client';
-
 import type { TodoListProps } from '@/app/(routers)/(todo)/goals/types';
 
-import { useState } from 'react';
 import { TodoSection } from '@/app/(routers)/(todo)/goals/_components/TodoSection';
 
 export default function TotalListTab() {
-  const [clickedId, setClickedId] = useState<number | null>(null);
-
   const todoLists = [
     {
       content: '사용자 데이터 렌더링 구현',
@@ -60,7 +55,6 @@ export default function TotalListTab() {
       link: true,
       note: true,
       favorites: true,
-      clicked: false,
     },
     {
       content: '개발 폴더 구조 세팅 (src, public, components)',
@@ -68,7 +62,6 @@ export default function TotalListTab() {
       link: true,
       note: false,
       favorites: false,
-      clicked: false,
     },
     {
       content: '자바스크립트 기초 챕터4 듣기',
@@ -76,7 +69,6 @@ export default function TotalListTab() {
       link: true,
       note: true,
       favorites: false,
-      clicked: false,
     },
     {
       content: 'JSON 서버 또는 mock API 연동',
@@ -84,7 +76,6 @@ export default function TotalListTab() {
       link: true,
       note: true,
       favorites: true,
-      clicked: false,
     },
     {
       content: '반응형 레이아웃을 설계하고 미디어쿼리를 적용',
@@ -92,7 +83,6 @@ export default function TotalListTab() {
       link: true,
       note: true,
       favorites: true,
-      clicked: false,
     },
     {
       content: '개발 폴더 구조 세팅 (src, public, components)',
@@ -100,7 +90,6 @@ export default function TotalListTab() {
       link: true,
       note: false,
       favorites: false,
-      clicked: false,
     },
     {
       content: '자바스크립트 기초 챕터4 듣기',
@@ -108,7 +97,6 @@ export default function TotalListTab() {
       link: true,
       note: true,
       favorites: false,
-      clicked: false,
     },
     {
       content: 'JSON 서버 또는 mock API 연동',
@@ -116,7 +104,6 @@ export default function TotalListTab() {
       link: true,
       note: true,
       favorites: true,
-      clicked: false,
     },
     {
       content: '반응형 레이아웃을 설계하고 미디어쿼리를 적용',
@@ -124,7 +111,6 @@ export default function TotalListTab() {
       link: true,
       note: true,
       favorites: true,
-      clicked: false,
     },
   ];
 
@@ -140,8 +126,6 @@ export default function TotalListTab() {
         emptyImage="/images/big-zero-todo.svg"
         emptyText="해야할 일이 아직 없어요"
         showActions
-        clickedId={clickedId}
-        onClickItem={setClickedId}
       />
       <TodoSection
         title="DONE"
