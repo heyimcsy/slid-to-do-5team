@@ -61,7 +61,6 @@ const tempGoals = [
 ];
 
 export default function SidebarNav() {
-  console.log('SidebarNav rendered');
   const pathname = usePathname();
   const [isGoalsOpen, setIsGoalsOpen] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
