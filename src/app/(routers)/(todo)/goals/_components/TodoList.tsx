@@ -6,19 +6,20 @@ import { cn } from '@/lib';
 
 import { Icon } from '@/components/icon/Icon';
 
-export default function TodoList({ content, checked, link, note, favorites }: TodoListProps) {
+export default function TodoList({ id, content, checked, link, note, favorites }: TodoListProps) {
   return (
     <div
       className={cn(
         'group hover:bg-orange-alpha-20 hover:rounded-[12px]',
         'flex h-9 min-h-9 w-full items-center justify-between space-x-[6px] px-1 md:h-11 md:px-2',
       )}
-      role="button"
-      tabIndex={0}
     >
       <div className="flex w-full min-w-0 items-center space-x-1 md:space-x-2">
         <Icon name="checkBox" size={18} className="shrink-0" checked={checked} />
-        <Link href={'/goals/1'} className="flex min-w-0 flex-1 items-center space-x-1 md:space-x-2">
+        <Link
+          href={`/goals/${id}`}
+          className="flex min-w-0 flex-1 items-center space-x-1 md:space-x-2"
+        >
           <p
             className={cn(
               'font-sm-regular md:font-base-regular lg:font-lg-regular cursor-pointer truncate',

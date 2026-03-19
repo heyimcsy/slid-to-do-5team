@@ -1,4 +1,5 @@
 export interface TodoListProps {
+  id: number;
   content: string;
   checked: boolean;
   link: boolean;

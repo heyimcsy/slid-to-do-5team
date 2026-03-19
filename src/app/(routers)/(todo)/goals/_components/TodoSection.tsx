@@ -1,4 +1,4 @@
-import type { TodoSectionProps } from '@/app/(routers)/(todo)/goals/types';
+import type { TodoListProps, TodoSectionProps } from '@/app/(routers)/(todo)/goals/types';
 
 import Image from 'next/image';
 import TodoList from '@/app/(routers)/(todo)/goals/_components/TodoList';
@@ -40,7 +40,7 @@ export function TodoSection({
           )}
         >
           {todos.length > 0 ? (
-            todos.map((todo, index) => <TodoList key={index} {...todo} />)
+            todos.map((todo: TodoListProps) => <TodoList key={todo.id} {...todo} />)
           ) : (
             <div className="flex flex-col items-center space-y-2.5">
               <Image
