@@ -1,6 +1,6 @@
 'use client';
 
-import type { Post, SortOption } from './types';
+import type { SortOption } from './types';
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
