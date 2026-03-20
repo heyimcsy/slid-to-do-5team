@@ -1,6 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
 import { cn } from '@/lib';
 
 import { Icon } from '@/components/icon/Icon';
@@ -11,34 +10,34 @@ interface PaginationProps {
   onPageChange: (page: number) => void;
 }
 
+function getPageNumbers(currentPage: number, totalPages: number): (number | '...')[] {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  const pages: (number | '...')[] = [];
+  const delta = 2;
+
+  const rangeStart = Math.max(2, currentPage - delta);
+  const rangeEnd = Math.min(totalPages - 1, currentPage + delta);
+
+  pages.push(1);
+
+  if (rangeStart > 2) pages.push('...');
+
+  for (let i = rangeStart; i <= rangeEnd; i++) {
+    pages.push(i);
+  }
+
+  if (rangeEnd < totalPages - 1) pages.push('...');
+
+  pages.push(totalPages);
+
+  return pages;
+}
+
 export function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
-  const getPageNumbers = () => {
-    if (totalPages <= 7) {
-      return Array.from({ length: totalPages }, (_, i) => i + 1);
-    }
-
-    const pages: (number | '...')[] = [];
-    const delta = 2;
-
-    const rangeStart = Math.max(2, currentPage - delta);
-    const rangeEnd = Math.min(totalPages - 1, currentPage + delta);
-
-    pages.push(1);
-
-    if (rangeStart > 2) pages.push('...');
-
-    for (let i = rangeStart; i <= rangeEnd; i++) {
-      pages.push(i);
-    }
-
-    if (rangeEnd < totalPages - 1) pages.push('...');
-
-    pages.push(totalPages);
-
-    return pages;
-  };
-
-  const pageNumbers = useMemo(() => getPageNumbers(), [currentPage, totalPages]);
+  const pageNumbers = getPageNumbers(currentPage, totalPages);
 
   const btnBase =
     'flex items-center justify-center bg-gray-50 size-8 rounded-lg md:size-12 md:rounded-2xl';
@@ -80,7 +79,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
       <button
         type="button"
         onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-        disabled={currentPage === totalPages}
+        disabled={currentPage === totalPages || totalPages === 0}
         className={cn(btnBase, 'disabled:opacity-40')}
         aria-label="다음 페이지"
       >
