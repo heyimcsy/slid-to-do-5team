@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import noteImage from '@/../public/images/img-note.svg';
 
 import { Chips } from '@/components/common/Chips';
 import { Icon } from '@/components/icon/Icon';
@@ -84,7 +85,7 @@ export function TodoDetailContent({
             variant="ghost"
             className="flex items-center gap-2 rounded-xl border border-gray-100 p-4"
           >
-            <Image src="/images/img-note.svg" alt="노트 첨부란 아이콘" width={32} height={32} />
+            <Image src={noteImage} alt="describe note icon" width={32} height={32} />
             <span className="font-base-regular text-gray-700">{noteTitle}</span>
           </IconButton>
         </div>

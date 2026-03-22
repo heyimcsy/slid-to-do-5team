@@ -24,7 +24,7 @@ export default function NoteList({ notes }: NoteListProps) {
             width={131}
             height={140}
             src={emptyImage}
-            alt="생성된 노트가 없음을 알려주는 이미지"
+            alt="describe empty note situation"
             className="h-22.5 w-20 object-contain md:h-35 md:w-32.5"
           />
           <p className="font-base-regular text-gray-400">아직 등록된 노트가 없어요</p>

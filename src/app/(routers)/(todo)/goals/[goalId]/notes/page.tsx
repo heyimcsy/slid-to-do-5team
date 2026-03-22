@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import goalImage from '@/../public/images/large-goal.svg';
 
 import { SearchInput } from '@/components/common/SearchInput';
 import { SortFilter } from '@/components/common/SortFilter';
@@ -161,8 +162,8 @@ export default function Notes() {
       {/* 목표 탭 */}
       <div className="lg:h=30 mt-6 flex h-16 w-full items-center justify-start space-x-3 rounded-[16px] bg-orange-100 p-4 md:mt-8 md:h-20 md:p-6 lg:mt-12 lg:space-x-6 lg:p-10">
         <Image
-          src="/images/large-goal.svg"
-          alt=""
+          src={goalImage}
+          alt="describe goal icon"
           width={40}
           height={40}
           className="w-8 object-contain lg:w-10"

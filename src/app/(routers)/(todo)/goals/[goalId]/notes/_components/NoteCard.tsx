@@ -44,7 +44,7 @@ export default function NoteCard({ id, title, todoTitle, isDone, updatedAt }: No
         <div className="flex items-center space-x-2 md:space-x-4">
           <Image
             src={imgNote}
-            alt="노트 이미지"
+            alt="describe note icon"
             width={40}
             height={40}
             className="size-8 lg:size-10"

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import goalImage from '@/../public/images/small-goal.svg';
 
 import { Icon } from '@/components/icon/Icon';
 import { Button } from '@/components/ui/button';
@@ -49,8 +50,8 @@ export default function GoalsTab() {
       <div className="flex h-16 w-full items-center justify-between rounded-[16px] bg-white p-4 lg:h-40 lg:w-1/2">
         <div className="flex items-center space-x-3">
           <Image
-            src="/images/small-goal.svg"
-            alt=""
+            src={goalImage}
+            alt="describe goal icon"
             width={32}
             height={32}
             className="object-contain"

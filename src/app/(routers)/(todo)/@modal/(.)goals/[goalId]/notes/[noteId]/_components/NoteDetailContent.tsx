@@ -3,6 +3,7 @@
 import type { Note } from '@/app/(routers)/(todo)/@modal/(.)goals/[goalId]/notes/[noteId]/types';
 
 import Image from 'next/image';
+import noteImage from '@/../public/images/img-note.svg';
 import Link from '@tiptap/extension-link';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -26,7 +27,13 @@ export default function NoteDetailContent({ note }: { note: Note }) {
       <SheetHeader className="shrink-0 space-y-6 md:space-y-7.5">
         {/* 아이콘 + 제목 */}
         <div className="flex items-center space-x-2 md:space-x-3">
-          <Image src="/images/img-note.svg" alt="" width={40} height={40} className="w-8 md:w-10" />
+          <Image
+            src={noteImage}
+            alt="describe note icon"
+            width={40}
+            height={40}
+            className="w-8 md:w-10"
+          />
           <SheetTitle className="font-xl-semibold md:font-2xl-semibold leading-tight text-gray-800">
             {note.title}
           </SheetTitle>

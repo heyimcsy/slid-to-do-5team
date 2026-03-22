@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import noteImage from '@/../public/images/large-note.svg';
 import GoalsTab from '@/app/(routers)/(todo)/goals/[goalId]/_components/GoalsTab';
 import TotalListTab from '@/app/(routers)/(todo)/goals/[goalId]/_components/TotalListTab';
 
@@ -37,7 +38,7 @@ export default async function GoalId({ params }: { params: Promise<{ goalId: str
             className="relative h-40 w-full rounded-[16px] bg-blue-200 text-white hover:shadow-2xl hover:shadow-blue-100 lg:w-1/2"
           >
             <Image
-              src="/images/large-note.svg"
+              src={noteImage}
               alt="note image for note page route"
               width={122}
               height={122}
