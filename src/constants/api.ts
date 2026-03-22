@@ -4,8 +4,16 @@ export const TEAM_ID = process.env.TEAM_ID;
 export const API_BASE_URL = `${API_URL}/${TEAM_ID}`;
 
 export const AUTH_CONFIG = {
+  /** HttpOnly 쿠키·서버에서 읽는 토큰 키 (snake_case) */
   ACCESS_TOKEN_KEY: 'access_token',
   REFRESH_TOKEN_KEY: 'refresh_token',
+
+  /**
+   * 백엔드 JSON(login/refresh 응답 등)에서 토큰 필드명이 camelCase일 때 대응.
+   * 파싱 시 `ACCESS_TOKEN_KEY` / `REFRESH_TOKEN_KEY`를 우선하고, 없으면 아래 키를 사용.
+   */
+  ACCESS_TOKEN_JSON_ALTERNATE: 'accessToken',
+  REFRESH_TOKEN_JSON_ALTERNATE: 'refreshToken',
 
   // 쿠키 만료 시간 (초 단위)
   ACCESS_TOKEN_MAX_AGE: 30 * 60, // 30분

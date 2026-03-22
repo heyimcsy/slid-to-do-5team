@@ -1,4 +1,5 @@
 import { API_BASE_URL, AUTH_CONFIG } from '@/constants/api';
+import { parseTokenPairFromBackendJson } from '@/lib/auth/parseTokenPairFromBackendJson';
 
 /**
  * @description NextFetchConfig - Next.js fetch 확장 — cache, revalidate, tags는 서버에서만 유효함
@@ -315,8 +316,8 @@ async function executeRefresh(): Promise<boolean> {
       if (!response.ok) return false;
 
       const data = (await response.json()) as Record<string, unknown>;
-      const newAccessToken = data[AUTH_CONFIG.ACCESS_TOKEN_KEY] as string | undefined;
-      const newRefreshToken = data[AUTH_CONFIG.REFRESH_TOKEN_KEY] as string | undefined;
+      const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+        parseTokenPairFromBackendJson(data);
       if (!newAccessToken || !newRefreshToken) return false;
       await setAuthCookies(newAccessToken, newRefreshToken);
       return true;
