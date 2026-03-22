@@ -144,5 +144,33 @@ describe('proxy', () => {
         }),
       );
     });
+
+    it('바디 있음(multipart 등) → upstream fetch에 duplex: half 전달', async () => {
+      (global.fetch as jest.Mock).mockResolvedValue(
+        new Response(JSON.stringify({ ok: true }), { status: 200 }),
+      );
+      const { cookies } = await import('next/headers');
+      const mockCookies = await cookies();
+      (mockCookies.get as jest.Mock).mockImplementation((name: string) =>
+        name === 'access_token' ? { value: 'Bearer token123' } : undefined,
+      );
+
+      const fd = new FormData();
+      fd.append('file', new Blob(['x'], { type: 'text/plain' }), 'a.txt');
+      const req = new Request(`${TEST_APP_URL}/api/proxy/upload`, {
+        method: 'POST',
+        body: fd,
+      });
+      await forwardToBackend(req, 'upload');
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/upload'),
+        expect.objectContaining({
+          method: 'POST',
+          duplex: 'half',
+          body: expect.anything(),
+        }),
+      );
+    });
   });
 });

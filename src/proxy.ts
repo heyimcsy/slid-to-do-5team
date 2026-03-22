@@ -3,9 +3,9 @@ import 'server-only';
 import type { NextRequest } from 'next/server';
 
 import { NextResponse } from 'next/server';
+import { parseTokenPairFromBackendJson } from '@/lib/auth/parseTokenPairFromBackendJson';
 
 import { ALLOWED_ORIGINS, API_BASE_URL, AUTH_CONFIG } from '@/constants/api';
-import { parseTokenPairFromBackendJson } from '@/lib/auth/parseTokenPairFromBackendJson';
 
 // PUBLIC_PATHS 에서는 인증을 거치지 않음(로그인 이전에 접근 가능한 페이지)
 const PUBLIC_PATHS = ['/', '/login', '/signup', '/com'];
@@ -89,12 +89,8 @@ export async function forwardToBackend(request: Request, path: string): Promise<
   }
 
   // accessToken 만료 직전이면 백엔드로 refresh 후 쿠키 갱신
-  const {
-    getAccessToken,
-    getRefreshToken,
-    isAccessTokenExpiringSoon,
-    setAuthCookies,
-  } = await import('@/lib/auth/cookies');
+  const { getAccessToken, getRefreshToken, isAccessTokenExpiringSoon, setAuthCookies } =
+    await import('@/lib/auth/cookies');
 
   if (await isAccessTokenExpiringSoon()) {
     const refreshToken = await getRefreshToken();
@@ -122,13 +118,21 @@ export async function forwardToBackend(request: Request, path: string): Promise<
 
   const headers = new Headers(request.headers);
   headers.delete('cookie');
+  /** 클라이언트의 Host는 백엔드 호스트와 다름 — undici가 `url` 기준으로 설정하도록 제거 */
+  headers.delete('host');
   if (accessToken) {
     headers.set('Authorization', `Bearer ${accessToken}`);
   }
 
-  return fetch(url, {
+  /** Node.js: ReadableStream 바디 전달 시 안전한 요청 처리를 위해 요청과 응답 스트림 분리 `duplex: half` 필요 (multipart 등) */
+  const upstreamInit: RequestInit & { duplex?: 'half' } = {
     method: request.method,
     headers,
     body: request.body,
-  });
+  };
+  if (request.body) {
+    upstreamInit.duplex = 'half';
+  }
+
+  return fetch(url, upstreamInit);
 }

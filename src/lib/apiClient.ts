@@ -46,8 +46,16 @@ export type ResponseInterceptor<T = unknown> = (response: Response, data: T) => 
  * @property onResponse: 성공 응답 반환 직전 호출 (데이터 변형)
  * @property onError: 에러 throw 직전 호출 (로깅 등)
  */
+/** JSON이 아닌 바디(FormData, Blob 등) + 응답 파싱 모드 */
+export type ApiClientResponseType = 'json' | 'blob' | 'text' | 'arrayBuffer';
+
 export type ApiClientConfig = Omit<RequestInit, 'body'> & {
   body?: unknown;
+  /**
+   * 성공 응답 파싱 방식 (기본 `json`).
+   * 이미지·파일 다운로드 등은 `blob` 또는 `arrayBuffer`.
+   */
+  responseType?: ApiClientResponseType;
   /* 재시도 여부(기본값 true, false 시 갱신 없이 즉시 에러 반환) */
   retry?: boolean;
   /* Next.js fetch 확장 — 서버에서만 유효 (cache, revalidate, tags) */
@@ -165,6 +173,76 @@ function runErrorInterceptors(err: ApiClientError, onError?: ErrorInterceptor): 
 }
 
 /**
+ * JSON API용 stringify vs FormData·Blob·스트림 등 그대로 전달 구분.
+ * @internal 테스트에서 동일 규칙을 검증할 수 있도록 export
+ */
+export function prepareApiClientBody(body: unknown): {
+  body: BodyInit | undefined;
+  /** true면 `Content-Type: application/json` 설정 */
+  setJsonContentType: boolean;
+  /** true면 기존 Content-Type 제거 (multipart boundary는 런타임이 붙임) */
+  stripContentTypeForFormData: boolean;
+} {
+  if (body === undefined || body === null) {
+    return { body: undefined, setJsonContentType: false, stripContentTypeForFormData: false };
+  }
+  if (typeof body === 'string') {
+    return { body, setJsonContentType: false, stripContentTypeForFormData: false };
+  }
+  if (typeof FormData !== 'undefined' && body instanceof FormData) {
+    return { body, setJsonContentType: false, stripContentTypeForFormData: true };
+  }
+  if (typeof Blob !== 'undefined' && body instanceof Blob) {
+    return { body, setJsonContentType: false, stripContentTypeForFormData: false };
+  }
+  if (body instanceof ArrayBuffer) {
+    return { body, setJsonContentType: false, stripContentTypeForFormData: false };
+  }
+  /** Node Buffer는 ArrayBufferView이지만 lib.dom `BodyInit`에 Buffer가 없어 단언 */
+  if (typeof Buffer !== 'undefined' && Buffer.isBuffer(body)) {
+    return {
+      body: body as BodyInit,
+      setJsonContentType: false,
+      stripContentTypeForFormData: false,
+    };
+  }
+  if (ArrayBuffer.isView(body)) {
+    return {
+      body: new Uint8Array(body.buffer, body.byteOffset, body.byteLength) as BodyInit,
+      setJsonContentType: false,
+      stripContentTypeForFormData: false,
+    };
+  }
+  if (typeof ReadableStream !== 'undefined' && body instanceof ReadableStream) {
+    return { body, setJsonContentType: false, stripContentTypeForFormData: false };
+  }
+  if (typeof URLSearchParams !== 'undefined' && body instanceof URLSearchParams) {
+    return { body, setJsonContentType: false, stripContentTypeForFormData: false };
+  }
+  return {
+    body: JSON.stringify(body),
+    setJsonContentType: true,
+    stripContentTypeForFormData: false,
+  };
+}
+
+async function parseSuccessBody<T>(
+  response: Response,
+  responseType: ApiClientResponseType,
+): Promise<T> {
+  switch (responseType) {
+    case 'blob':
+      return (await response.blob()) as T;
+    case 'text':
+      return (await response.text()) as T;
+    case 'arrayBuffer':
+      return (await response.arrayBuffer()) as T;
+    default:
+      return (await response.json()) as T;
+  }
+}
+
+/**
  * @description apiClient - 서버/클라이언트 양쪽에서 사용 가능한 Fetch Wrapper
  * @param endpoint - 요청 URL
  * @param config - API 클라이언트 설정
@@ -184,6 +262,7 @@ export async function apiClient<T = unknown>(
 ): Promise<T> {
   const {
     body,
+    responseType = 'json',
     retry = true,
     headers: customHeaders,
     next: nextConfig,
@@ -197,9 +276,16 @@ export async function apiClient<T = unknown>(
   const baseUrl = isServer ? API_BASE_URL : '/api/proxy';
   const url = `${baseUrl}${endpoint}`;
 
-  // 헤더 구성
+  const prepared = prepareApiClientBody(body);
+
+  // 헤더 구성 — FormData/multipart 시 Content-Type 제거(경계 문자열은 UA가 설정)
   const headers = new Headers(customHeaders);
-  headers.set('Content-Type', 'application/json');
+  if (prepared.stripContentTypeForFormData) {
+    headers.delete('Content-Type');
+  }
+  if (prepared.setJsonContentType) {
+    headers.set('Content-Type', 'application/json');
+  }
 
   // 서버 환경: 쿠키에서 직접 토큰 추출
   if (isServer) {
@@ -222,7 +308,7 @@ export async function apiClient<T = unknown>(
     url,
     ...restConfig,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
+    body: prepared.body,
     credentials: isServer ? 'omit' : 'include',
   };
 
@@ -275,12 +361,12 @@ export async function apiClient<T = unknown>(
     return undefined as T;
   }
 
-  let data = (await response.json()) as T;
+  let data: T = (await parseSuccessBody<T>(response, responseType)) as T;
   for (const fn of responseInterceptors) {
-    data = fn(response, data) as T;
+    data = fn(response, data as unknown) as T;
   }
   if (onResponse) {
-    data = onResponse(response, data) as T;
+    data = onResponse(response, data as unknown) as T;
   }
   return data;
 }
