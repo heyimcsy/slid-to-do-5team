@@ -6,6 +6,7 @@ import type { DehydratedState } from '@tanstack/react-query';
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
+import { useTokenRefreshOnMount } from '@/hooks/auth/useTokenRefreshOnMount';
 import { createQueryPersister } from '@/providers/createQueryPersister';
 import { PersistRehydrationProvider } from '@/providers/PersistRehydrationProvider';
 import { HydrationBoundary, QueryClient } from '@tanstack/react-query';
@@ -45,6 +46,8 @@ export function AppProviders({
   persistStores = PERSIST_STORES,
   queryPersistStorage = 'localStorage',
 }: AppProvidersProps) {
+  // accessToken 만료 직전 자동 갱신하는 custom hook 호출
+  useTokenRefreshOnMount();
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -69,9 +72,11 @@ export function AppProviders({
    * @option persistStores - persist 미들웨어 사용 Zustand store 목록. skipHydration 포함 시 서버에서 hydration 시도하지 않고 클라이언트에서 rehydrate됨
    */
   const content = (
-    <HydrationBoundary state={dehydratedState}>
-      <PersistRehydrationProvider stores={persistStores}>{children}</PersistRehydrationProvider>
-    </HydrationBoundary>
+    <>
+      <HydrationBoundary state={dehydratedState}>
+        <PersistRehydrationProvider stores={persistStores}>{children}</PersistRehydrationProvider>
+      </HydrationBoundary>
+    </>
   );
 
   /**
