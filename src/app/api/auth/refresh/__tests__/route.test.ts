@@ -70,4 +70,36 @@ describe('POST /api/auth/refresh', () => {
     const json = await res.json();
     expect(json.message).toBe('토큰 갱신 실패');
   });
+
+  it('fetch 네트워크 실패 → 502', async () => {
+    (global.fetch as jest.Mock).mockRejectedValue(new Error('ECONNREFUSED'));
+    const { cookies } = await import('next/headers');
+    const mockCookies = await cookies();
+    (mockCookies.get as jest.Mock).mockImplementation((name: string) =>
+      name === 'refresh_token' ? { value: 'valid-refresh' } : undefined,
+    );
+
+    const res = await POST();
+    expect(res.status).toBe(502);
+    const json = await res.json();
+    expect(json.success).toBe(false);
+    expect(json.message).toContain('인증 서버');
+  });
+
+  it('백엔드 200이나 본문이 유효한 JSON이 아님 → 502', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue(
+      new Response('<html>error</html>', { status: 200, headers: { 'Content-Type': 'text/html' } }),
+    );
+    const { cookies } = await import('next/headers');
+    const mockCookies = await cookies();
+    (mockCookies.get as jest.Mock).mockImplementation((name: string) =>
+      name === 'refresh_token' ? { value: 'valid-refresh' } : undefined,
+    );
+
+    const res = await POST();
+    expect(res.status).toBe(502);
+    const json = await res.json();
+    expect(json.success).toBe(false);
+    expect(json.message).toContain('인증 서버');
+  });
 });
