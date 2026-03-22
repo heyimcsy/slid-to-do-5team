@@ -61,6 +61,9 @@ export function KebabMenu({ items }: KebabMenuProps) {
                 item.onClick();
                 setIsOpen(false);
               }}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') setIsOpen(false);
+              }}
               className={`font-base-medium w-full px-5 py-4 text-left hover:bg-gray-50 ${
                 item.variant === 'danger' ? 'text-red-500' : 'text-gray-700'
               }`}
