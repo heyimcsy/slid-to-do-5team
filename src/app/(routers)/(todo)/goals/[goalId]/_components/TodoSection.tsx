@@ -1,7 +1,7 @@
 import type { TodoListProps, TodoSectionProps } from '@/app/(routers)/(todo)/goals/types';
 
 import Image from 'next/image';
-import TodoList from '@/app/(routers)/(todo)/goals/_components/TodoList';
+import TodoList from '@/app/(routers)/(todo)/goals/[goalId]/_components/TodoList';
 import { cn } from '@/lib';
 
 import { Icon } from '@/components/icon/Icon';
