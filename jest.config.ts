@@ -89,6 +89,7 @@ const config: Config = {
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^server-only$': '<rootDir>/__mocks__/server-only.ts',
     // CSS Modules 모킹
     '\\.module\\.(css|scss|sass)$': 'identity-obj-proxy',
     // 정적 파일 모킹 (이미지, SVG 등)
@@ -96,8 +97,17 @@ const config: Config = {
     '^.+\\.svg$': '<rootDir>/__mocks__/svgMock.tsx',
   },
 
-  // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
-  // modulePathIgnorePatterns: [],
+  // haste-map·모듈 탐색 제외 — .claude/.cursor 워크트리 등 중복 __mocks__ 경고 방지, 빌드 산출물 스캔 생략
+  modulePathIgnorePatterns: [
+    '/node_modules/',
+    '/\\.next/',
+    '/coverage/',
+    '/dist/',
+    '/out/',
+    '/build/',
+    '\\.claude/',
+    '\\.cursor/',
+  ],
 
   // Activates notifications for test results
   // notify: false,
@@ -165,9 +175,16 @@ const config: Config = {
   // ],
 
   // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
-  // testPathIgnorePatterns: [
-  //   "/node_modules/"
-  // ],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/\\.next/',
+    '/coverage/',
+    '/dist/',
+    '/out/',
+    '/build/',
+    '\\.claude/',
+    '\\.cursor/',
+  ],
 
   // The regexp pattern or array of patterns that Jest uses to detect test files
   // testRegex: [],
@@ -195,8 +212,17 @@ const config: Config = {
   // Indicates whether each individual test should be reported during the run
   // verbose: undefined,
 
-  // An array of regexp patterns that are matched against all source file paths before re-running tests in watch mode
-  // watchPathIgnorePatterns: [],
+  // watch 모드에서 불필요한 재실행 방지
+  watchPathIgnorePatterns: [
+    '/node_modules/',
+    '/\\.next/',
+    '/coverage/',
+    '/dist/',
+    '/out/',
+    '/build/',
+    '\\.claude/',
+    '\\.cursor/',
+  ],
 
   // Whether to use watchman for file crawling
   // watchman: true,
