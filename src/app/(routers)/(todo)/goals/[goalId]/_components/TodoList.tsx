@@ -1,12 +1,13 @@
 import type { TodoListProps } from '@/app/(routers)/(todo)/goals/types';
 
 import Link from 'next/link';
-import ItemActionBar from '@/app/(routers)/(todo)/goals/_components/ItemActionBar';
+import ItemActionBar from '@/app/(routers)/(todo)/goals/[goalId]/_components/ItemActionBar';
 import { cn } from '@/lib';
 
 import { Icon } from '@/components/icon/Icon';
 
 export default function TodoList({ id, content, checked, link, note, favorites }: TodoListProps) {
+  const goalId = 1;
   return (
     <div
       className={cn(
@@ -17,7 +18,7 @@ export default function TodoList({ id, content, checked, link, note, favorites }
       <div className="flex w-full min-w-0 items-center space-x-1 md:space-x-2">
         <Icon name="checkBox" size={18} className="shrink-0" checked={checked} />
         <Link
-          href={`/goals/${id}`}
+          href={`/goals/${goalId}/todos/${id}`}
           className="flex min-w-0 flex-1 items-center space-x-1 md:space-x-2"
         >
           <p
