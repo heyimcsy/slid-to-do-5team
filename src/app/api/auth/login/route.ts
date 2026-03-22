@@ -39,21 +39,35 @@ export async function POST(request: NextRequest) {
   const { email, password } = parsedBody.data;
 
   const base = API_BASE_URL?.replace(/\/$/, '') ?? '';
-  const response = await fetch(`${base}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  });
 
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
+  /** 백엔드 연결 실패·성공 본문 JSON 파싱 실패 등 → 제어된 502 (미처리 시 Route Handler 500) */
+  let data: Record<string, unknown>;
+  try {
+    const response = await fetch(`${base}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      return NextResponse.json(
+        { success: false, message: (err as { message?: string }).message ?? '로그인 실패' },
+        { status: response.status },
+      );
+    }
+
+    data = (await response.json()) as Record<string, unknown>;
+  } catch {
     return NextResponse.json(
-      { success: false, message: (err as { message?: string }).message ?? '로그인 실패' },
-      { status: response.status },
+      {
+        success: false,
+        message: '인증 서버와 통신 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
+      },
+      { status: 502 },
     );
   }
 
-  const data = (await response.json()) as Record<string, unknown>;
   const { accessToken, refreshToken } = parseTokenPairFromBackendJson(data);
 
   if (!accessToken || !refreshToken) {
