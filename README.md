@@ -33,13 +33,21 @@
 
 ## 요구사항
 
-- PNPM을 패키지 매니저로 사용할 것이므로 아래 명령어를 통해 전역 설치
+- PNPM을 패키지 매니저로 사용할 것이므로 프로젝트 루트에서 아래 명령어를 통해 전역 설치
 
 ```bash
 # npm을 사용하여 pnpm 전역 설치
 npm i -g pnpm@latest
-# macOS의 경우
+# macOS의 경우(mise, asdf 등 사용시 설치 명령어에 맞게 조정)
 brew install pnpm
+```
+
+- Node.js, PNPM 등 버전 업그레이드 시
+
+```bash
+# Homebrew 사용 시
+brew upgrade node@24
+brew upgrade pnpm
 ```
 
 ### 사용방법
