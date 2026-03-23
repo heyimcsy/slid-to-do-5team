@@ -3,7 +3,8 @@
  */
 import { POST } from '@/app/api/auth/refresh/route';
 
-import { API_URL, AUTH_CONFIG, TEAM_ID } from '@/constants/api';
+import { API_URL, TEAM_ID } from '@/constants/api';
+import { AUTH_CONFIG } from '@/constants/auth-config';
 
 describe('POST /api/auth/refresh', () => {
   const originalFetch = global.fetch;

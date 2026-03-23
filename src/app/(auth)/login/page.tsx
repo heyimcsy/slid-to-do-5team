@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
@@ -70,6 +71,9 @@ export default function LoginPage() {
           {loading ? '로그인 중...' : '로그인'}
         </button>
       </form>
+      <p>
+        계정이 없으신가요? <Link href="/signup">회원가입</Link>
+      </p>
     </main>
   );
 }

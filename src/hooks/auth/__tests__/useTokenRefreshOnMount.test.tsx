@@ -4,7 +4,7 @@
 import { useTokenRefreshOnMount } from '@/hooks/auth/useTokenRefreshOnMount';
 import { act, renderHook, waitFor } from '@testing-library/react';
 
-jest.mock('@/constants/api', () => ({
+jest.mock('@/constants/auth-config', () => ({
   AUTH_CONFIG: { REFRESH_CHECK_INTERVAL_MS: 5_000 },
 }));
 

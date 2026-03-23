@@ -68,7 +68,10 @@ const MOCK_POST: Post = {
         content: [
           { type: 'text', text: '저는 ' },
           { type: 'text', marks: [{ type: 'italic' }], text: '아이젠하워 매트릭스' },
-          { type: 'text', text: '를 활용해서 중요도와 긴급도로 나눠서 처리하고 있어요. 여러분도 한번 시도해보세요!' },
+          {
+            type: 'text',
+            text: '를 활용해서 중요도와 긴급도로 나눠서 처리하고 있어요. 여러분도 한번 시도해보세요!',
+          },
         ],
       },
     ],

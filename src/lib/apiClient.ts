@@ -1,7 +1,8 @@
 import { parseTokenPairFromBackendJson } from '@/lib/auth/parseTokenPairFromBackendJson';
 import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 
-import { API_BASE_URL, AUTH_CONFIG } from '@/constants/api';
+import { API_BASE_URL } from '@/constants/api';
+import { AUTH_CONFIG } from '@/constants/auth-config';
 
 /**
  * @description NextFetchConfig - Next.js fetch 확장 — cache, revalidate, tags는 서버에서만 유효함
