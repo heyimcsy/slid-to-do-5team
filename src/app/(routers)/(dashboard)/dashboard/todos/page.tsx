@@ -39,7 +39,7 @@ const todolists: Task[] = [
   {
     id: 4,
     content: 'JSON 서버 또는 mock API 연동',
-    checked: false,
+    checked: true,
     link: true,
     note: true,
     favorites: true,
@@ -72,13 +72,16 @@ export default function TodosPage() {
   return (
     <div className="flex h-full w-full flex-col px-4 py-10">
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
-        <div className="mb-4 hidden md:block">
+        <div className="mb-4 hidden px-2 md:block">
           <TodoHeader count={todolists.length} />
         </div>
 
-        <div className="mb-2 flex items-center justify-between gap-2">
+        <div className="mb-2 flex items-center justify-between">
           <TodoTabs active={filter} onChange={setFilter} />
-          <Button variant="ghost" size="sm" className="font-sm-semibold shrink-0">
+          <Button variant="ghost" size="sm" className="min-w-0 md:hidden">
+            + 할 일 추가
+          </Button>
+          <Button variant="ghost" size="md" className="hidden min-w-0 md:block">
             + 할 일 추가
           </Button>
         </div>

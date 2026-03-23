@@ -10,7 +10,7 @@ interface TodoListProps {
 
 export default function TodoList({ todolists }: TodoListProps) {
   return (
-    <div className="flex-1 rounded-2xl bg-white px-4 py-3 shadow-sm">
+    <div className="flex-1 rounded-2xl bg-white px-2 py-3 shadow-sm">
       {todolists.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20">
           <Image

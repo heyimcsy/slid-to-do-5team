@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/lib/shadcn';
+import { cn } from '@/lib';
 
 export type FilterType = 'ALL' | 'TODO' | 'DONE';
 
@@ -25,13 +25,13 @@ interface TodoTabsProps {
 
 export default function TodoTabs({ active, onChange }: TodoTabsProps) {
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center">
       {TABS.map((tab) => (
         <button
           key={tab.value}
           onClick={() => onChange(tab.value)}
           className={cn(
-            'rounded-full px-4 py-1.5 text-sm font-semibold transition-colors duration-200',
+            'font-base-bold rounded-2xl px-4 py-1.5 transition-colors duration-200',
             active === tab.value
               ? 'bg-[rgba(255,165,101,0.2)] text-orange-600'
               : 'text-gray-400 hover:text-gray-600',
