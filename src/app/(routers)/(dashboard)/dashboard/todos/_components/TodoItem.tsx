@@ -1,5 +1,8 @@
+'use client';
+
 import type { Task } from '../types';
 
+import { useState } from 'react';
 import { cn } from '@/lib';
 
 import { Icon } from '@/components/icon/Icon';
@@ -9,16 +12,18 @@ interface TodoItemProps {
 }
 
 export default function TodoItem({ task }: TodoItemProps) {
+  const [hovered, setHovered] = useState(false);
   return (
     <li
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       className={cn(
-        'flex items-center justify-between gap-2 rounded-xl px-3 py-3 transition-colors duration-150',
-        task.checked && 'bg-orange-50',
+        'flex cursor-pointer items-center justify-between gap-2 rounded-3xl px-3 py-3 transition-colors duration-150 hover:bg-[var(--orange-alpha-20)]',
       )}
     >
       {/* 체크박스 */}
-      <button className="shrink-0">
-        <Icon name="checkBox" />
+      <button className="shrink-0 cursor-pointer">
+        {task.checked ? <Icon name="checkBox" checked={true} /> : <Icon name="checkBox" />}
       </button>
 
       {/* 할일 텍스트 */}
@@ -34,6 +39,12 @@ export default function TodoItem({ task }: TodoItemProps) {
         <div className="flex shrink-0 items-center gap-1">
           <Icon name="note" variant="orange" />
           <Icon name="link" variant="orange" />
+          {hovered && (
+            <>
+              <Icon name="edit" />
+              <Icon name="dotscircle" />
+            </>
+          )}
           <Icon name="outlineStar" />
         </div>
       </div>

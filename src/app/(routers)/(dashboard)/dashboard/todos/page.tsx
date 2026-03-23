@@ -63,6 +63,11 @@ const todolists: Task[] = [
 ];
 export default function TodosPage() {
   const [filter, setFilter] = useState<FilterType>('ALL');
+  const filteredTasks = todolists.filter((todo) => {
+    if (filter === 'TODO') return !todo.checked;
+    if (filter === 'DONE') return todo.checked;
+    return true;
+  });
 
   return (
     <div className="flex h-full w-full flex-col px-4 py-10">
@@ -78,7 +83,7 @@ export default function TodosPage() {
           </Button>
         </div>
 
-        <TodoList todolists={todolists} />
+        <TodoList todolists={filteredTasks} />
       </div>
     </div>
   );
