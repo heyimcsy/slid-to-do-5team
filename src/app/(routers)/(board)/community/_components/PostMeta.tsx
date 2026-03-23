@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-
 import type { Post } from '../types';
 
+import { useState } from 'react';
 import { cn } from '@/lib';
 
 import { Icon } from '@/components/icon/Icon';
+
 import { formatRelativeTime } from '../_utils/formatRelativeTime';
 
 interface PostMetaProps {

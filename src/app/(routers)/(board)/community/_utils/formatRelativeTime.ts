@@ -11,5 +11,5 @@ export function formatRelativeTime(isoString: string): string {
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days}일 전`;
 
-  return new Date(isoString).toLocaleDateString('ko-KR');
+  return new Date(isoString).toLocaleDateString('ko-KR').replace(/\.$/, '');
 }
