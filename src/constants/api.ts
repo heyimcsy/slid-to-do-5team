@@ -27,6 +27,11 @@ export const AUTH_CONFIG = {
 
   // 클라이언트 주기적 refresh 체크 간격 (ms, 5분)
   REFRESH_CHECK_INTERVAL_MS: 5 * 60 * 1000,
+
+  /**
+   * `apiClient` 토큰 갱신 fetch 상한 (ms). 백엔드/BFF 무응답 시 서버·클라이언트 무한 대기 방지.
+   */
+  REFRESH_FETCH_TIMEOUT_MS: 15_000,
 } as const;
 
 /**

@@ -416,18 +416,37 @@ async function attemptTokenRefresh(): Promise<boolean> {
   }
 }
 
+/** AbortController + 상한 시간 — 무응답 fetch로 인한 서버 리소스 대기 방지 */
+function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init: RequestInit | undefined,
+  timeoutMs: number,
+): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  return fetch(input, { ...init, signal: controller.signal }).finally(() => {
+    clearTimeout(id);
+  });
+}
+
 async function executeRefresh(): Promise<boolean> {
+  const timeoutMs = AUTH_CONFIG.REFRESH_FETCH_TIMEOUT_MS;
+
   try {
     if (isServer) {
       const { getRefreshToken, setAuthCookies } = await import('@/lib/auth/cookies');
       const refreshToken = await getRefreshToken();
       if (!refreshToken) return false;
 
-      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ [AUTH_CONFIG.REFRESH_TOKEN_KEY]: refreshToken }),
-      });
+      const response = await fetchWithTimeout(
+        `${API_BASE_URL}/auth/refresh`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ [AUTH_CONFIG.REFRESH_TOKEN_KEY]: refreshToken }),
+        },
+        timeoutMs,
+      );
 
       if (!response.ok) return false;
 
@@ -438,10 +457,14 @@ async function executeRefresh(): Promise<boolean> {
       await setAuthCookies(newAccessToken, newRefreshToken);
       return true;
     } else {
-      const response = await fetch('/api/auth/refresh', {
-        method: 'POST',
-        credentials: 'include',
-      });
+      const response = await fetchWithTimeout(
+        '/api/auth/refresh',
+        {
+          method: 'POST',
+          credentials: 'include',
+        },
+        timeoutMs,
+      );
       return response.ok;
     }
   } catch {
