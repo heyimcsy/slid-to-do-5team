@@ -83,8 +83,12 @@ const PersistRehydrationGate = ({
 
     // rehydration 시작(비동기 즉시 실행 함수 표현식(IIFE), void 키워드를 사용하여 의도적으로 반환(Promise)을 무시)
     void (async function rehydrateStores() {
-      // rehydration 대상 스토어들을 순회하며 rehydrate 호출(Promise.allSettled를 사용하여 모든 rehydrate가 완료되었는지 확인)
-      await Promise.allSettled(toRehydrate.map((s) => Promise.resolve(s.persist.rehydrate())));
+      // `Promise.resolve(rehydrate())`는 rehydrate()가 **동기 throw**하면 표현식 평가 단계에서 터져
+      // Promise로 감싸지지 않음 → allSettled 밖으로 빠져 Gate가 영원히 fallback.
+      // `.then(() => …)`으로 호출을 한 틱 미루면 동기 예외도 거부된 Promise가 되어 allSettled에 포함됨.
+      await Promise.allSettled(
+        toRehydrate.map((s) => Promise.resolve().then(() => s.persist.rehydrate())),
+      );
       // rehydration 취소 여부를 확인하고 취소됨(!cancelled === false)이면 rehydration 완료 표시
       if (!cancelled) {
         setRehydrationDone(true);
@@ -125,7 +129,7 @@ export type PersistRehydrationProviderProps = {
  *
  * - rehydrate 대상이 **없으면** (`getStoresToRehydrate`가 빈 배열) effect 없이 곧바로 `children`을 렌더한다
  * - 대상이 **있으면** {@link PersistRehydrationGate}에서 각 `persist.rehydrate()`가 끝날 때까지 `fallback`을 보여준다
- *   내부는 `Promise.allSettled`이므로 **일부가 reject되어도** 나머지가 끝나면 `children`으로 진행한다
+ *   내부는 `Promise.allSettled`이므로 **일부가 reject(비동기·동기 throw 포함)되어도** settle이 끝나면 `children`으로 진행한다
  *
  * @see {@link https://react.dev/reference/react/useMemo | React — useMemo} — `toRehydrate` 메모이제이션
  */

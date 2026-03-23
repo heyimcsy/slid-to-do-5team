@@ -100,6 +100,26 @@ describe('PersistRehydrationProvider', () => {
     jest.useRealTimers();
   });
 
+  it('rehydrate가 동기적으로 throw해도 allSettled 후 children이 렌더된다', async () => {
+    const syncThrowStore: PersistStore = {
+      persist: {
+        rehydrate: () => {
+          throw new Error('sync rehydrate');
+        },
+        getOptions: () => ({ name: 'sync-throw-store' }),
+      },
+    };
+
+    render(
+      <PersistRehydrationProvider stores={[syncThrowStore]} fallback={<div>Loading</div>}>
+        <span>Content</span>
+      </PersistRehydrationProvider>,
+    );
+
+    await act(async () => {});
+    expect(screen.getByText('Content')).toBeInTheDocument();
+  });
+
   it('rehydrate가 reject되어도 allSettled에 의해 children이 렌더된다', async () => {
     let resolveOk!: () => void;
     const okStore: PersistStore = {
