@@ -30,3 +30,14 @@ export const AUTH_CONFIG = {
    */
   REFRESH_FETCH_TIMEOUT_MS: 15_000,
 } as const;
+
+/**
+ * 라우트 보호(`proxy`)·401 시 `/login` 이동(`apiClient`)을 켤지 여부.
+ * 로컬/E2E에서 끄려면 `.env.local`에 `NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED=false`
+ * (미설정·true면 기존과 동일하게 보호).
+ */
+export function isAuthRouteGuardEnabled(): boolean {
+  const v = process.env.NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED?.trim().toLowerCase();
+  if (v === undefined || v === '') return true;
+  return v !== 'false' && v !== '0' && v !== 'off';
+}
