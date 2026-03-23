@@ -32,6 +32,8 @@ export const AUTH_CONFIG = {
 /**
  * @description BFF origin 검증용 - 개발/프리뷰 URL (NEXT_PUBLIC_ 없는 호출은 서버 전용)
  * @note appUrl은 실제 앱 URL, vercelUrl은 프리뷰 URL(vercel에서 VERCEL_URL 자동 주입)
+ * @note `*` 가 포함된 항목은 `src/proxy.ts` 의 `originMatchesAllowedEntry` 에서
+ *       호스트 한 세그먼트(예: `https://abc.ngrok-free.app` ← `https://*.ngrok-free.app`)로 매칭됨.
  */
 export const ALLOWED_ORIGINS = (() => {
   const origins: string[] = [];

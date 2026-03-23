@@ -2,7 +2,13 @@
  * @jest-environment node
  */
 import { NextRequest } from 'next/server';
-import { forwardToBackend, isAllowedOrigin, isPublicPath, proxy } from '@/proxy';
+import {
+  forwardToBackend,
+  isAllowedOrigin,
+  isPublicPath,
+  originMatchesAllowedEntry,
+  proxy,
+} from '@/proxy';
 
 import { APP_URL } from '@/constants/api';
 
@@ -52,6 +58,26 @@ describe('proxy', () => {
       const req = createRequest('/dashboard', 'valid-token');
       const res = proxy(req);
       expect(res.status).toBe(200);
+    });
+  });
+
+  describe('originMatchesAllowedEntry', () => {
+    it('리터럴 origin 일치', () => {
+      expect(originMatchesAllowedEntry('https://example.com', 'https://example.com')).toBe(true);
+    });
+
+    it('리터럴 불일치', () => {
+      expect(originMatchesAllowedEntry('https://example.com', 'https://other.com')).toBe(false);
+    });
+
+    it('https://*.ngrok-free.app → 실제 ngrok 호스트 일치', () => {
+      expect(
+        originMatchesAllowedEntry('https://*.ngrok-free.app', 'https://abc123.ngrok-free.app'),
+      ).toBe(true);
+    });
+
+    it('ngrok 패턴 — 외부 도메인 거부', () => {
+      expect(originMatchesAllowedEntry('https://*.ngrok-free.app', 'https://evil.com')).toBe(false);
     });
   });
 

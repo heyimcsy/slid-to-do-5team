@@ -40,6 +40,26 @@ export const config = {
 };
 
 /**
+ * `ALLOWED_ORIGINS` 항목이 `Origin` 헤더 값과 맞는지 확인.
+ * - 리터럴: `===` 또는 `startsWith(entry + '/')` (기존 동작)
+ * - `*` 포함(예: `https://*.ngrok-free.app`): `*` 는 호스트 내 **한 라벨**(점 없음)에 대응
+ *
+ * @internal 테스트용 export
+ */
+export function originMatchesAllowedEntry(allowed: string, candidateOrigin: string): boolean {
+  if (!allowed.includes('*')) {
+    return candidateOrigin === allowed || candidateOrigin.startsWith(allowed + '/');
+  }
+  try {
+    const parts = allowed.split('*');
+    const escaped = parts.map((p) => p.replace(/[.+?^${}()|[\]\\]/g, '\\$&'));
+    return new RegExp(`^${escaped.join('[^.]+')}$`).test(candidateOrigin);
+  } catch {
+    return false;
+  }
+}
+
+/**
  * @description BFF 요청 origin 검증 (cross-site 요청 차단)
  * @note Server Component는 API_BASE_URL 직통이라 /api/proxy 미사용. Client만 사용.
  * @note Origin 없음 → 동일 출처 GET 또는 서버 fetch (허용). Origin 있으면 화이트리스트 검사.
@@ -54,8 +74,7 @@ export function isAllowedOrigin(request: Request): boolean {
   if (origin) {
     // 동일 출처 또는 화이트리스트
     return (
-      origin === targetOrigin ||
-      ALLOWED_ORIGINS.some((o) => origin === o || origin.startsWith(o + '/'))
+      origin === targetOrigin || ALLOWED_ORIGINS.some((o) => originMatchesAllowedEntry(o, origin))
     );
   }
   if (referer) {
@@ -63,7 +82,7 @@ export function isAllowedOrigin(request: Request): boolean {
       const refOrigin = new URL(referer).origin;
       return (
         refOrigin === targetOrigin ||
-        ALLOWED_ORIGINS.some((o) => refOrigin === o || refOrigin.startsWith(o + '/'))
+        ALLOWED_ORIGINS.some((o) => originMatchesAllowedEntry(o, refOrigin))
       );
     } catch {
       return false;
