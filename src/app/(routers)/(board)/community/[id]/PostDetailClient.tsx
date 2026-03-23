@@ -4,6 +4,8 @@ import type { Post } from '../types';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { EditorContent, useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
 
 import { KebabMenu } from '@/components/common/KebabMenu';
 
@@ -13,11 +15,26 @@ interface PostDetailClientProps {
   post: Post;
 }
 
+const parseContent = (content: string) => {
+  try {
+    return JSON.parse(content);
+  } catch {
+    return { type: 'doc', content: [] };
+  }
+};
+
 export function PostDetailClient({ post }: PostDetailClientProps) {
   const { id, title, content, image, viewCount, createdAt, writer } = post;
   const [imageError, setImageError] = useState(false);
   const [writerImageError, setWriterImageError] = useState(false);
   const router = useRouter();
+
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: parseContent(content),
+    editable: false,
+    immediatelyRender: false,
+  });
 
   const kebabItems = [
     { label: '수정하기', onClick: () => router.push(`/community/${id}/edit`) },
@@ -30,7 +47,7 @@ export function PostDetailClient({ post }: PostDetailClientProps) {
         <div className="flex items-start gap-2.5 rounded-3xl bg-white px-5 py-6 md:p-10 lg:flex-col lg:items-start lg:gap-14 lg:p-14">
           <div className="w-full">
             <div className="flex items-start justify-between gap-2">
-              <h1 className="font-base-semibold md:font-xl-semibold text-gray-700">{title}</h1>
+              <h1 className="font-base-semibold md:font-xl-semibold text-gray-800">{title}</h1>
               <KebabMenu items={kebabItems} />
             </div>
 
@@ -54,7 +71,10 @@ export function PostDetailClient({ post }: PostDetailClientProps) {
 
             <hr className="mt-4 border-gray-200" />
 
-            <p className="font-sm-regular mt-6 whitespace-pre-wrap text-gray-700">{content}</p>
+            <EditorContent
+              editor={editor}
+              className="prose prose-sm md:prose-base prose-headings:font-base-semibold prose-headings:text-gray-800 prose-headings:mt-6 prose-headings:mb-2 prose-strong:font-semibold prose-strong:text-gray-800 prose-ul:pl-5 prose-li:my-0.5 prose-p:leading-5 md:prose-p:leading-6 prose-p:my-2 mt-6 max-w-none text-gray-700"
+            />
 
             {image && !imageError && (
               <div className="mt-6 flex gap-4">
