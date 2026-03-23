@@ -1,6 +1,9 @@
 export const APP_URL = process.env.APP_URL;
 export const API_URL = process.env.API_URL;
 export const TEAM_ID = process.env.TEAM_ID;
+if (!API_URL || !TEAM_ID) {
+  throw new Error('API_URL 또는 TEAM_ID가 설정되지 않았습니다. .env.example 파일을 참고하세요.');
+}
 export const API_BASE_URL = `${API_URL}/${TEAM_ID}`;
 
 export const AUTH_CONFIG = {
