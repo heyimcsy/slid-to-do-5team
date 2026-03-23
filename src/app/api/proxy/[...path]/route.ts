@@ -4,6 +4,7 @@ type RouteContext = { params: Promise<{ path: string[] }> };
 
 async function handleRequest(request: Request, pathSegments: string[]): Promise<Response> {
   const path = pathSegments.join('/');
+  /** 쿼리는 `request.url`로 `forwardToBackend`에서 백엔드 URL에 이어붙임 */
   return forwardToBackend(request, path);
 }
 

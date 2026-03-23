@@ -75,7 +75,7 @@ export function isAllowedOrigin(request: Request): boolean {
 /**
  * @description forwardToBackend - 클라이언트 요청을 백엔드 API로 전달하는 BFF 프록시
  * @param request - 클라이언트 요청
- * @param path - 백엔드 API 경로
+ * @param path - 백엔드 API 경로(세그먼트만, 선행 `/` 없음). 원 요청의 쿼리스트링은 `request.url`에서 이어붙임.
  * @returns {Promise<Response>} - 백엔드 API 응답
  * @note Route Handler에서 호출 (cookies()로 accessToken 읽기 가능)
  * @see https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
@@ -114,7 +114,10 @@ export async function forwardToBackend(request: Request, path: string): Promise<
 
   const accessToken = await getAccessToken();
   const base = API_BASE_URL?.replace(/\/$/, '') ?? '';
-  const url = path ? `${base}/${path}` : base;
+  /** BFF `/api/proxy/...?a=1` → 백엔드 `.../...?a=1` (필터·페이지네이션 유지) */
+  const search = new URL(request.url).search;
+  const pathPart = path ? `${base}/${path}` : base;
+  const url = `${pathPart}${search}`;
 
   const headers = new Headers(request.headers);
   headers.delete('cookie');

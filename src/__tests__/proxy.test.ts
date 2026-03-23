@@ -1,8 +1,8 @@
 /**
  * @jest-environment node
  */
-import { forwardToBackend, isAllowedOrigin, isPublicPath, proxy } from '@/proxy';
 import { NextRequest } from 'next/server';
+import { forwardToBackend, isAllowedOrigin, isPublicPath, proxy } from '@/proxy';
 
 import { APP_URL } from '@/constants/api';
 
@@ -143,6 +143,26 @@ describe('proxy', () => {
           headers: expect.any(Headers),
         }),
       );
+    });
+
+    it('원 요청 쿼리스트링이 백엔드 fetch URL에 포함됨', async () => {
+      (global.fetch as jest.Mock).mockResolvedValue(
+        new Response(JSON.stringify({ data: [] }), { status: 200 }),
+      );
+      const { cookies } = await import('next/headers');
+      const mockCookies = await cookies();
+      (mockCookies.get as jest.Mock).mockImplementation((name: string) =>
+        name === 'access_token' ? { value: 'Bearer token123' } : undefined,
+      );
+
+      const req = new Request(`${TEST_APP_URL}/api/proxy/todos?page=1&sort=desc`, {
+        method: 'GET',
+      });
+      await forwardToBackend(req, 'todos');
+
+      const calledUrl = (global.fetch as jest.Mock).mock.calls[0][0] as string;
+      expect(calledUrl).toContain('/todos?page=1');
+      expect(calledUrl).toContain('sort=desc');
     });
 
     it('바디 있음(multipart 등) → upstream fetch에 duplex: half 전달', async () => {

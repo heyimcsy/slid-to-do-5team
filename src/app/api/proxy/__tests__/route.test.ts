@@ -76,4 +76,27 @@ describe('GET /api/proxy/[...path]', () => {
       }),
     );
   });
+
+  it('쿼리스트링이 백엔드 fetch URL에 전달됨', async () => {
+    (globalThis.fetch as jest.Mock).mockResolvedValue(
+      new Response(JSON.stringify({ data: [] }), { status: 200 }),
+    );
+    const { cookies } = await import('next/headers');
+    const mockCookies = await cookies();
+    (mockCookies.get as jest.Mock).mockImplementation((name: string) =>
+      name === 'access_token' ? { value: 'token123' } : undefined,
+    );
+
+    const { GET } = await getRouteHandlers();
+    const { APP_URL: appUrl } = await import('@/constants/api');
+
+    const req = new Request(`${appUrl}/api/proxy/todos?page=1&sort=desc`, {
+      method: 'GET',
+    });
+    await GET(req, { params: Promise.resolve({ path: ['todos'] }) });
+
+    const calledUrl = (globalThis.fetch as jest.Mock).mock.calls[0][0] as string;
+    expect(calledUrl).toContain('/todos?page=1');
+    expect(calledUrl).toContain('sort=desc');
+  });
 });
