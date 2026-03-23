@@ -1,5 +1,6 @@
-import { API_BASE_URL, AUTH_CONFIG } from '@/constants/api';
 import { parseTokenPairFromBackendJson } from '@/lib/auth/parseTokenPairFromBackendJson';
+
+import { API_BASE_URL, AUTH_CONFIG } from '@/constants/api';
 
 /**
  * @description NextFetchConfig - Next.js fetch 확장 — cache, revalidate, tags는 서버에서만 유효함
@@ -42,7 +43,7 @@ export type ResponseInterceptor<T = unknown> = (response: Response, data: T) => 
  * @property body: 요청 바디 (어떤 값이 들어올지 모르므로 기본 unknown)
  * @property retry: 401 시 토큰 갱신 후 재시도
  * @property next: Next.js fetch 확장 — cache, revalidate, tags는 서버에서만 유효함
- * @property onBeforeRequest: 요청 직전 호출 (헤더·URL 등 변형)
+ * @property onBeforeRequest: 요청 직전 호출 — **서버(Route Handler 등)에서 권장** (전역 `use*` 인터셉터는 브라우저 전용)
  * @property onResponse: 성공 응답 반환 직전 호출 (데이터 변형)
  * @property onError: 에러 throw 직전 호출 (로깅 등)
  */
@@ -104,51 +105,61 @@ export class ApiClientError extends Error {
 export type ErrorInterceptor = (error: ApiClientError) => void | Promise<void>;
 
 /**
- * @description 전역 인터셉터 (axios 스타일)
- * @property requestInterceptors: 요청 인터셉터
- * @property responseInterceptors: 응답 인터셉터
- * @property errorInterceptors: 에러 인터셉터
+ * 클라이언트 전역 인터셉터 (axios 스타일).
+ * 서버(Node·서버리스·Edge)에서는 모듈이 요청 간 재사용되므로 **배열을 두지 않음** — 누적·교차 실행 방지.
+ * 서버 측 훅/Route Handler에서는 `ApiClientConfig`의 `onBeforeRequest` / `onResponse` / `onError`만 사용.
  */
-const requestInterceptors: RequestInterceptor[] = [];
-const responseInterceptors: ResponseInterceptor<unknown>[] = [];
-const errorInterceptors: ErrorInterceptor[] = [];
+const clientRequestInterceptors: RequestInterceptor[] = [];
+const clientResponseInterceptors: ResponseInterceptor<unknown>[] = [];
+const clientErrorInterceptors: ErrorInterceptor[] = [];
+
+function assertInterceptorClientOnly(apiName: string): void {
+  if (typeof window === 'undefined') {
+    throw new Error(
+      `${apiName}은(는) 클라이언트 전용입니다. 서버에서는 ApiClientConfig의 onBeforeRequest, onResponse, onError를 사용하세요.`,
+    );
+  }
+}
 
 /**
- * @description useRequestInterceptor - 요청 인터셉터 등록
+ * @description useRequestInterceptor - 요청 인터셉터 등록 (브라우저 전용)
  * @param fn - 요청 인터셉터 함수
  * @returns - 요청 인터셉터 제거 함수(리턴값을 호출하면 요청 인터셉터 제거)
  */
 export function useRequestInterceptor(fn: RequestInterceptor): () => void {
-  requestInterceptors.push(fn);
+  assertInterceptorClientOnly('useRequestInterceptor');
+  clientRequestInterceptors.push(fn);
   return () => {
-    const i = requestInterceptors.indexOf(fn);
-    if (i >= 0) requestInterceptors.splice(i, 1);
+    const i = clientRequestInterceptors.indexOf(fn);
+    if (i >= 0) clientRequestInterceptors.splice(i, 1);
   };
 }
 
 /**
- * @description useResponseInterceptor - 응답 인터셉터 등록
+ * @description useResponseInterceptor - 응답 인터셉터 등록 (브라우저 전용)
  * @param fn - 응답 인터셉터 함수
  * @returns - 응답 인터셉터 제거 함수(리턴값을 호출하면 응답 인터셉터 제거)
  */
 export function useResponseInterceptor<T = unknown>(fn: ResponseInterceptor<T>): () => void {
-  responseInterceptors.push(fn as ResponseInterceptor<unknown>);
+  assertInterceptorClientOnly('useResponseInterceptor');
+  clientResponseInterceptors.push(fn as ResponseInterceptor<unknown>);
   return () => {
-    const i = responseInterceptors.indexOf(fn as ResponseInterceptor<unknown>);
-    if (i >= 0) responseInterceptors.splice(i, 1);
+    const i = clientResponseInterceptors.indexOf(fn as ResponseInterceptor<unknown>);
+    if (i >= 0) clientResponseInterceptors.splice(i, 1);
   };
 }
 
 /**
- * @description useErrorInterceptor - 에러 인터셉터 등록
+ * @description useErrorInterceptor - 에러 인터셉터 등록 (브라우저 전용)
  * @param fn - 에러 인터셉터 함수
  * @returns - 에러 인터셉터 제거 함수(리턴값을 호출하면 에러 인터셉터 제거)
  */
 export function useErrorInterceptor(fn: ErrorInterceptor): () => void {
-  errorInterceptors.push(fn);
+  assertInterceptorClientOnly('useErrorInterceptor');
+  clientErrorInterceptors.push(fn);
   return () => {
-    const i = errorInterceptors.indexOf(fn);
-    if (i >= 0) errorInterceptors.splice(i, 1);
+    const i = clientErrorInterceptors.indexOf(fn);
+    if (i >= 0) clientErrorInterceptors.splice(i, 1);
   };
 }
 
@@ -164,8 +175,10 @@ const isServer = typeof window === 'undefined';
  * @param onError - 에러 인터셉터 실행 에러 함수(ApiClientError를 받아서 처리)
  */
 function runErrorInterceptors(err: ApiClientError, onError?: ErrorInterceptor): void {
-  for (const fn of errorInterceptors) {
-    void Promise.resolve(fn(err));
+  if (!isServer) {
+    for (const fn of clientErrorInterceptors) {
+      void Promise.resolve(fn(err));
+    }
   }
   if (onError) {
     void Promise.resolve(onError(err));
@@ -251,10 +264,12 @@ async function parseSuccessBody<T>(
  * [Server Component / Route Handler]
  *   - `cookies()`로 accessToken을 읽어 Authorization 헤더에 주입
  *   - API_BASE_URL 사용 (내부 네트워크 통신)
+ *   - 인터셉터는 `config`의 onBeforeRequest/onResponse/onError만 적용 (모듈 전역 `use*`는 서버에서 미실행)
  *
  * [Client Component]
  *   - 브라우저가 HttpOnly 쿠키를 자동 전송 → Next.js Route Handler(BFF, /api/proxy)로 요청
  *   - Route Handler가 쿠키 → Bearer 변환 후 API_BASE_URL(백엔드)로 프록시
+ *   - 전역 `useRequestInterceptor` 등은 이 환경에서만 안전하게 공유됨
  */
 export async function apiClient<T = unknown>(
   endpoint: string,
@@ -312,8 +327,10 @@ export async function apiClient<T = unknown>(
     credentials: isServer ? 'omit' : 'include',
   };
 
-  for (const fn of requestInterceptors) {
-    requestInput = fn(requestInput);
+  if (!isServer) {
+    for (const fn of clientRequestInterceptors) {
+      requestInput = fn(requestInput);
+    }
   }
   if (onBeforeRequest) {
     requestInput = onBeforeRequest(requestInput);
@@ -362,8 +379,10 @@ export async function apiClient<T = unknown>(
   }
 
   let data: T = (await parseSuccessBody<T>(response, responseType)) as T;
-  for (const fn of responseInterceptors) {
-    data = fn(response, data as unknown) as T;
+  if (!isServer) {
+    for (const fn of clientResponseInterceptors) {
+      data = fn(response, data as unknown) as T;
+    }
   }
   if (onResponse) {
     data = onResponse(response, data as unknown) as T;
