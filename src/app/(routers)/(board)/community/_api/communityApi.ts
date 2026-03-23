@@ -2,9 +2,14 @@ import type { Post } from '../types';
 
 const BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/${process.env.NEXT_PUBLIC_TEAM_ID}`;
 
-// 로그인 기능 구현 후 토큰 부분 수정 예정
+const getAccessToken = () => {
+  if (typeof document === 'undefined') return '';
+  const match = document.cookie.match(/(?:^|; )accessToken=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : '';
+};
+
 const getAuthHeader = () => ({
-  Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+  Authorization: `Bearer ${getAccessToken()}`,
 });
 
 export interface PostsResponse {

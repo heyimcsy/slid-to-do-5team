@@ -1,6 +1,6 @@
 'use client';
 
-import type { SortOption } from './types';
+import type { Post, SortOption } from './types';
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -31,7 +31,7 @@ export default function CommunityClient() {
     staleTime: 1000 * 60 * 5,
   });
 
-  const posts = data?.posts ?? [];
+  const posts: Post[] = data?.posts ?? [];
 
   const featuredPosts = useMemo(
     () => [...posts].sort((a, b) => b.viewCount - a.viewCount).slice(0, 3),
