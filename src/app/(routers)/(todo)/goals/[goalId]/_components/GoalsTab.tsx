@@ -4,17 +4,8 @@ import { useState } from 'react';
 import Image from 'next/image';
 import goalImage from '@/../public/images/small-goal.svg';
 
+import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { Icon } from '@/components/icon/Icon';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -73,36 +64,13 @@ export default function GoalsTab() {
           </SelectContent>
         </Select>
       </div>
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent
-          showCloseButton={false}
-          className="w-86 space-y-8 pt-8 md:w-114 md:space-y-10 md:pt-8"
-        >
-          <DialogHeader>
-            <DialogTitle>정말 삭제하시겠어요?</DialogTitle>
-            <DialogDescription className="font-xs-regular md:font-base-regular flex items-center text-orange-600">
-              <Icon name={'warning'} variant={'orange'} size={18} />
-              삭제된 목표는 복구할 수 없습니다.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose
-              render={
-                <Button type="button" variant="ghost" className="w-1/2">
-                  취소
-                </Button>
-              }
-            />
-            <DialogClose
-              render={
-                <Button onClick={handleDelete} type="button" variant="default" className="w-1/2">
-                  확인
-                </Button>
-              }
-            />
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="정말 삭제하시겠어요?"
+        description="삭제된 목표는 복구할 수 없습니다."
+        onConfirm={handleDelete}
+      />
     </>
   );
 }
