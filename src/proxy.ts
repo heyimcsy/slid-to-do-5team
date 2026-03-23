@@ -4,8 +4,20 @@ import type { NextRequest } from 'next/server';
 
 import { NextResponse } from 'next/server';
 import { parseTokenPairFromBackendJson } from '@/lib/auth/parseTokenPairFromBackendJson';
+import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 
 import { ALLOWED_ORIGINS, API_BASE_URL, AUTH_CONFIG } from '@/constants/api';
+
+/** 갱신 실패·액세스 토큰 없음 — 백엔드로 무인증 프록시하지 않음 */
+function proxyAuthRequiredResponse(): Response {
+  return new Response(
+    JSON.stringify({
+      success: false,
+      message: '인증이 만료되었습니다. 다시 로그인해 주세요.',
+    }),
+    { status: 401, headers: { 'Content-Type': 'application/json' } },
+  );
+}
 
 // PUBLIC_PATHS 에서는 인증을 거치지 않음(로그인 이전에 접근 가능한 페이지)
 const PUBLIC_PATHS = ['/', '/login', '/signup', '/com'];
@@ -107,32 +119,49 @@ export async function forwardToBackend(request: Request, path: string): Promise<
     });
   }
 
-  // accessToken 만료 직전이면 백엔드로 refresh 후 쿠키 갱신
   const { getAccessToken, getRefreshToken, isAccessTokenExpiringSoon, setAuthCookies } =
     await import('@/lib/auth/cookies');
 
+  const apiBase = API_BASE_URL?.replace(/\/$/, '') ?? '';
+  const refreshTimeoutMs = AUTH_CONFIG.REFRESH_FETCH_TIMEOUT_MS;
+
+  /** 만료 임박(또는 액세스 없음) 시 선행 refresh — 실패 시 백엔드로 보내지 않음(BFF) */
   if (await isAccessTokenExpiringSoon()) {
     const refreshToken = await getRefreshToken();
-    if (refreshToken) {
-      const base = API_BASE_URL?.replace(/\/$/, '') ?? '';
-      const res = await fetch(`${base}/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ [AUTH_CONFIG.REFRESH_TOKEN_KEY]: refreshToken }),
-      });
-      if (res.ok) {
-        const data = (await res.json()) as Record<string, unknown>;
-        const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-          parseTokenPairFromBackendJson(data);
-        if (newAccessToken && newRefreshToken) {
-          await setAuthCookies(newAccessToken, newRefreshToken);
-        }
+    if (!refreshToken) {
+      return proxyAuthRequiredResponse();
+    }
+    try {
+      const res = await fetchWithTimeout(
+        `${apiBase}/auth/refresh`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ [AUTH_CONFIG.REFRESH_TOKEN_KEY]: refreshToken }),
+        },
+        refreshTimeoutMs,
+      );
+      if (!res.ok) {
+        return proxyAuthRequiredResponse();
       }
+      const data = (await res.json()) as Record<string, unknown>;
+      const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+        parseTokenPairFromBackendJson(data);
+      if (!newAccessToken || !newRefreshToken) {
+        return proxyAuthRequiredResponse();
+      }
+      await setAuthCookies(newAccessToken, newRefreshToken);
+    } catch {
+      return proxyAuthRequiredResponse();
     }
   }
 
   const accessToken = await getAccessToken();
-  const base = API_BASE_URL?.replace(/\/$/, '') ?? '';
+  if (!accessToken) {
+    return proxyAuthRequiredResponse();
+  }
+
+  const base = apiBase;
   /** BFF `/api/proxy/...?a=1` → 백엔드 `.../...?a=1` (필터·페이지네이션 유지) */
   const search = new URL(request.url).search;
   const pathPart = path ? `${base}/${path}` : base;
@@ -142,9 +171,7 @@ export async function forwardToBackend(request: Request, path: string): Promise<
   headers.delete('cookie');
   /** 클라이언트의 Host는 백엔드 호스트와 다름 — undici가 `url` 기준으로 설정하도록 제거 */
   headers.delete('host');
-  if (accessToken) {
-    headers.set('Authorization', `Bearer ${accessToken}`);
-  }
+  headers.set('Authorization', `Bearer ${accessToken}`);
 
   /** Node.js: ReadableStream 바디 전달 시 안전한 요청 처리를 위해 요청과 응답 스트림 분리 `duplex: half` 필요 (multipart 등) */
   const upstreamInit: RequestInit & { duplex?: 'half' } = {

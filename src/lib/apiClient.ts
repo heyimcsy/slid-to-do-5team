@@ -1,4 +1,5 @@
 import { parseTokenPairFromBackendJson } from '@/lib/auth/parseTokenPairFromBackendJson';
+import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 
 import { API_BASE_URL, AUTH_CONFIG } from '@/constants/api';
 
@@ -414,19 +415,6 @@ async function attemptTokenRefresh(): Promise<boolean> {
   } finally {
     clientRefreshInFlight = null;
   }
-}
-
-/** AbortController + 상한 시간 — 무응답 fetch로 인한 서버 리소스 대기 방지 */
-function fetchWithTimeout(
-  input: RequestInfo | URL,
-  init: RequestInit | undefined,
-  timeoutMs: number,
-): Promise<Response> {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeoutMs);
-  return fetch(input, { ...init, signal: controller.signal }).finally(() => {
-    clearTimeout(id);
-  });
 }
 
 async function executeRefresh(): Promise<boolean> {

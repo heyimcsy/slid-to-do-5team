@@ -6,6 +6,14 @@ import { API_URL, APP_URL, TEAM_ID } from '@/constants/api';
 /** `jest.resetModules()` 후 정적 import 값은 갱신되지 않으므로, 동적 import로 읽은 값만 사용 */
 const getRouteHandlers = () => import('@/app/api/proxy/[...path]/route');
 
+/** `getJwtExp` 기준 만료까지 충분히 남은 액세스 토큰 (선행 refresh 미진입) */
+function mockAccessTokenValidLong(): string {
+  const payload = Buffer.from(
+    JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 3600 }),
+  ).toString('base64url');
+  return `h.${payload}.s`;
+}
+
 describe('GET /api/proxy/[...path]', () => {
   const originalFetch = globalThis.fetch;
 
@@ -56,7 +64,7 @@ describe('GET /api/proxy/[...path]', () => {
     const { cookies } = await import('next/headers');
     const mockCookies = await cookies();
     (mockCookies.get as jest.Mock).mockImplementation((name: string) =>
-      name === 'access_token' ? { value: 'token123' } : undefined,
+      name === 'access_token' ? { value: mockAccessTokenValidLong() } : undefined,
     );
 
     const { GET } = await getRouteHandlers();
@@ -84,7 +92,7 @@ describe('GET /api/proxy/[...path]', () => {
     const { cookies } = await import('next/headers');
     const mockCookies = await cookies();
     (mockCookies.get as jest.Mock).mockImplementation((name: string) =>
-      name === 'access_token' ? { value: 'token123' } : undefined,
+      name === 'access_token' ? { value: mockAccessTokenValidLong() } : undefined,
     );
 
     const { GET } = await getRouteHandlers();

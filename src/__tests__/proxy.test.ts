@@ -14,6 +14,22 @@ import { APP_URL } from '@/constants/api';
 
 const TEST_APP_URL = APP_URL || 'http://localhost:3000';
 
+/** `getJwtExp`가 읽을 수 있는 형태 — 만료까지 1시간 (갱신 분기 미진입) */
+function mockAccessTokenValidLong(): string {
+  const payload = Buffer.from(
+    JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 3600 }),
+  ).toString('base64url');
+  return `h.${payload}.s`;
+}
+
+/** REFRESH_BUFFER_SECONDS(60) 이내 만료 → 선행 refresh 분기 */
+function mockAccessTokenExpiringSoon(): string {
+  const payload = Buffer.from(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 30 })).toString(
+    'base64url',
+  );
+  return `h.${payload}.s`;
+}
+
 describe('proxy', () => {
   describe('isPublicPath', () => {
     it('PUBLIC path: "/", "/login", "/signup", "/com/woo" → true', () => {
@@ -153,7 +169,7 @@ describe('proxy', () => {
       const { cookies } = await import('next/headers');
       const mockCookies = await cookies();
       (mockCookies.get as jest.Mock).mockImplementation((name: string) =>
-        name === 'access_token' ? { value: 'Bearer token123' } : undefined,
+        name === 'access_token' ? { value: mockAccessTokenValidLong() } : undefined,
       );
 
       const req = new Request(`${TEST_APP_URL}/api/proxy/todos`, {
@@ -178,7 +194,7 @@ describe('proxy', () => {
       const { cookies } = await import('next/headers');
       const mockCookies = await cookies();
       (mockCookies.get as jest.Mock).mockImplementation((name: string) =>
-        name === 'access_token' ? { value: 'Bearer token123' } : undefined,
+        name === 'access_token' ? { value: mockAccessTokenValidLong() } : undefined,
       );
 
       const req = new Request(`${TEST_APP_URL}/api/proxy/todos?page=1&sort=desc`, {
@@ -198,7 +214,7 @@ describe('proxy', () => {
       const { cookies } = await import('next/headers');
       const mockCookies = await cookies();
       (mockCookies.get as jest.Mock).mockImplementation((name: string) =>
-        name === 'access_token' ? { value: 'Bearer token123' } : undefined,
+        name === 'access_token' ? { value: mockAccessTokenValidLong() } : undefined,
       );
 
       const fd = new FormData();
@@ -217,6 +233,29 @@ describe('proxy', () => {
           body: expect.anything(),
         }),
       );
+    });
+
+    it('만료 임박 + refresh 실패 시 401, 백엔드 업스트림 fetch 없음', async () => {
+      (global.fetch as jest.Mock).mockResolvedValue(new Response(null, { status: 401 }));
+
+      const { cookies } = await import('next/headers');
+      const mockCookies = await cookies();
+      (mockCookies.get as jest.Mock).mockImplementation((name: string) =>
+        name === 'refresh_token'
+          ? { value: 'rt' }
+          : name === 'access_token'
+            ? { value: mockAccessTokenExpiringSoon() }
+            : undefined,
+      );
+
+      const req = new Request(`${TEST_APP_URL}/api/proxy/todos`, { method: 'GET' });
+      const res = await forwardToBackend(req, 'todos');
+
+      expect(res.status).toBe(401);
+      const json = await res.json();
+      expect(json.success).toBe(false);
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect((global.fetch as jest.Mock).mock.calls[0][0]).toContain('/auth/refresh');
     });
   });
 });
