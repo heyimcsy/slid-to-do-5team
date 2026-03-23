@@ -6,18 +6,9 @@ import imgNote from '@/../public/images/img-note.svg';
 import { cn } from '@/lib';
 
 import { Chips } from '@/components/common/Chips';
+import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { Icon } from '@/components/icon/Icon';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 
 interface NoteCardProps {
   id: number;
@@ -60,48 +51,23 @@ export default function NoteCard({ id, title, todoTitle, isDone, updatedAt }: No
             e.preventDefault(); // 링크 이동 중지
           }}
         >
-          <Dialog>
-            <DialogTrigger
-              render={
-                <Button
-                  variant="icon"
-                  size="none"
-                  className="hover:bg-orange-800"
-                  aria-label="더보기"
-                >
-                  <Icon name="dotscircle" size={24} />
-                </Button>
-              }
-            />
-            <DialogContent
-              showCloseButton={false}
-              className="w-86 space-y-8 pt-8 md:w-114 md:space-y-10 md:pt-8"
-            >
-              <DialogHeader>
-                <DialogTitle>정말 삭제하시겠어요?</DialogTitle>
-                <DialogDescription className="font-xs-regular md:font-base-regular flex items-center text-orange-600">
-                  <Icon name={'warning'} variant={'orange'} size={18} />
-                  삭제된 노트는 복구할 수 없습니다.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <DialogClose
-                  render={
-                    <Button type="button" variant="ghost" className="w-1/2">
-                      취소
-                    </Button>
-                  }
-                />
-                <DialogClose
-                  render={
-                    <Button type="button" variant="default" className="w-1/2">
-                      확인
-                    </Button>
-                  }
-                />
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <DeleteDialog
+            trigger={
+              <Button
+                variant="icon"
+                size="none"
+                className="hover:bg-orange-800"
+                aria-label="더보기"
+              >
+                <Icon name="dotscircle" size={24} />
+              </Button>
+            }
+            title="정말 삭제하시겠어요?"
+            description="삭제된 노트는 복구할 수 없습니다."
+            onConfirm={() => {
+              console.log('delete');
+            }}
+          />
         </div>
       </div>
       {/* 하단: 뱃지 + 할일 제목 + 날짜 */}
