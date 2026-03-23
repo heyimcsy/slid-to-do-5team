@@ -23,7 +23,7 @@ export function AttachmentPreview({ url, image }: AttachmentPreviewProps) {
       )}
       {image && (
         <div className="relative h-44.5 w-full overflow-hidden rounded-[16px] border-gray-200 md:h-51.5">
-          <Image src={image} alt="첨부된 이미지" fill className="object-cover" />
+          <Image src={image} alt="embeded image" fill className="object-cover" />
         </div>
       )}
     </div>

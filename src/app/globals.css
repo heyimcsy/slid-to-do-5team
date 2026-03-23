@@ -451,3 +451,33 @@ body {
   font-size: 80px;
   line-height: 74px;
 }
+
+@theme {
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1628px;
+}
+
+.ProseMirror {
+  outline: none;
+}
+
+.ProseMirror p {
+  @apply font-sm-regular leading-relaxed my-2 text-gray-700;
+}
+
+.ProseMirror h3 {
+  @apply font-base-semibold text-gray-800 mt-6 mb-2;
+}
+
+.ProseMirror ul {
+  @apply pl-5 space-y-1 list-disc;
+}
+
+.ProseMirror li {
+  @apply font-sm-regular text-gray-700;
+}
+
+.ProseMirror strong {
+  @apply font-semibold text-gray-800;
+}

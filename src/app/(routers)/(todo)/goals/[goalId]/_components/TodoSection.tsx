@@ -1,7 +1,7 @@
 import type { TodoListProps, TodoSectionProps } from '@/app/(routers)/(todo)/goals/types';
 
 import Image from 'next/image';
-import TodoList from '@/app/(routers)/(todo)/goals/_components/TodoList';
+import TodoList from '@/app/(routers)/(todo)/goals/[goalId]/_components/TodoList';
 import { cn } from '@/lib';
 
 import { Icon } from '@/components/icon/Icon';
@@ -47,7 +47,7 @@ export function TodoSection({
                 width={131}
                 height={140}
                 src={emptyImage}
-                alt=""
+                alt="describe empty situation"
                 className="h-22.5 w-20 object-contain md:h-35 md:w-32.5"
               />
               <p className="font-sm-regular md:font-base-regular text-gray-500">{emptyText}</p>

@@ -1,6 +1,6 @@
 import type { TodoListProps } from '@/app/(routers)/(todo)/goals/types';
 
-import { TodoSection } from '@/app/(routers)/(todo)/goals/_components/TodoSection';
+import { TodoSection } from '@/app/(routers)/(todo)/goals/[goalId]/_components/TodoSection';
 
 export default function TotalListTab() {
   const todoLists: TodoListProps[] = [
