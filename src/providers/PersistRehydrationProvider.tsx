@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import type { Mutate, StoreApi } from 'zustand';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useIsRestoring } from '@tanstack/react-query';
 
 /**
  * @description `Mutate<StoreApi, [['zustand/persist', …]]>` 결과에서 **`persist` 프로퍼티 타입**만 취한다
@@ -53,14 +54,32 @@ const getRehydrationGateKey = (toRehydrate: PersistStoreRehydratable[]): string 
   toRehydrate.map((s) => s.persist.getOptions().name ?? '').join('\0');
 
 /**
+ * TanStack Query persist 복원 중(`useIsRestoring() === true`)에는 `fallback`을 유지한다.
+ * `PersistQueryClientProvider` 밖에서는 IsRestoring 컨텍스트가 없어 `false`로 동작한다(단위 테스트·스토리북).
+ */
+function QueryPersistSyncGate({
+  fallback,
+  children,
+}: {
+  fallback: ReactNode;
+  children: ReactNode;
+}) {
+  const isRestoring = useIsRestoring();
+  if (isRestoring) return <>{fallback}</>;
+  return <>{children}</>;
+}
+
+/**
  * @description `PersistRehydrationGate` 컴포넌트 props
  * @property toRehydrate - `getStoresToRehydrate` 결과 — 비어 있지 않음
  * @property fallback - `rehydrationDone`이 `false`일 때 fallback 표시
+ * @property waitForQueryPersistRestore - `true`이면 Zustand rehydrate 후에도 RQ persist 복원이 끝날 때까지 동일 `fallback` 유지
  * @property children - 복원 완료 후 표시
  */
 type PersistRehydrationGateProps = {
   toRehydrate: PersistStoreRehydratable[];
   fallback: ReactNode;
+  waitForQueryPersistRestore: boolean;
   children: ReactNode;
 };
 
@@ -72,6 +91,7 @@ type PersistRehydrationGateProps = {
 const PersistRehydrationGate = ({
   toRehydrate,
   fallback,
+  waitForQueryPersistRestore,
   children,
 }: PersistRehydrationGateProps) => {
   // rehydration 완료 여부를 확인하기 위한 상태 관리
@@ -104,7 +124,9 @@ const PersistRehydrationGate = ({
 
   // 아직 rehydration이 완료되지 않았으면 fallback을 렌더링
   if (!rehydrationDone) return <>{fallback}</>;
-  // 완료되었으면 children을 렌더링
+  if (waitForQueryPersistRestore) {
+    return <QueryPersistSyncGate fallback={fallback}>{children}</QueryPersistSyncGate>;
+  }
   return <>{children}</>;
 };
 
@@ -122,13 +144,19 @@ export type PersistRehydrationProviderProps = {
   stores?: PersistStore[];
   /** rehydrate 완료 전에 보여줄 UI (없으면 `null`) */
   fallback?: ReactNode;
+  /**
+   * `true`이면 Zustand rehydrate 완료 후에도 TanStack Query persist 복원이 끝날 때까지(`useIsRestoring`이 `false`) 동일 `fallback`을 유지한다.
+   * `PersistQueryClientProvider` 트리 안에서만 RQ 대기가 실제로 걸린다. 단독 렌더·테스트에서는 컨텍스트 부재로 대기 없음.
+   * @default true
+   */
+  waitForQueryPersistRestore?: boolean;
 };
 
 /**
  * zustand persist 스토어를 스토리지와 맞춘 후 자식을 렌더링함
  *
- * - rehydrate 대상이 **없으면** (`getStoresToRehydrate`가 빈 배열) effect 없이 곧바로 `children`을 렌더한다
- * - 대상이 **있으면** {@link PersistRehydrationGate}에서 각 `persist.rehydrate()`가 끝날 때까지 `fallback`을 보여준다
+ * - rehydrate 대상이 **없으면** (`getStoresToRehydrate`가 빈 배열) Zustand 게이트는 생략하고, `waitForQueryPersistRestore`가 `true`이면 RQ persist 복원 대기만 적용한다
+ * - 대상이 **있으면** {@link PersistRehydrationGate}에서 각 `persist.rehydrate()`가 끝날 때까지 `fallback`을 보여준 뒤, `waitForQueryPersistRestore`에 따라 RQ 복원까지 동일 `fallback`을 유지할 수 있다
  *   내부는 `Promise.allSettled`이므로 **일부가 reject(비동기·동기 throw 포함)되어도** settle이 끝나면 `children`으로 진행한다
  *
  * @see {@link https://react.dev/reference/react/useMemo | React — useMemo} — `toRehydrate` 메모이제이션
@@ -137,10 +165,14 @@ export function PersistRehydrationProvider({
   children,
   stores = [],
   fallback = null,
+  waitForQueryPersistRestore = true,
 }: PersistRehydrationProviderProps) {
   const toRehydrate = useMemo(() => getStoresToRehydrate(stores), [stores]);
 
   if (toRehydrate.length === 0) {
+    if (waitForQueryPersistRestore) {
+      return <QueryPersistSyncGate fallback={fallback}>{children}</QueryPersistSyncGate>;
+    }
     return <>{children}</>;
   }
 
@@ -149,6 +181,7 @@ export function PersistRehydrationProvider({
       key={getRehydrationGateKey(toRehydrate)}
       toRehydrate={toRehydrate}
       fallback={fallback}
+      waitForQueryPersistRestore={waitForQueryPersistRestore}
     >
       {children}
     </PersistRehydrationGate>

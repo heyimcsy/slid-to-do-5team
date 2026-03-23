@@ -9,7 +9,7 @@ import { render, screen, waitFor } from '@testing-library/react';
  * {@link AppProviders} 스모크 테스트
  *
  * - 자식이 DOM에 나타나는지 확인
- * - `persistStores={[]}`일 때도 {@link PersistRehydrationProvider}가 Gate 없이 children만 그리는 경로와 맞는지 확인
+ * - `persistStores={[]}`이어도 RQ persist 복원 후(`useIsRestoring` false) {@link PersistRehydrationProvider}가 children을 연다
  *
  * `globalThis.fetch` 모킹: {@link AppProviders}가 마운트 시 `useTokenRefreshOnMount` → `/api/auth/refresh` `fetch`를 호출하므로
  * 테스트에서 네트워크/미처리 rejection을 막기 위함(호출 자체는 검증하지 않음).
@@ -71,10 +71,9 @@ describe('AppProviders', () => {
       </AppProviders>,
     );
 
-    // Assert - children 렌더
-    expect(screen.getByText('Content')).toBeInTheDocument();
+    // Assert - QueryPersistSyncGate: RQ 복원 전엔 children 미마운트 → 복원 후 Content 표시
+    expect(await screen.findByText('Content')).toBeInTheDocument();
 
-    // Assert - PersistQueryClientProvider: persist 복원 후 setIsRestoring(false) — act 경고 없이 기다리기
     await waitFor(() => {
       expect(screen.getByTestId('rq-is-restoring')).toHaveTextContent('false');
     });
