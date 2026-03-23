@@ -2,7 +2,7 @@ import 'server-only'; // Client Component에서 import 시 빌드 에러 발생�
 
 import { cookies } from 'next/headers';
 
-import { AUTH_CONFIG } from '@/constants/api';
+import { AUTH_CONFIG } from '@/constants/auth-config';
 
 type CookieOptions = {
   httpOnly: boolean;
