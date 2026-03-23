@@ -71,6 +71,10 @@ export async function POST(request: NextRequest) {
 
   const { accessToken, refreshToken } = parseTokenPairFromBackendJson(data);
 
+  /**
+   * 로그인은 **반드시** 세션(토큰 쌍) 확보가 목적이다. 2xx인데 토큰이 없으면 signup과 달리
+   * 정상 분기가 아니라 **BFF·백엔드 응답 계약 위반**으로 본다 (`/api/auth/signup` 주석 참고).
+   */
   if (!accessToken || !refreshToken) {
     return NextResponse.json(
       {

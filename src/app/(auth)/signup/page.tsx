@@ -45,13 +45,14 @@ export default function SignupPage() {
       const data = (await res.json()) as {
         success?: boolean;
         message?: string;
-        authenticated?: boolean;
+        sessionIssued?: boolean;
+        emailVerificationRequired?: boolean;
       };
       if (!res.ok) {
         setError(data.message ?? '회원가입 실패');
         return;
       }
-      if (data.authenticated) {
+      if (data.sessionIssued) {
         try {
           await fetch('/api/proxy/users/me', { credentials: 'include' });
         } catch {
