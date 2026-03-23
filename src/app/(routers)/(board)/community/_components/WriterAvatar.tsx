@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface WriterAvatarProps {
   name: string;
@@ -9,6 +9,10 @@ interface WriterAvatarProps {
 
 export function WriterAvatar({ name, image }: WriterAvatarProps) {
   const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [image]);
 
   return (
     <div className="size-5 shrink-0 overflow-hidden rounded-full bg-gray-200">

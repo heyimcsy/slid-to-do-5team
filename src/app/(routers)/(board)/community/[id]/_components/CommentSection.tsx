@@ -58,6 +58,7 @@ export function CommentSection({ commentCount }: CommentSectionProps) {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={(e) => {
+            if (e.nativeEvent.isComposing) return;
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
               handleSubmit();
@@ -70,7 +71,8 @@ export function CommentSection({ commentCount }: CommentSectionProps) {
         <button
           type="button"
           onClick={handleSubmit}
-          className="font-sm-semibold md:font-base-semibold w-16 shrink-0 rounded-full bg-orange-500 py-2.5 text-white md:w-20 md:py-3"
+          disabled={!inputValue.trim()}
+          className="font-sm-semibold md:font-base-semibold w-16 shrink-0 rounded-full bg-orange-500 py-2.5 text-white disabled:cursor-not-allowed disabled:bg-gray-300 md:w-20 md:py-3"
         >
           등록
         </button>
