@@ -20,14 +20,17 @@ export function KebabMenu({ items }: KebabMenuProps) {
   const menuId = useId();
 
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleClickOutside = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setIsOpen(false);
       }
     };
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isOpen]);
 
   return (
     <div ref={ref} className="relative">
@@ -47,9 +50,6 @@ export function KebabMenu({ items }: KebabMenuProps) {
         <div
           id={menuId}
           role="menu"
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') setIsOpen(false);
-          }}
           className="absolute top-full right-0 z-10 mt-1 w-[120px] overflow-hidden rounded-2xl bg-white shadow-[0px_4px_20px_0px_rgba(0,0,0,0.1)]"
         >
           {items.map((item) => (
