@@ -390,18 +390,29 @@ export async function apiClient<T = unknown>(
   return data;
 }
 
-// === 토큰 갱신 (Race Condition 방지) ===
-let refreshPromise: Promise<boolean> | null = null;
+/**
+ * 토큰 갱신
+ *
+ * - **서버(Node·Edge·서버리스):** 모듈 전역 락을 쓰지 않음. 캐시된 모듈이 요청 간 공유되면
+ *   다른 사용자의 refresh가 한 Promise로 묶이거나, Edge의 stateless 특성과 맞지 않음.
+ *   동시에 여러 `apiClient` 호출이 refresh를 트리거하면 백엔드 호출이 겹칠 수 있으나 쿠키는 요청별로만 갱신됨.
+ * - **클라이언트(브라우저):** 탭 내 동시 401에 대해 한 번만 refresh 하도록 in-flight Promise 공유.
+ */
+let clientRefreshInFlight: Promise<boolean> | null = null;
 
 async function attemptTokenRefresh(): Promise<boolean> {
-  if (refreshPromise) return refreshPromise;
+  if (isServer) {
+    return executeRefresh();
+  }
 
-  refreshPromise = executeRefresh();
+  if (clientRefreshInFlight) return clientRefreshInFlight;
+
+  clientRefreshInFlight = executeRefresh();
 
   try {
-    return await refreshPromise;
+    return await clientRefreshInFlight;
   } finally {
-    refreshPromise = null;
+    clientRefreshInFlight = null;
   }
 }
 
