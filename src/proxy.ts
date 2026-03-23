@@ -6,7 +6,8 @@ import { NextResponse } from 'next/server';
 import { parseTokenPairFromBackendJson } from '@/lib/auth/parseTokenPairFromBackendJson';
 import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 
-import { ALLOWED_ORIGINS, API_BASE_URL, AUTH_CONFIG } from '@/constants/api';
+import { ALLOWED_ORIGINS, API_BASE_URL } from '@/constants/api';
+import { AUTH_CONFIG } from '@/constants/auth-config';
 
 /** 갱신 실패·액세스 토큰 없음 — 백엔드로 무인증 프록시하지 않음 */
 function proxyAuthRequiredResponse(): Response {

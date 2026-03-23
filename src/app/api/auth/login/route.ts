@@ -3,7 +3,8 @@ import { setAuthCookies } from '@/lib/auth/cookies';
 import { parseTokenPairFromBackendJson } from '@/lib/auth/parseTokenPairFromBackendJson';
 import { z } from 'zod';
 
-import { API_BASE_URL, AUTH_CONFIG } from '@/constants/api';
+import { API_BASE_URL } from '@/constants/api';
+import { AUTH_CONFIG } from '@/constants/auth-config';
 
 const loginBodySchema = z.object({
   email: z.string().trim().email({ message: '유효한 이메일을 입력하세요.' }),

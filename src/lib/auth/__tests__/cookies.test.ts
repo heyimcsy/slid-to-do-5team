@@ -2,10 +2,9 @@
  * @jest-environment node
  */
 import { cookies } from 'next/headers';
-
-import { AUTH_CONFIG } from '@/constants/api';
-
 import { getJwtExp, isAccessTokenExpiringSoon } from '@/lib/auth/cookies';
+
+import { AUTH_CONFIG } from '@/constants/auth-config';
 
 /** base64url 인코딩 */
 function b64url(obj: object): string {

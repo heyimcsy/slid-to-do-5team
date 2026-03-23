@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-import { AUTH_CONFIG } from '@/constants/api';
+import { AUTH_CONFIG } from '@/constants/auth-config';
 
 /**
  * @description 마운트 시 + 일정 간격으로 /api/auth/refresh 호출 — access_token 만료 직전 자동 갱신

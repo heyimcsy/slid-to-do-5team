@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { setAuthCookies } from '@/lib/auth/cookies';
 import { parseTokenPairFromBackendJson } from '@/lib/auth/parseTokenPairFromBackendJson';
 
-import { API_BASE_URL, AUTH_CONFIG } from '@/constants/api';
+import { API_BASE_URL } from '@/constants/api';
+import { AUTH_CONFIG } from '@/constants/auth-config';
 
 export async function POST() {
   const { getRefreshToken, isAccessTokenExpiringSoon } = await import('@/lib/auth/cookies');

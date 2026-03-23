@@ -1,4 +1,4 @@
-import { AUTH_CONFIG } from '@/constants/api';
+import { AUTH_CONFIG } from '@/constants/auth-config';
 
 /**
  * 백엔드 login/refresh JSON에서 토큰 쌍을 읽는다.
