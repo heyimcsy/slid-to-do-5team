@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 interface WriterAvatarProps {
   name: string;
@@ -9,10 +9,12 @@ interface WriterAvatarProps {
 
 export function WriterAvatar({ name, image }: WriterAvatarProps) {
   const [imageError, setImageError] = useState(false);
+  const [prevImage, setPrevImage] = useState(image);
 
-  useEffect(() => {
+  if (image !== prevImage) {
+    setPrevImage(image);
     setImageError(false);
-  }, [image]);
+  }
 
   return (
     <div className="size-5 shrink-0 overflow-hidden rounded-full bg-gray-200">
