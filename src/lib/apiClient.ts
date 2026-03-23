@@ -2,7 +2,7 @@ import { parseTokenPairFromBackendJson } from '@/lib/auth/parseTokenPairFromBack
 import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 
 import { API_BASE_URL } from '@/constants/api';
-import { AUTH_CONFIG } from '@/constants/auth-config';
+import { AUTH_CONFIG, isAuthRouteGuardEnabled } from '@/constants/auth-config';
 
 /**
  * @description NextFetchConfig - Next.js fetch 확장 — cache, revalidate, tags는 서버에서만 유효함
@@ -358,7 +358,7 @@ export async function apiClient<T = unknown>(
 
     const err = new ApiClientError(401, 'UNAUTHORIZED', '인증이 만료되었습니다.');
     runErrorInterceptors(err, onError);
-    if (!isServer) {
+    if (!isServer && isAuthRouteGuardEnabled()) {
       window.location.href = '/login';
     }
     throw err;

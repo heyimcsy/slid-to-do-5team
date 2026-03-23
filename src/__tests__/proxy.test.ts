@@ -64,10 +64,22 @@ describe('proxy', () => {
     });
 
     it('비공개 path + 토큰 없음 → redirect /login', () => {
+      const prev = process.env.NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED;
+      process.env.NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED = 'true';
       const req = createRequest('/dashboard', undefined);
       const res = proxy(req);
       expect(res.status).toBe(307);
       expect(res.headers.get('location')).toContain('/login');
+      process.env.NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED = prev;
+    });
+
+    it('비공개 path + 토큰 없음 + guard OFF → next()', () => {
+      const prev = process.env.NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED;
+      process.env.NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED = 'false';
+      const req = createRequest('/dashboard', undefined);
+      const res = proxy(req);
+      expect(res.status).toBe(200);
+      process.env.NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED = prev;
     });
 
     it('비공개 path + 토큰 있음 → next()', () => {
