@@ -3,9 +3,9 @@
 import type { QueryPersistStorageType } from '@/constants/query';
 import type { PersistStore } from '@/providers/PersistRehydrationProvider';
 import type { DehydratedState } from '@tanstack/react-query';
+import type { ComponentType } from 'react';
 
-import { useState } from 'react';
-import dynamic from 'next/dynamic';
+import { useEffect, useState } from 'react';
 import { useTokenRefreshOnMount } from '@/hooks/auth/useTokenRefreshOnMount';
 import { createQueryPersister } from '@/providers/createQueryPersister';
 import { PersistRehydrationProvider } from '@/providers/PersistRehydrationProvider';
@@ -16,15 +16,22 @@ import { QUERY_MAX_AGE, QUERY_STALE_TIME } from '@/constants/query';
 import { PERSIST_STORES } from '@/constants/store';
 
 /**
- * @description 개발환경에서만 ReactQueryDevtools 동적 임포트, 서버에서 렌더링 안하도록 ssr: false 설정.
+ * @description 개발환경 전용 React Query Devtools. `next/dynamic` + `ssr: false`는 App Router에서
+ * BailoutToCSR 오버레이를 유발하므로, 마운트 후 동적 import로만 로드한다.
  * @environment NODE_ENV=development
  */
-const ReactQueryDevtools =
-  process.env.NODE_ENV === 'development'
-    ? dynamic(() => import('@tanstack/react-query-devtools').then((m) => m.ReactQueryDevtools), {
-        ssr: false,
-      })
-    : () => null;
+function ReactQueryDevtoolsLazy() {
+  const [Devtools, setDevtools] = useState<ComponentType<{ initialIsOpen?: boolean }> | null>(null);
+
+  useEffect(() => {
+    void import('@tanstack/react-query-devtools').then((m) => {
+      setDevtools(() => m.ReactQueryDevtools);
+    });
+  }, []);
+
+  if (!Devtools) return null;
+  return <Devtools initialIsOpen={false} />;
+}
 
 /**
  * @description AppProviders 컴포넌트 타입
@@ -74,7 +81,9 @@ export function AppProviders({
   const content = (
     <>
       <HydrationBoundary state={dehydratedState}>
-        <PersistRehydrationProvider stores={persistStores}>{children}</PersistRehydrationProvider>
+        <PersistRehydrationProvider stores={persistStores} waitForQueryPersistRestore>
+          {children}
+        </PersistRehydrationProvider>
       </HydrationBoundary>
     </>
   );
@@ -83,7 +92,7 @@ export function AppProviders({
    * @description ReactQueryDevtools 컴포넌트 렌더링(개발환경에서만 호출)
    */
   const reactQueryDevtools =
-    process.env.NODE_ENV === 'development' ? <ReactQueryDevtools initialIsOpen={false} /> : null;
+    process.env.NODE_ENV === 'development' ? <ReactQueryDevtoolsLazy /> : null;
 
   /**
    * @description AppProviders 컴포넌트 반환
