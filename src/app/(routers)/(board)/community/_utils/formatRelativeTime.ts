@@ -1,3 +1,5 @@
+import { formatDate } from './formatDate';
+
 export function formatRelativeTime(isoString: string): string {
   const diff = Date.now() - new Date(isoString).getTime();
   const minutes = Math.floor(diff / 1000 / 60);
@@ -11,5 +13,5 @@ export function formatRelativeTime(isoString: string): string {
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days}일 전`;
 
-  return new Date(isoString).toLocaleDateString('ko-KR').replace(/\.$/, '');
+  return formatDate(isoString);
 }
