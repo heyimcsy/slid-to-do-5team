@@ -213,15 +213,23 @@ function Sidebar({
       <div
         data-slot="sidebar-gap"
         className={cn(
-          'relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear',
+          'relative bg-transparent transition-[width] duration-200 ease-linear',
+
+          // ❌ 기본은 gap 없음 (overlay)
+          'w-0',
+
+          // ✅ 아이콘 상태
+          'md:group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)]',
+
+          // ✅ desktop(lg 이상)에서만 expanded 시 gap 생김
+          'lg:group-data-[state=expanded]:w-(--sidebar-width)',
+
+          // offcanvas
           'group-data-[collapsible=offcanvas]:w-0',
+
           'group-data-[side=right]:rotate-180',
-          variant === 'floating' || variant === 'inset'
-            ? 'group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]'
-            : 'group-data-[collapsible=icon]:w-20 lg:group-data-[collapsible=icon]:w-24',
         )}
       />
-      {/* ✅ 여기에 삽입 */}
       {state === 'expanded' && (
         <div
           data-slot="sidebar-overlay"

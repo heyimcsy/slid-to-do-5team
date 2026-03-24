@@ -21,7 +21,7 @@ const navItems: { label: string; href: string; icon: IconName; hasArrow?: boolea
   { label: '대시보드', href: '/dashboard', icon: 'dashboard' },
   { label: '목표', href: '/goals', icon: 'flag', hasArrow: true },
   { label: '캘린더', href: '/calendar', icon: 'calendar' },
-  { label: '소통 게시판', href: '/board', icon: 'message' },
+  { label: '소통 게시판', href: '/community', icon: 'message' },
   { label: '찜한 할 일', href: '/favorites', icon: 'filledStar' },
 ];
 
@@ -83,8 +83,9 @@ export default function SidebarNav() {
                 <SidebarMenuButton
                   size="lg"
                   isActive={isActive}
-                  render={<Link href={item.href} />}
-                  className="px-4 group-data-[collapsible=icon]:hidden [&_svg]:size-6"
+                  render={!item.hasArrow ? <Link href={item.href} /> : undefined}
+                  onClick={item.hasArrow ? () => setIsGoalsOpen((prev) => !prev) : undefined}
+                  className="cursor-pointer px-4 group-data-[collapsible=icon]:hidden active:bg-transparent active:text-inherit [&_svg]:size-6"
                 >
                   <Icon name={item.icon} variant={isActive ? 'orange' : 'default'} />
                   <span className="font-lg-semibold">{item.label}</span>
