@@ -54,10 +54,8 @@ export default function TodoItem({ task }: TodoItemProps) {
               <Icon name="edit" />
               <div>
                 <DropdownMenu>
-                  <DropdownMenuTrigger className="flex items-center gap-2">
-                    <button className="cursor-pointer">
-                      <Icon name="dotscircle" />
-                    </button>
+                  <DropdownMenuTrigger className="flex cursor-pointer items-center gap-2">
+                    <Icon name="dotscircle" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
                     <DropdownMenuItem onClick={() => console.log('수정', task.id)}>

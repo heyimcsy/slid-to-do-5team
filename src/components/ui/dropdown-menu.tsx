@@ -20,7 +20,8 @@ function DropdownMenuTrigger({ ...props }: MenuPrimitive.Trigger.Props) {
 
 function DropdownMenuContent({
   align = 'start',
-  alignOffset = 0,
+  // DropDown 메뉴 위치 조절
+  alignOffset = 12,
   side = 'bottom',
   sideOffset = 4,
   className,

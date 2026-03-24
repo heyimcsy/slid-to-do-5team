@@ -6,6 +6,14 @@ export interface Writer {
   image: string | null;
 }
 
+export interface Comment {
+  id: number;
+  content: string;
+  createdAt: string;
+  writer: Writer;
+  isMyComment: boolean;
+}
+
 export interface Post {
   id: number;
   teamId: string;
