@@ -1,20 +1,39 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+
 import { Icon } from '@/components/icon/Icon';
 import { Button } from '@/components/ui/button';
 
 export default function ItemActionBar({
-  note,
+  noteIds,
   link,
   favorites,
 }: {
-  note: boolean;
-  link: boolean;
+  noteIds: number[];
+  link: string | null;
   favorites: boolean;
 }) {
+  const goalId = 1;
+  const router = useRouter();
   return (
     <div className="flex h-fit shrink-0 space-x-[6px] lg:space-x-2">
-      {note && <Icon name="note" variant="orange" />}
+      <Button
+        onClick={(e) => {
+          e.stopPropagation();
+          if (noteIds.length > 0) {
+            router.push(`/goals/${goalId}/notes/${noteIds[0]}`);
+          } else {
+            // router.push(`/goals/${goalId}/notes/new`);
+            //TODO :이게 맞누 ㅜ
+            window.location.href = `/goals/${goalId}/notes/new`;
+          }
+        }}
+        variant="icon"
+        size="none"
+      >
+        <Icon name="note" variant="orange" />
+      </Button>
       {link && <Icon name="link" variant="orange" />}
       <div className="hidden h-fit shrink-1 space-x-[6px] group-hover:flex lg:space-x-2">
         <Button
