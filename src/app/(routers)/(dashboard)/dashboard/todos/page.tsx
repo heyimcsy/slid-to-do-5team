@@ -70,7 +70,7 @@ export default function TodosPage() {
   });
 
   return (
-    <div className="flex h-full w-full flex-col px-4 py-10">
+    <div className="flex h-full w-full flex-col items-center px-4 py-10">
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
         <div className="mb-4 hidden px-2 md:block">
           <TodoHeader count={todolists.length} />
