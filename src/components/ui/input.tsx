@@ -17,8 +17,8 @@ interface InputProps extends React.ComponentProps<'input'> {
 
 function Input({ className, type, errorMessage, endAdornment, ...props }: InputProps) {
   const inputClassName = cn(
-    'h-11 w-81.75 rounded-xl px-3',
-    'md:h-14 md:w-100 md:rounded-2xl md:px-4',
+    'h-11 w-full rounded-xl px-3',
+    'md:h-14 md:rounded-2xl md:px-4',
     'bg-white text-base transition-colors outline-none',
     'placeholder:text-gray-400',
     'border border-gray-300',
@@ -43,16 +43,16 @@ function Input({ className, type, errorMessage, endAdornment, ...props }: InputP
   );
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col">
       {endAdornment ? (
-        <div className="relative inline-block max-w-full">
+        <div className="relative flex w-full md:w-100">
           {primitiveInput}
           <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 md:pr-3">
             <span className="pointer-events-auto inline-flex">{endAdornment}</span>
           </div>
         </div>
       ) : (
-        primitiveInput
+        <div>{primitiveInput}</div>
       )}
       {errorMessage && (
         <FieldDescription className="text-sm-medium px-1 text-[#FF3434]">
