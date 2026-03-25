@@ -1,9 +1,5 @@
 import { z } from 'zod';
 
-
-
-
-
 /**
  * 회원가입 요청 본문 (BFF + 클라이언트 공통).
  * `passwordConfirm`은 백엔드로 전달하지 않고 검증에만 사용한다.

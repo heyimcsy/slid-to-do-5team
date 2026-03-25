@@ -1,4 +1,3 @@
-;
 /**
  * POST /api/auth/signup (BFF)
  *
@@ -13,13 +12,7 @@ import { setAuthCookies } from '@/lib/auth/cookies';
 import { parseTokenPairFromBackendJson } from '@/lib/auth/parseTokenPairFromBackendJson';
 import { signupBodySchema, signupValidationMessage } from '@/lib/auth/schemas/signup';
 
-
-
 import { API_BASE_URL } from '@/constants/api';
-
-
-
-
 
 export async function POST(request: NextRequest) {
   let rawBody: unknown;

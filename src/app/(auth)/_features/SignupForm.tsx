@@ -2,11 +2,11 @@
 
 import type { SignupBody } from '@/lib/auth/schemas/signup';
 
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { apiClient, ApiClientError } from '@/lib/apiClient';
 import { signupBodySchema } from '@/lib/auth/schemas/signup';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';

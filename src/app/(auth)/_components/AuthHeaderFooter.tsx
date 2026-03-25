@@ -2,9 +2,9 @@
 
 import type { AuthLinkVariantProps } from '../_types/auth';
 
+import { memo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { memo } from 'react';
 
 import { AUTH_LINK_VARIANTS } from '../_constants/auth';
 
