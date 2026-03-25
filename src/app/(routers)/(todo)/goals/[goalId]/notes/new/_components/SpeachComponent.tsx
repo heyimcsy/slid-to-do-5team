@@ -74,7 +74,7 @@ export default function SpeachComponent({
               </DialogTrigger>
               <DialogContent className="max-w-[343px] md:max-w-139" showCloseButton={false}>
                 <DialogHeader className="mt-8">
-                  <DialogTitle className="f text-gray-800">{title}</DialogTitle>
+                  <DialogTitle className="text-gray-800">{title}</DialogTitle>
                   <DialogDescription className="font-sm-semibold md:font-xl-semibold text-gray-800">
                     제목의 노트를 불러오시겠어요?
                   </DialogDescription>
