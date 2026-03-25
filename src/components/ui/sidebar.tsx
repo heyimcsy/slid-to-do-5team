@@ -216,10 +216,10 @@ function Sidebar({
           'relative bg-transparent transition-[width] duration-200 ease-linear',
 
           // ❌ 기본은 gap 없음 (overlay)
-          'w-0',
+          'w-20',
 
           // ✅ 아이콘 상태
-          'md:group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)]',
+          // 'md:group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)]',
 
           // ✅ desktop(lg 이상)에서만 expanded 시 gap 생김
           'lg:group-data-[state=expanded]:w-(--sidebar-width)',

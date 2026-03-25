@@ -29,7 +29,7 @@ export default function RootLayout({
           <div className="p-2 md:hidden">
             <MobileHeader />
           </div>
-          <div className="flex h-full w-full min-w-[375px] items-center justify-center bg-gray-100">
+          <div className="flex h-full w-full min-w-[375px] items-center justify-center overflow-y-scroll bg-gray-100">
             {children}
           </div>
         </SidebarInset>

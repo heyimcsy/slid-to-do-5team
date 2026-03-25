@@ -63,10 +63,13 @@ const tempGoals = [
 export default function SidebarNav() {
   const pathname = usePathname();
   const [isGoalsOpen, setIsGoalsOpen] = React.useState(false);
+  // 목표탭 하위에 Input을 보여주는 상태 관리
+  const [isInputVisible, setIsInputVisible] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const handleNewGoal = (e: React.MouseEvent) => {
     e.preventDefault();
-    setIsGoalsOpen(true);
+    setIsGoalsOpen(!isGoalsOpen);
+    setIsInputVisible(true);
     setTimeout(() => {
       inputRef.current?.focus();
     }, 350);
@@ -120,12 +123,14 @@ export default function SidebarNav() {
                               {goal.label}
                             </Link>
                           ))}
-                          <div className="mt-1 flex items-center gap-2 border border-t-0 border-r-0 border-b-2 border-l-0 border-b-orange-500 bg-orange-200 px-4 py-2 text-orange-700">
+                          <div
+                            className={`mt-1 flex ${!isInputVisible && 'hidden'} items-center gap-2 border border-t-0 border-r-0 border-b-2 border-l-0 border-b-orange-500 bg-orange-200 px-4 py-2 text-orange-700`}
+                          >
                             <input
                               ref={inputRef}
                               type="text"
                               placeholder="입력 후 Enter"
-                              className="w-full cursor-text border-none bg-transparent ring-0 outline-none placeholder:text-orange-400 focus:border-none focus:ring-0 focus:outline-none"
+                              className={`w-full cursor-text border-none bg-transparent ring-0 outline-none placeholder:text-orange-400 focus:border-none focus:ring-0 focus:outline-none ${!isInputVisible && 'hidden'}`}
                             />
                           </div>
                         </div>
@@ -161,10 +166,12 @@ export default function SidebarNav() {
               <Link
                 href={item.href}
                 onClick={item.label === '새 목표' ? handleNewGoal : undefined}
-                className={`flex flex-row items-center justify-center gap-2 rounded-full border border-orange-500 px-6 py-4 md:flex-col md:rounded-xl md:py-8 ${item.bgClassName}`}
+                className={`flex flex-row items-center justify-center gap-2 rounded-full border border-orange-500 px-4 py-3 md:flex-col md:rounded-xl md:px-6 md:py-8 ${item.bgClassName}`}
               >
                 <Icon name={item.icon} variant={item.variant} size={38} />
-                <span className={`font-lg-semibold ${item.textClassName}`}>{item.label}</span>
+                <span className={`font-base-semibold md:font-lg-semibold ${item.textClassName}`}>
+                  {item.label}
+                </span>
               </Link>
             </SidebarMenuItem>
           ))}
