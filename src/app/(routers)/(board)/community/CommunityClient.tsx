@@ -4,12 +4,10 @@ import type { Post, SortOption } from './types';
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
 
 import { Icon } from '@/components/icon/Icon';
 
-import { getPosts } from './_api/communityApi';
-import { communityQueryKeys } from './_api/communityQueryKeys';
+import { useGetPosts } from './_api/communityQueries';
 import { FeaturedPostCard } from './_components/FeaturedPostCard';
 import { Pagination } from './_components/Pagination';
 import { PostEmptyState } from './_components/PostEmptyState';
@@ -25,11 +23,7 @@ export default function CommunityClient() {
   const [sort, setSort] = useState<SortOption>('최신순');
   const [search, setSearch] = useState('');
 
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: communityQueryKeys.posts(),
-    queryFn: getPosts,
-    staleTime: 1000 * 60 * 5,
-  });
+  const { data, isLoading, isError, refetch } = useGetPosts(sort);
 
   const posts: Post[] = data?.posts ?? [];
 
@@ -40,19 +34,12 @@ export default function CommunityClient() {
 
   const filteredPosts = useMemo(() => {
     const lowerSearch = search.toLowerCase();
-    return posts
-      .filter(
-        (post) =>
-          post.title.toLowerCase().includes(lowerSearch) ||
-          post.content.toLowerCase().includes(lowerSearch),
-      )
-      .sort((a, b) => {
-        if (sort === '최신순')
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        if (sort === '인기순') return b.viewCount - a.viewCount;
-        return 0;
-      });
-  }, [posts, search, sort]);
+    return posts.filter(
+      (post) =>
+        post.title.toLowerCase().includes(lowerSearch) ||
+        post.content.toLowerCase().includes(lowerSearch),
+    );
+  }, [posts, search]);
 
   const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
   const paginatedPosts = filteredPosts.slice(
