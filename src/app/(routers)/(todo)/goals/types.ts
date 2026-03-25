@@ -1,9 +1,9 @@
 export interface TodoListProps {
   id: number;
   content: string;
-  checked: boolean;
-  link: boolean;
-  note: boolean;
+  done: boolean;
+  link: string | null;
+  noteIds: number[];
   favorites: boolean;
 }
 export interface TodoSectionProps {

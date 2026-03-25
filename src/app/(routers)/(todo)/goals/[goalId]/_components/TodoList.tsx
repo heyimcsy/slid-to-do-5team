@@ -6,7 +6,7 @@ import { cn } from '@/lib';
 
 import { Icon } from '@/components/icon/Icon';
 
-export default function TodoList({ id, content, checked, link, note, favorites }: TodoListProps) {
+export default function TodoList({ id, content, done, link, noteIds, favorites }: TodoListProps) {
   const goalId = 1;
   return (
     <div
@@ -16,7 +16,7 @@ export default function TodoList({ id, content, checked, link, note, favorites }
       )}
     >
       <div className="flex w-full min-w-0 items-center space-x-1 md:space-x-2">
-        <Icon name="checkBox" size={18} className="shrink-0" checked={checked} />
+        <Icon name="checkBox" size={18} className="shrink-0" checked={done} />
         <Link
           href={`/goals/${goalId}/todos/${id}`}
           className="flex min-w-0 flex-1 items-center space-x-1 md:space-x-2"
@@ -24,7 +24,7 @@ export default function TodoList({ id, content, checked, link, note, favorites }
           <p
             className={cn(
               'font-sm-regular md:font-base-regular lg:font-lg-regular cursor-pointer truncate',
-              checked ? 'text-gray-500' : 'text-gray-800',
+              done ? 'text-gray-500' : 'text-gray-800',
               'hover:font-sm-semibold hover:md:font-base-semibold hover:lg:font-lg-semibold hover:truncate hover:text-orange-500',
             )}
           >
@@ -32,7 +32,7 @@ export default function TodoList({ id, content, checked, link, note, favorites }
           </p>
         </Link>
       </div>
-      <ItemActionBar note={note} link={link} favorites={favorites} />
+      <ItemActionBar noteIds={noteIds} link={link} favorites={favorites} />
     </div>
   );
 }

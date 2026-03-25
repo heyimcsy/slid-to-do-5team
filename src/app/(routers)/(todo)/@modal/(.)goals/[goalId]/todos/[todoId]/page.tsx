@@ -20,6 +20,7 @@ const tags: Tags[] = [
 
 // 임시 mock — 나중에 params.goalId로 API 호출
 const mockData = {
+  id: 1,
   title: '자바스크립트 기초 챕터3 듣기',
   status: 'TO DO' as const,
   goalTitle: '자바스크립트로 웹 서비스 만들기',
