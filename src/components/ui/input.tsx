@@ -58,7 +58,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(function Input(
           {primitiveInput}
           {startAdornment ? (
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2 md:pl-3">
-              <span className="pointer-events-auto inline-flex">{startAdornment}</span>
+              <span aria-hidden="true" className="pointer-events-none inline-flex">
+                {startAdornment}
+              </span>
             </div>
           ) : null}
           {endAdornment ? (
