@@ -23,7 +23,11 @@ function PostListItemSkeleton() {
 
 export function PostListSkeleton() {
   return (
-    <div className="h-full w-full bg-gray-100 px-4 py-6 md:px-8 md:py-12">
+    <div
+      className="h-full w-full bg-gray-100 px-4 py-6 md:px-8 md:py-12"
+      aria-busy="true"
+      aria-label="게시물 목록 로딩 중"
+    >
       <div className="mx-auto w-full max-w-[1200px]">
         <div className="mb-6 h-8 w-40 animate-pulse rounded-md bg-gray-200 md:mb-8" />
 
