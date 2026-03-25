@@ -1,9 +1,8 @@
 'use client';
 
+import { useToolbar } from '@/hooks/editor';
 import { cn } from '@/lib';
 import { type Editor } from '@tiptap/react';
-
-import { useToolbar } from '@/hooks/editor';
 
 interface ToolbarProps {
   editor: Editor | null;
@@ -34,7 +33,7 @@ export function Toolbar({
     <div
       role="toolbar"
       aria-label="텍스트 서식"
-      className="relative flex h-[44px] w-full max-w-[700px] flex-row items-center gap-1.5 rounded-[18px] bg-[var(--gray-50)] px-[16px] py-[6px]"
+      className="relative flex h-[44px] w-full max-w-[700px] flex-row items-center gap-1 rounded-[18px] bg-[var(--gray-50)] px-[16px] py-[6px] md:gap-1.5"
     >
       <input
         ref={fileInputRef}

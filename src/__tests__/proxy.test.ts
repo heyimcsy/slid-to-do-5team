@@ -149,13 +149,13 @@ describe('proxy', () => {
   });
 
   describe('forwardToBackend', () => {
-    const originalFetch = global.fetch;
+    const originalFetch = globalThis.fetch;
 
     beforeEach(() => {
-      global.fetch = jest.fn();
+      globalThis.fetch = jest.fn();
     });
     afterEach(() => {
-      global.fetch = originalFetch;
+      globalThis.fetch = originalFetch;
     });
 
     it('Origin 허용 안 됨 → 403', async () => {
@@ -175,7 +175,7 @@ describe('proxy', () => {
     });
 
     it('정상 요청 → 백엔드 URL로 fetch, Authorization 주입', async () => {
-      (global.fetch as jest.Mock).mockResolvedValue(
+      (globalThis.fetch as jest.Mock).mockResolvedValue(
         new Response(JSON.stringify({ data: [] }), { status: 200 }),
       );
       const { cookies } = await import('next/headers');
@@ -190,17 +190,41 @@ describe('proxy', () => {
       const res = await forwardToBackend(req, 'todos');
 
       expect(res.status).toBe(200);
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         expect.stringContaining('/todos'),
         expect.objectContaining({
           method: 'GET',
           headers: expect.any(Headers),
         }),
       );
+      const fetchOpts = (globalThis.fetch as jest.Mock).mock.calls[0][1] as RequestInit;
+      const upstreamHeaders = fetchOpts.headers as Headers;
+      expect(upstreamHeaders.get('Accept-Encoding')).toBe('identity');
+    });
+
+    it('클라이언트가 gzip을 요청해도 백엔드로는 Accept-Encoding: identity', async () => {
+      (globalThis.fetch as jest.Mock).mockResolvedValue(
+        new Response(JSON.stringify({ data: [] }), { status: 200 }),
+      );
+      const { cookies } = await import('next/headers');
+      const mockCookies = await cookies();
+      (mockCookies.get as jest.Mock).mockImplementation((name: string) =>
+        name === 'access_token' ? { value: mockAccessTokenValidLong() } : undefined,
+      );
+
+      const req = new Request(`${TEST_APP_URL}/api/proxy/posts`, {
+        method: 'GET',
+        headers: { 'Accept-Encoding': 'gzip, deflate, br' },
+      });
+      await forwardToBackend(req, 'posts');
+
+      const fetchOpts = (globalThis.fetch as jest.Mock).mock.calls[0][1] as RequestInit;
+      const upstreamHeaders = fetchOpts.headers as Headers;
+      expect(upstreamHeaders.get('Accept-Encoding')).toBe('identity');
     });
 
     it('원 요청 쿼리스트링이 백엔드 fetch URL에 포함됨', async () => {
-      (global.fetch as jest.Mock).mockResolvedValue(
+      (globalThis.fetch as jest.Mock).mockResolvedValue(
         new Response(JSON.stringify({ data: [] }), { status: 200 }),
       );
       const { cookies } = await import('next/headers');
@@ -214,13 +238,13 @@ describe('proxy', () => {
       });
       await forwardToBackend(req, 'todos');
 
-      const calledUrl = (global.fetch as jest.Mock).mock.calls[0][0] as string;
+      const calledUrl = (globalThis.fetch as jest.Mock).mock.calls[0][0] as string;
       expect(calledUrl).toContain('/todos?page=1');
       expect(calledUrl).toContain('sort=desc');
     });
 
     it('바디 있음(multipart 등) → upstream fetch에 duplex: half 전달', async () => {
-      (global.fetch as jest.Mock).mockResolvedValue(
+      (globalThis.fetch as jest.Mock).mockResolvedValue(
         new Response(JSON.stringify({ ok: true }), { status: 200 }),
       );
       const { cookies } = await import('next/headers');
@@ -237,7 +261,7 @@ describe('proxy', () => {
       });
       await forwardToBackend(req, 'upload');
 
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         expect.stringContaining('/upload'),
         expect.objectContaining({
           method: 'POST',
@@ -247,8 +271,47 @@ describe('proxy', () => {
       );
     });
 
+    it('POST /goals — JSON 바디(title)가 업스트림으로 전달되고 duplex·Authorization·identity 적용', async () => {
+      (globalThis.fetch as jest.Mock).mockResolvedValue(
+        new Response(JSON.stringify({ id: '1', title: '프로젝트 완성' }), { status: 201 }),
+      );
+      const { cookies } = await import('next/headers');
+      const mockCookies = await cookies();
+      (mockCookies.get as jest.Mock).mockImplementation((name: string) =>
+        name === 'access_token' ? { value: mockAccessTokenValidLong() } : undefined,
+      );
+
+      const payload = { title: '프로젝트 완성' };
+      const req = new Request(`${TEST_APP_URL}/api/proxy/goals`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const res = await forwardToBackend(req, 'goals');
+
+      expect(res.status).toBe(201);
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        expect.stringMatching(/\/goals$/),
+        expect.objectContaining({
+          method: 'POST',
+          duplex: 'half',
+          body: expect.anything(),
+        }),
+      );
+
+      const fetchOpts = (globalThis.fetch as jest.Mock).mock.calls[0][1] as RequestInit;
+      const upstreamHeaders = fetchOpts.headers as Headers;
+      expect(upstreamHeaders.get('Accept-Encoding')).toBe('identity');
+      expect(upstreamHeaders.get('Authorization')).toMatch(/^Bearer /);
+
+      const streamed = fetchOpts.body;
+      expect(streamed).toBeDefined();
+      const forwardedJson = JSON.parse(await new Response(streamed as BodyInit).text());
+      expect(forwardedJson).toEqual(payload);
+    });
+
     it('만료 임박 + refresh 실패 시 401, 백엔드 업스트림 fetch 없음', async () => {
-      (global.fetch as jest.Mock).mockResolvedValue(new Response(null, { status: 401 }));
+      (globalThis.fetch as jest.Mock).mockResolvedValue(new Response(null, { status: 401 }));
 
       const { cookies } = await import('next/headers');
       const mockCookies = await cookies();
@@ -266,8 +329,8 @@ describe('proxy', () => {
       expect(res.status).toBe(401);
       const json = await res.json();
       expect(json.success).toBe(false);
-      expect(global.fetch).toHaveBeenCalledTimes(1);
-      expect((global.fetch as jest.Mock).mock.calls[0][0]).toContain('/auth/refresh');
+      expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+      expect((globalThis.fetch as jest.Mock).mock.calls[0][0]).toContain('/auth/refresh');
     });
   });
 });

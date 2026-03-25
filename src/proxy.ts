@@ -177,6 +177,12 @@ export async function forwardToBackend(request: Request, path: string): Promise<
   /** 클라이언트의 Host는 백엔드 호스트와 다름 — undici가 `url` 기준으로 설정하도록 제거 */
   headers.delete('host');
   headers.set('Authorization', `Bearer ${accessToken}`);
+  /**
+   * 브라우저의 Accept-Encoding(gzip 등)을 그대로 넘기면 업스트림이 압축 응답을 보내고,
+   * Node fetch → BFF 응답 전달 시 Content-Encoding과 바디가 어긋나 브라우저에서
+   * ERR_CONTENT_DECODING_FAILED가 날 수 있음 — 백엔드 요청만 비압축으로 고정.
+   */
+  headers.set('Accept-Encoding', 'identity');
 
   /** Node.js: ReadableStream 바디 전달 시 안전한 요청 처리를 위해 요청과 응답 스트림 분리 `duplex: half` 필요 (multipart 등) */
   const upstreamInit: RequestInit & { duplex?: 'half' } = {
