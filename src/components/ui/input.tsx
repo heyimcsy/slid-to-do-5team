@@ -11,20 +11,16 @@ import { FieldDescription } from './field';
  * @param startAdornment 입력 필드 좌측(세로 중앙) — 예: 검색 아이콘(optional)
  * @param endAdornment 입력 필드 우측(세로 중앙) — 예: 비밀번호 표시 토글(optional)
  */
-interface InputProps extends React.ComponentProps<'input'> {
+export interface InputProps extends Omit<React.ComponentProps<'input'>, 'ref'> {
   errorMessage?: string;
   startAdornment?: React.ReactNode;
   endAdornment?: React.ReactNode;
 }
 
-function Input({
-  className,
-  type,
-  errorMessage,
-  startAdornment,
-  endAdornment,
-  ...props
-}: InputProps) {
+const Input = React.forwardRef<HTMLInputElement, InputProps>(function Input(
+  { className, type, errorMessage, startAdornment, endAdornment, ...props },
+  ref,
+) {
   const hasAdornment = !!(startAdornment || endAdornment);
 
   const inputClassName = cn(
@@ -46,6 +42,7 @@ function Input({
    */
   const primitiveInput = (
     <InputPrimitive
+      ref={ref}
       type={type}
       data-slot="input"
       aria-invalid={!!errorMessage}
@@ -80,6 +77,8 @@ function Input({
       )}
     </div>
   );
-}
+});
+
+Input.displayName = 'Input';
 
 export { Input };
