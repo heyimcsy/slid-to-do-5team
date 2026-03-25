@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { Icon } from '@/components/icon/Icon';
 
 import { useGetPosts } from './_api/communityQueries';
+import { extractPlainText } from './_utils/extractPlainText';
 import { FeaturedPostCard } from './_components/FeaturedPostCard';
 import { Pagination } from './_components/Pagination';
 import { PostEmptyState } from './_components/PostEmptyState';
@@ -25,7 +26,10 @@ export default function CommunityClient() {
 
   const { data, isLoading, isError, refetch } = useGetPosts(sort);
 
-  const posts: Post[] = data?.posts ?? [];
+  const posts: Post[] = useMemo(
+    () => (data?.posts ?? []).map((post) => ({ ...post, content: extractPlainText(post.content) })),
+    [data],
+  );
 
   const featuredPosts = useMemo(
     () => [...posts].sort((a, b) => b.viewCount - a.viewCount).slice(0, 3),
