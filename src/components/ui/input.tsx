@@ -57,7 +57,7 @@ function Input({
   return (
     <div className="flex flex-col">
       {hasAdornment ? (
-        <div className="relative flex w-full md:w-100">
+        <div className="relative flex w-full">
           {primitiveInput}
           {startAdornment ? (
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2 md:pl-3">
