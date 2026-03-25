@@ -49,7 +49,7 @@ export function PostDetailClient({ id }: PostDetailClientProps) {
       }
       setContentReady(true);
     }
-  }, [editor, post?.content]);
+  }, [editor, post]);
 
   if (isError) return <PostErrorFallback onRetry={refetch} />;
   if (isLoading || !contentReady) return <PostDetailSkeleton />;

@@ -8,7 +8,6 @@ import Link from 'next/link';
 import { Icon } from '@/components/icon/Icon';
 
 import { useGetPosts } from './_api/communityQueries';
-import { extractPlainText } from './_utils/extractPlainText';
 import { FeaturedPostCard } from './_components/FeaturedPostCard';
 import { Pagination } from './_components/Pagination';
 import { PostEmptyState } from './_components/PostEmptyState';
@@ -16,6 +15,7 @@ import { PostErrorFallback } from './_components/PostErrorFallback';
 import { PostListItem } from './_components/PostListItem';
 import { PostListSkeleton } from './_components/PostListSkeleton';
 import { PostSearchBar } from './_components/PostSearchBar';
+import { extractPlainText } from './_utils/extractPlainText';
 
 const POSTS_PER_PAGE = 5;
 
