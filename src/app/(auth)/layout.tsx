@@ -1,5 +1,9 @@
 import type { Metadata } from 'next';
 
+
+
+
+
 export const metadata: Metadata = {
   title: '슬리드 투두',
   description:
@@ -12,8 +16,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex h-dvh w-full items-center justify-center bg-gray-100 md:flex">
-      {children}
-    </div>
+    <div className="flex min-h-dvh w-full items-center justify-center bg-gray-100">{children}</div>
   );
 }
