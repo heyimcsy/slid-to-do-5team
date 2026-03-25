@@ -1,3 +1,4 @@
+;
 /**
  * POST /api/auth/signup (BFF)
  *
@@ -12,7 +13,13 @@ import { setAuthCookies } from '@/lib/auth/cookies';
 import { parseTokenPairFromBackendJson } from '@/lib/auth/parseTokenPairFromBackendJson';
 import { signupBodySchema, signupValidationMessage } from '@/lib/auth/schemas/signup';
 
+
+
 import { API_BASE_URL } from '@/constants/api';
+
+
+
+
 
 export async function POST(request: NextRequest) {
   let rawBody: unknown;
@@ -30,7 +37,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { email, password } = parsedBody.data;
+  const { email, name, password } = parsedBody.data;
 
   const base = API_BASE_URL?.replace(/\/$/, '') ?? '';
 
@@ -40,7 +47,7 @@ export async function POST(request: NextRequest) {
     const response = await fetch(`${base}/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, name, password }),
     });
 
     if (!response.ok) {
@@ -69,7 +76,7 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         sessionIssued: false,
-        emailVerificationRequired: true,
+        // emailVerificationRequired: true,
         message: '회원가입이 완료되었습니다. 로그인해 주세요.',
       },
       { status: 200 },
@@ -82,7 +89,7 @@ export async function POST(request: NextRequest) {
     {
       success: true,
       sessionIssued: true,
-      emailVerificationRequired: false,
+      // emailVerificationRequired: false,
       message: '회원가입이 완료되었습니다.',
     },
     { status: 201 },
