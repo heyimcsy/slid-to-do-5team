@@ -29,6 +29,7 @@ export default function ItemActionBar({
             window.location.href = `/goals/${goalId}/notes/new`;
           }
         }}
+        aria-label={noteIds.length > 0 ? '노트 열기' : '새 노트 만들기'}
         variant="icon"
         size="none"
       >
