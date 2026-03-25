@@ -11,7 +11,7 @@ import StarterKit from '@tiptap/starter-kit';
 import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { KebabMenu } from '@/components/common/KebabMenu';
 
-import { useGetPostById } from '../_api/communityQueries';
+import { useDeletePost, useGetPostById, useGetUser } from '../_api/communityQueries';
 import { PostErrorFallback } from '../_components/PostErrorFallback';
 import { WriterAvatar } from '../_components/WriterAvatar';
 import { formatDate } from '../_utils/formatDate';
@@ -19,11 +19,15 @@ import { CommentSection } from './_components/CommentSection';
 import { PostDetailSkeleton } from './_components/PostDetailSkeleton';
 
 interface PostDetailClientProps {
-  id: number;
+  postId: number;
 }
 
-export function PostDetailClient({ id }: PostDetailClientProps) {
-  const { data: post, isLoading, isError, refetch } = useGetPostById(id);
+export function PostDetailClient({ postId }: PostDetailClientProps) {
+  const { data: post, isLoading, isError, refetch } = useGetPostById(postId);
+  const { data: user } = useGetUser();
+  const { mutate: deletePost } = useDeletePost();
+  const isWriter = user?.id === post?.userId;
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [contentReady, setContentReady] = useState(false);
   const router = useRouter();
@@ -58,7 +62,7 @@ export function PostDetailClient({ id }: PostDetailClientProps) {
   const { title, viewCount, createdAt, writer, commentCount } = post;
 
   const kebabItems = [
-    { label: '수정하기', onClick: () => router.push(`/community/${id}/edit`) },
+    { label: '수정하기', onClick: () => router.push(`/community/${postId}/edit`) },
     { label: '삭제하기', onClick: () => setDeleteDialogOpen(true), variant: 'danger' as const },
   ];
 
@@ -70,7 +74,9 @@ export function PostDetailClient({ id }: PostDetailClientProps) {
         title="정말 삭제하시겠어요?"
         description="삭제된 게시물은 복구할 수 없습니다."
         onConfirm={() => {
-          // TODO: 게시물 삭제 API 연동
+          deletePost(postId, {
+            onSuccess: () => router.push('/community'),
+          });
         }}
       />
       <div className="h-full w-full overflow-y-auto bg-gray-100 px-4 py-4 md:px-8 md:py-10 lg:p-14">
@@ -79,7 +85,7 @@ export function PostDetailClient({ id }: PostDetailClientProps) {
             <div className="w-full">
               <div className="flex items-start justify-between gap-2">
                 <h1 className="font-base-semibold md:font-xl-semibold text-gray-800">{title}</h1>
-                <KebabMenu items={kebabItems} />
+                {isWriter && <KebabMenu items={kebabItems} />}
               </div>
 
               <div className="mt-6 flex items-center gap-1">
@@ -101,7 +107,7 @@ export function PostDetailClient({ id }: PostDetailClientProps) {
               </div>
             </div>
 
-            <CommentSection postId={id} commentCount={commentCount} />
+            <CommentSection postId={postId} commentCount={commentCount} />
           </div>
         </div>
       </div>

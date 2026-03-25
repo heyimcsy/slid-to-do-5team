@@ -12,5 +12,5 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
 
   if (!Number.isInteger(numId) || numId <= 0) notFound();
 
-  return <PostDetailClient id={numId} />;
+  return <PostDetailClient postId={numId} />;
 }
