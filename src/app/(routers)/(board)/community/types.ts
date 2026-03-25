@@ -8,10 +8,12 @@ export interface Writer {
 
 export interface Comment {
   id: number;
+  userId: number;
+  postId: number;
   content: string;
   createdAt: string;
+  updatedAt: string;
   writer: Writer;
-  isMyComment: boolean;
 }
 
 export interface Post {

@@ -1,47 +1,25 @@
 'use client';
 
-import type { Comment } from '../../types';
-
 import { useState } from 'react';
 
+import { useGetComments } from '../../_api/communityQueries';
 import { CommentItem } from './CommentItem';
-
-const MOCK_COMMENTS: Comment[] = [
-  {
-    id: 1,
-    content: '저도 아이젠하워 매트릭스 활용하고 있어요! 확실히 우선순위 정하기 편하더라고요.',
-    createdAt: '2025-05-22T01:00:00.000Z',
-    writer: { id: 2, name: '고길동', image: null },
-    isMyComment: false,
-  },
-  {
-    id: 2,
-    content: '저는 그냥 중요한 것부터 하는 편인데, 매트릭스 한번 써봐야겠네요!',
-    createdAt: '2025-05-22T02:00:00.000Z',
-    writer: { id: 1, name: '체다치즈', image: null },
-    isMyComment: true,
-  },
-  {
-    id: 3,
-    content: 'GTD 방식도 추천드려요. 일단 모든 할 일을 적고 나서 분류하면 머릿속이 훨씬 정리돼요.',
-    createdAt: '2025-05-22T03:00:00.000Z',
-    writer: { id: 3, name: '홍길동', image: null },
-    isMyComment: false,
-  },
-];
 
 interface CommentSectionProps {
   postId: number;
   commentCount: number;
 }
 
-// TODO: 댓글 API 연동 시 postId 사용
-export function CommentSection({ postId: _postId, commentCount }: CommentSectionProps) {
+export function CommentSection({ postId, commentCount }: CommentSectionProps) {
+  const { data } = useGetComments(postId);
   const [inputValue, setInputValue] = useState('');
+  // TODO: Auth 개발 후 현재 로그인한 유저의 ID를 가져와야 함
+  const currentUserId = 1;
+
+  const comments = data?.comments ?? [];
 
   const handleSubmit = () => {
     if (!inputValue.trim()) return;
-    // TODO: 댓글 등록 API 연동
     setInputValue('');
   };
 
@@ -81,8 +59,12 @@ export function CommentSection({ postId: _postId, commentCount }: CommentSection
       </div>
 
       <ul className="flex flex-col gap-8 md:gap-10">
-        {MOCK_COMMENTS.map((comment) => (
-          <CommentItem key={comment.id} comment={comment} />
+        {comments.map((comment) => (
+          <CommentItem
+            key={comment.id}
+            comment={comment}
+            isMyComment={comment.userId === currentUserId}
+          />
         ))}
       </ul>
     </div>

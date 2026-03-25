@@ -1,9 +1,15 @@
-import type { Post, PostsResponse, SortOption, UpdatePostInput, User } from '../types';
+import type { Comment, Post, PostsResponse, SortOption, UpdatePostInput, User } from '../types';
 
 import { apiClient } from '@/lib/apiClient';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { communityQueryKeys } from './communityQueryKeys';
+
+export interface CommentsResponse {
+  comments: Comment[];
+  nextCursor: string | null;
+  totalCount: number;
+}
 
 const toApiType = (sort: SortOption): 'all' | 'best' => (sort === '인기순' ? 'best' : 'all');
 
@@ -15,7 +21,7 @@ export const useGetUser = () => {
   });
 };
 
-// 게시물 전체 조회
+// 게시물 목록 조회
 export const useGetPosts = (sort: SortOption = '최신순') => {
   const type = toApiType(sort);
   return useQuery({
@@ -67,5 +73,15 @@ export const useDeletePost = () => {
       queryClient.removeQueries({ queryKey: communityQueryKeys.post(deletedPostId) });
       queryClient.invalidateQueries({ queryKey: [...communityQueryKeys.all, 'posts'] });
     },
+  });
+};
+
+// 댓글 목록 조회
+export const useGetComments = (postId: number) => {
+  return useQuery({
+    queryKey: communityQueryKeys.comments(postId),
+    queryFn: () => apiClient<CommentsResponse>(`/posts/${postId}/comments`),
+    staleTime: 1000 * 60 * 5,
+    enabled: Number.isInteger(postId) && postId > 0,
   });
 };
