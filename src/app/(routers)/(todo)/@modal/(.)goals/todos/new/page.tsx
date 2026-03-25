@@ -2,7 +2,10 @@
 
 import type { KeyboardEvent } from 'react';
 
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 import { ImageUploadInput } from '@/components/common/ImageUploadInput';
 import { Icon } from '@/components/icon/Icon';
@@ -17,7 +20,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,6 +45,7 @@ interface Tag {
 }
 
 export default function NewPage() {
+  const [open, setOpen] = useState(false);
   const [date, setDate] = React.useState<Date>();
   const [image, setImage] = useState<File | null>(null);
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
@@ -72,12 +82,18 @@ export default function NewPage() {
       removeTag(tags.length - 1);
     }
   };
+  const [link, setLink] = useState('');
+  const router = useRouter();
+
+  // useEffect(() => {
+  //   setOpen(true);
+  // }, []);
 
   // ✅ 공통 폼 (Dialog 전용 컴포넌트 제거)
   const formContent = (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-2 md:gap-4">
       <Field>
-        <FieldLabel className="font-base-semibold gap-1">
+        <FieldLabel className="font-sm-semi md:font-base-semibold gap-1">
           제목<span className="text-orange-600">*</span>
         </FieldLabel>
         <Input className="w-full" />
@@ -86,7 +102,7 @@ export default function NewPage() {
       {/* FieldLabel 스타일링에 ! 써도되는지? */}
 
       <Field>
-        <FieldLabel className="font-base-semibold gap-1">
+        <FieldLabel className="font-sm-semi md:font-base-semibold gap-1">
           목표<span className="text-orange-600">*</span>
         </FieldLabel>
         <DropdownMenu>
@@ -110,7 +126,7 @@ export default function NewPage() {
       </Field>
 
       <Field>
-        <FieldLabel className="font-base-semibold gap-1">
+        <FieldLabel className="font-sm-semi md:font-base-semibold gap-1">
           마감기한<span className="text-orange-600">*</span>
         </FieldLabel>
         <Popover>
@@ -119,12 +135,20 @@ export default function NewPage() {
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar mode="single" selected={date} onSelect={setDate} defaultMonth={date} />
+            <div className="flex gap-2 p-3 pt-0">
+              <Button variant="ghost" className="flex-1" onClick={() => {}}>
+                취소
+              </Button>
+              <Button className="flex-1" onClick={() => {}}>
+                확인
+              </Button>
+            </div>
           </PopoverContent>
         </Popover>
       </Field>
 
       <Field>
-        <FieldLabel className="font-base-semibold">태그</FieldLabel>
+        <FieldLabel className="font-sm-semi md:font-base-semibold">태그</FieldLabel>
         <div
           className="flex min-h-11 w-full cursor-text flex-wrap items-center gap-1.5 rounded-xl border border-gray-300 bg-white px-3 py-2 focus-within:border-orange-500 md:min-h-14 md:rounded-2xl md:px-4"
           onClick={() => inputRef.current?.focus()}
@@ -146,36 +170,65 @@ export default function NewPage() {
       </Field>
 
       <Field>
-        <FieldLabel className="font-base-semibold">링크</FieldLabel>
+        <FieldLabel className="font-sm-semi md:font-base-semibold">링크</FieldLabel>
         <div className="space-y-2">
           <Input
             type="url"
+            value={link}
             placeholder="링크를 업로드해주세요"
             className="w-full border-dashed bg-gray-50"
+            onChange={(e) => setLink(e.target.value)}
+            startAdornment={
+              <button>
+                <Icon name="linkEditor" />
+              </button>
+            }
+            endAdornment={
+              link && (
+                <button onClick={() => setLink('')}>
+                  <Icon name="close" color="gray" />
+                </button>
+              )
+            }
           />
         </div>
       </Field>
 
       <Field>
-        <FieldLabel className="font-base-semibold">이미지</FieldLabel>
+        <FieldLabel className="font-sm-semi md:font-base-semibold">이미지</FieldLabel>
         <ImageUploadInput value={image} onChange={setImage} />
       </Field>
     </div>
   );
 
+  const isMobile = useIsMobile();
+
   return (
     <>
-      {/* ✅ 모바일: Drawer */}
-      <div className="md:hidden">
-        <Drawer>
-          <DrawerTrigger>open</DrawerTrigger>
-          <DrawerContent className="px-4 pb-6">
-            <DrawerTitle>할 일 생성</DrawerTitle>
+      {isMobile ? (
+        <Drawer
+          open
+          onOpenChange={(v) => {
+            if (!v) router.back();
+          }}
+        >
+          <DrawerContent className="mb-4 p-6">
+            <DrawerHeader className="mt-0 mb-4 flex flex-row justify-between p-0">
+              <DrawerTitle className="font-xl-semibold">할 일 생성</DrawerTitle>
+              <button className="cursor-pointer border-0" onClick={() => router.back()}>
+                <Icon name="close" color="gray" />
+              </button>
+            </DrawerHeader>
 
             {formContent}
 
             <div className="mt-4 flex gap-2">
-              <Button size="lg" variant="ghost" className="flex-1">
+              <Button
+                size="lg"
+                variant="ghost"
+                className="flex-1 cursor-pointer"
+                onClick={() => router.back()}
+              >
                 취소
               </Button>
               <Button size="lg" disabled className="flex-1">
@@ -184,12 +237,9 @@ export default function NewPage() {
             </div>
           </DrawerContent>
         </Drawer>
-      </div>
-
-      {/* ✅ 데스크탑: Dialog */}
-      <div className="hidden md:block">
-        <Dialog>
-          <DialogTrigger>open</DialogTrigger>
+      ) : (
+        <Dialog open>
+          {/* <DialogTrigger>open</DialogTrigger> */}
           <DialogContent>
             <DialogHeader className="mb-8">
               <DialogTitle>할 일 생성</DialogTitle>
@@ -198,7 +248,7 @@ export default function NewPage() {
             {formContent}
 
             <DialogFooter className="mt-10 w-full">
-              <Button size="lg" variant="ghost" className="flex-1">
+              <Button size="lg" variant="ghost" className="flex-1" onClick={() => router.back()}>
                 취소
               </Button>
               <Button size="lg" variant="default" disabled className="flex-1">
@@ -207,7 +257,7 @@ export default function NewPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
+      )}
     </>
   );
 }
