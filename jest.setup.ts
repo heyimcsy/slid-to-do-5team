@@ -1,15 +1,8 @@
-;
 // 1. jest-dom 커스텀 매처
 import '@testing-library/jest-dom';
 
-
-
 // 2. Next.js 전용 모킹
 import { TextDecoder, TextEncoder } from 'util';
-
-
-
-
 
 // Route Handler 테스트용 env (constants 로드 전에 설정)
 // 앱 origin과 공격자 origin을 분리(동일하면 isAllowedOrigin이 동일 출처로 통과함)
