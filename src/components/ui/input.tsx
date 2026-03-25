@@ -21,7 +21,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(function Input(
   { className, type, errorMessage, startAdornment, endAdornment, ...props },
   ref,
 ) {
-  const hasAdornment = !!(startAdornment || endAdornment);
+  const hasAdornment = startAdornment != null || endAdornment != null;
 
   const inputClassName = cn(
     'h-11 w-full rounded-xl px-3',
