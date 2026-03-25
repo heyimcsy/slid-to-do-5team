@@ -1,9 +1,9 @@
 'use client';
 
+import type { Post } from '../types';
+
 import { useState } from 'react';
 import Link from 'next/link';
-
-import type { Post } from '../types';
 
 import { PostMeta } from './PostMeta';
 
@@ -23,7 +23,7 @@ export function PostListItem({ post }: PostListItemProps) {
       <div className="flex min-w-0 flex-1 flex-col gap-2 md:gap-[26px]">
         <div className="flex flex-col gap-1 md:gap-4">
           <p className="font-sm-semibold md:font-xl-semibold truncate text-gray-900">{title}</p>
-          <p className="font-sm-regular md:font-base-regular line-clamp-2 text-gray-700">
+          <p className="font-sm-regular md:font-base-regular line-clamp-2 whitespace-pre-line text-gray-700">
             {content}
           </p>
         </div>
