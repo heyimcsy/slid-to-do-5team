@@ -8,14 +8,21 @@ import { FieldDescription } from './field';
 
 /**
  * @param errorMessage 에러 메시지(optional)
- * @param endAdornment 입력 필드 우측(세로 중앙)에 배치할 노드 — 예: 비밀번호 표시 토글(optional)
+ * @param startAdornment 입력 필드 좌측(세로 중앙) — 예: 검색 아이콘(optional)
+ * @param endAdornment 입력 필드 우측(세로 중앙) — 예: 비밀번호 표시 토글(optional)
  */
-interface InputProps extends React.ComponentProps<'input'> {
+export interface InputProps extends Omit<React.ComponentProps<'input'>, 'ref'> {
   errorMessage?: string;
+  startAdornment?: React.ReactNode;
   endAdornment?: React.ReactNode;
 }
 
-function Input({ className, type, errorMessage, endAdornment, ...props }: InputProps) {
+const Input = React.forwardRef<HTMLInputElement, InputProps>(function Input(
+  { className, type, errorMessage, startAdornment, endAdornment, ...props },
+  ref,
+) {
+  const hasAdornment = startAdornment != null || endAdornment != null;
+
   const inputClassName = cn(
     'h-11 w-full rounded-xl px-3',
     'md:h-14 md:rounded-2xl md:px-4',
@@ -25,6 +32,7 @@ function Input({ className, type, errorMessage, endAdornment, ...props }: InputP
     'focus:border-orange-500',
     'aria-invalid:border-red-500 aria-invalid:focus:border-red-500',
     'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
+    startAdornment && 'pl-11 md:pl-12',
     endAdornment && 'pr-11 md:pr-12',
     className,
   );
@@ -34,6 +42,7 @@ function Input({ className, type, errorMessage, endAdornment, ...props }: InputP
    */
   const primitiveInput = (
     <InputPrimitive
+      ref={ref}
       type={type}
       data-slot="input"
       aria-invalid={!!errorMessage}
@@ -44,12 +53,21 @@ function Input({ className, type, errorMessage, endAdornment, ...props }: InputP
 
   return (
     <div className="flex flex-col">
-      {endAdornment ? (
-        <div className="relative flex w-full md:w-100">
+      {hasAdornment ? (
+        <div className="relative flex w-full">
           {primitiveInput}
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 md:pr-3">
-            <span className="pointer-events-auto inline-flex">{endAdornment}</span>
-          </div>
+          {startAdornment ? (
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2 md:pl-3">
+              <span aria-hidden="true" className="pointer-events-none inline-flex">
+                {startAdornment}
+              </span>
+            </div>
+          ) : null}
+          {endAdornment ? (
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 md:pr-3">
+              <span className="pointer-events-auto inline-flex">{endAdornment}</span>
+            </div>
+          ) : null}
         </div>
       ) : (
         <div>{primitiveInput}</div>
@@ -61,6 +79,8 @@ function Input({ className, type, errorMessage, endAdornment, ...props }: InputP
       )}
     </div>
   );
-}
+});
+
+Input.displayName = 'Input';
 
 export { Input };

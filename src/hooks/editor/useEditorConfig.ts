@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
+import { Placeholder } from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
 import { useEditor } from '@tiptap/react';
@@ -8,12 +9,18 @@ import StarterKit from '@tiptap/starter-kit';
 
 interface UseEditorConfigProps {
   content?: string;
-  onUpdate?: (html: string) => void;
+  onUpdate?: (json: string) => void;
   variant?: 'note' | 'post';
+  placeholder?: string;
 }
 
 // 수정 페이지에서 사용하는 에디터
-export function useEditorConfig({ content = '', onUpdate, variant }: UseEditorConfigProps = {}) {
+export function useEditorConfig({
+  content = '',
+  onUpdate,
+  variant,
+  placeholder,
+}: UseEditorConfigProps = {}) {
   // stale closure 방지를 위해 onUpdate를 ref로 관리
   const onUpdateRef = useRef(onUpdate);
   useEffect(() => {
@@ -22,7 +29,7 @@ export function useEditorConfig({ content = '', onUpdate, variant }: UseEditorCo
 
   const editor = useEditor({
     immediatelyRender: false,
-    content,
+    content: content ? JSON.parse(content) : '', // ✅ JSON 문자열이면 파싱해서 넣기
     editorProps: {
       attributes: {
         class:
@@ -39,34 +46,45 @@ export function useEditorConfig({ content = '', onUpdate, variant }: UseEditorCo
         autolink: variant !== 'post',
         linkOnPaste: variant !== 'post',
       }),
+      Placeholder.configure({
+        placeholder: placeholder,
+      }),
     ],
     onUpdate: ({ editor }) => {
-      onUpdateRef.current?.(editor.getHTML());
+      onUpdateRef.current?.(JSON.stringify(editor.getJSON())); // ✅ 문자열로 직렬화
     },
   });
 
   // 외부에서 content가 변경되면 에디터에 반영
   useEffect(() => {
-    if (!editor || editor.getHTML() === content) return;
-    editor.commands.setContent(content);
+    if (!editor || !content) return;
+    const current = JSON.stringify(editor.getJSON());
+    if (current === content) return;
+    editor.commands.setContent(JSON.parse(content));
   }, [editor, content]);
 
   return editor;
 }
-
 // 작성페이지에서 사용하는 에디터
-// initialContent: 특정 내용으로 시작할 때 사용
+
 export function useEditorWithContent({
   initialContent = '',
   variant,
+  placeholder,
 }: {
   initialContent?: string;
   variant: 'note' | 'post';
+  placeholder?: string;
 }) {
   const [inputContent] = useState(initialContent);
-  const [html, setHtml] = useState(initialContent);
+  const [json, setJson] = useState(initialContent); // html → json으로 이름 변경
 
-  const editor = useEditorConfig({ content: inputContent, onUpdate: setHtml, variant });
+  const editor = useEditorConfig({
+    content: inputContent,
+    onUpdate: setJson, // JSON 문자열이 들어옴
+    variant,
+    placeholder,
+  });
 
-  return { editor, html };
+  return { editor, json };
 }
