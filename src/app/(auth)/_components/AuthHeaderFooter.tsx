@@ -22,7 +22,6 @@ const AuthHeaderInner = (): React.ReactNode => {
         height={48}
         className="h-auto w-50"
         priority
-        loading="eager"
       />
     </header>
   );
