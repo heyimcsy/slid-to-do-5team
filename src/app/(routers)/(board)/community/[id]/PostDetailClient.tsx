@@ -1,43 +1,60 @@
 'use client';
 
-import type { Post } from '../types';
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from '@tiptap/extension-image';
+import TextAlign from '@tiptap/extension-text-align';
+import Underline from '@tiptap/extension-underline';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 
 import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { KebabMenu } from '@/components/common/KebabMenu';
 
+import { useGetPostById } from '../_api/communityQueries';
 import { formatDate } from '../_utils/formatDate';
 import { WriterAvatar } from '../_components/WriterAvatar';
 import { CommentSection } from './_components/CommentSection';
 
 interface PostDetailClientProps {
-  post: Post;
+  id: number;
 }
 
 const parseContent = (content: string) => {
   try {
     return JSON.parse(content);
   } catch {
-    return { type: 'doc', content: [] };
+    return content;
   }
 };
 
-export function PostDetailClient({ post }: PostDetailClientProps) {
-  const { id, title, content, image, viewCount, createdAt, writer, commentCount } = post;
-  const [imageError, setImageError] = useState(false);
+export function PostDetailClient({ id }: PostDetailClientProps) {
+  const { data: post, isLoading, isError } = useGetPostById(id);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const router = useRouter();
 
   const editor = useEditor({
-    extensions: [StarterKit],
-    content: parseContent(content),
+    extensions: [
+      StarterKit,
+      Underline,
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      Image,
+    ],
+    content: '',
     editable: false,
     immediatelyRender: false,
   });
+
+  useEffect(() => {
+    if (editor && post?.content) {
+      editor.commands.setContent(parseContent(post.content));
+    }
+  }, [editor, post?.content]);
+
+  if (isLoading) return null; // TODO: 스켈레톤 추가
+  if (isError || !post) return null; // TODO: 에러 컴포넌트 추가
+
+  const { title, viewCount, createdAt, writer, commentCount } = post;
 
   const kebabItems = [
     { label: '수정하기', onClick: () => router.push(`/community/${id}/edit`) },
@@ -71,20 +88,7 @@ export function PostDetailClient({ post }: PostDetailClientProps) {
 
               <hr className="mt-4 border-gray-200" />
 
-              <EditorContent editor={editor} className="mt-6" />
-
-              {image && !imageError && (
-                <div className="mt-6 flex gap-4">
-                  <div className="size-[232px] shrink-0 overflow-hidden rounded-[20px] border border-gray-200">
-                    <img
-                      src={image}
-                      alt="게시물 이미지"
-                      className="size-full object-cover"
-                      onError={() => setImageError(true)}
-                    />
-                  </div>
-                </div>
-              )}
+              <EditorContent editor={editor} className="mt-6 [&_img]:mt-4 [&_img]:w-full [&_img]:max-w-[232px] [&_img]:rounded-[20px] [&_img]:object-cover [&_img]:aspect-square" />
 
               <div className="font-xs-regular mt-4 flex gap-1 text-gray-400">
                 <span>{formatDate(createdAt)}</span>

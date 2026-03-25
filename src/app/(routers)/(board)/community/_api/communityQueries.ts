@@ -22,3 +22,12 @@ export const useGetPosts = (sort: SortOption = '최신순') => {
     staleTime: 1000 * 60 * 5,
   });
 };
+
+// 게시물 상세 조회
+export const useGetPostById = (id: number) => {
+  return useQuery({
+    queryKey: communityQueryKeys.post(id),
+    queryFn: () => apiClient<Post>(`/posts/${id}`),
+    staleTime: 1000 * 60 * 5,
+  });
+};
