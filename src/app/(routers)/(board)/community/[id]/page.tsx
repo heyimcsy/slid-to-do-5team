@@ -1,3 +1,5 @@
+import { notFound } from 'next/navigation';
+
 import { PostDetailClient } from './PostDetailClient';
 
 interface PostDetailPageProps {
@@ -6,5 +8,9 @@ interface PostDetailPageProps {
 
 export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const { id } = await params;
-  return <PostDetailClient id={Number(id)} />;
+  const numId = Number(id);
+
+  if (!Number.isInteger(numId) || numId <= 0) notFound();
+
+  return <PostDetailClient id={numId} />;
 }

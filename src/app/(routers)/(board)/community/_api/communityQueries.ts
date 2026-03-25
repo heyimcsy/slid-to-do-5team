@@ -29,5 +29,6 @@ export const useGetPostById = (id: number) => {
     queryKey: communityQueryKeys.post(id),
     queryFn: () => apiClient<Post>(`/posts/${id}`),
     staleTime: 1000 * 60 * 5,
+    enabled: Number.isInteger(id) && id > 0,
   });
 };

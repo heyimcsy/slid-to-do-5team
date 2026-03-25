@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
@@ -12,25 +12,20 @@ import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { KebabMenu } from '@/components/common/KebabMenu';
 
 import { useGetPostById } from '../_api/communityQueries';
-import { formatDate } from '../_utils/formatDate';
+import { PostErrorFallback } from '../_components/PostErrorFallback';
 import { WriterAvatar } from '../_components/WriterAvatar';
+import { formatDate } from '../_utils/formatDate';
 import { CommentSection } from './_components/CommentSection';
+import { PostDetailSkeleton } from './_components/PostDetailSkeleton';
 
 interface PostDetailClientProps {
   id: number;
 }
 
-const parseContent = (content: string) => {
-  try {
-    return JSON.parse(content);
-  } catch {
-    return content;
-  }
-};
-
 export function PostDetailClient({ id }: PostDetailClientProps) {
-  const { data: post, isLoading, isError } = useGetPostById(id);
+  const { data: post, isLoading, isError, refetch } = useGetPostById(id);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [contentReady, setContentReady] = useState(false);
   const router = useRouter();
 
   const editor = useEditor({
@@ -46,13 +41,19 @@ export function PostDetailClient({ id }: PostDetailClientProps) {
   });
 
   useEffect(() => {
-    if (editor && post?.content) {
-      editor.commands.setContent(parseContent(post.content));
+    if (editor && post) {
+      try {
+        editor.commands.setContent(JSON.parse(post.content));
+      } catch {
+        editor.commands.setContent(post.content ?? '');
+      }
+      setContentReady(true);
     }
   }, [editor, post?.content]);
 
-  if (isLoading) return null; // TODO: 스켈레톤 추가
-  if (isError || !post) return null; // TODO: 에러 컴포넌트 추가
+  if (isError) return <PostErrorFallback onRetry={refetch} />;
+  if (isLoading || !contentReady) return <PostDetailSkeleton />;
+  if (!post) return <PostErrorFallback onRetry={refetch} />;
 
   const { title, viewCount, createdAt, writer, commentCount } = post;
 
@@ -88,7 +89,10 @@ export function PostDetailClient({ id }: PostDetailClientProps) {
 
               <hr className="mt-4 border-gray-200" />
 
-              <EditorContent editor={editor} className="mt-6 [&_img]:mt-4 [&_img]:w-full [&_img]:max-w-[232px] [&_img]:rounded-[20px] [&_img]:object-cover [&_img]:aspect-square" />
+              <EditorContent
+                editor={editor}
+                className="mt-6 [&_img]:mt-4 [&_img]:aspect-square [&_img]:w-full [&_img]:max-w-[232px] [&_img]:rounded-[20px] [&_img]:object-cover"
+              />
 
               <div className="font-xs-regular mt-4 flex gap-1 text-gray-400">
                 <span>{formatDate(createdAt)}</span>
@@ -97,7 +101,7 @@ export function PostDetailClient({ id }: PostDetailClientProps) {
               </div>
             </div>
 
-            <CommentSection commentCount={commentCount} />
+            <CommentSection postId={id} commentCount={commentCount} />
           </div>
         </div>
       </div>
