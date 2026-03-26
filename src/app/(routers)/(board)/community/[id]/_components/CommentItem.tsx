@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { KebabMenu } from '@/components/common/KebabMenu';
 
+import { useDeleteComment } from '../../_api/communityQueries';
 import { WriterAvatar } from '../../_components/WriterAvatar';
 import { formatRelativeTime } from '../../_utils/formatRelativeTime';
 
@@ -18,6 +19,7 @@ interface CommentItemProps {
 export function CommentItem({ comment, isMyComment }: CommentItemProps) {
   const { content, createdAt, writer } = comment;
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const { mutate: deleteComment } = useDeleteComment(comment.postId);
 
   const kebabItems = [
     { label: '수정하기', onClick: () => {} /* TODO: 댓글 수정 API 연동 */ },
@@ -32,7 +34,7 @@ export function CommentItem({ comment, isMyComment }: CommentItemProps) {
         title="정말 삭제하시겠어요?"
         description="삭제된 댓글은 복구할 수 없습니다."
         onConfirm={() => {
-          // TODO: 댓글 삭제 API 연동
+          deleteComment(comment.id);
         }}
       />
       <div className="flex items-center justify-between">

@@ -1,15 +1,16 @@
-import type { Comment, Post, PostsResponse, SortOption, UpdatePostInput, User } from '../types';
+import type {
+  CommentsResponse,
+  Post,
+  PostsResponse,
+  SortOption,
+  UpdatePostInput,
+  User,
+} from '../types';
 
 import { apiClient } from '@/lib/apiClient';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { communityQueryKeys } from './communityQueryKeys';
-
-export interface CommentsResponse {
-  comments: Comment[];
-  nextCursor: string | null;
-  totalCount: number;
-}
 
 const toApiType = (sort: SortOption): 'all' | 'best' => (sort === '인기순' ? 'best' : 'all');
 
@@ -83,5 +84,20 @@ export const useGetComments = (postId: number) => {
     queryFn: () => apiClient<CommentsResponse>(`/posts/${postId}/comments`),
     staleTime: 1000 * 60 * 5,
     enabled: Number.isInteger(postId) && postId > 0,
+  });
+};
+
+// 댓글 삭제
+export const useDeleteComment = (postId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (commentId: number) =>
+      apiClient<void>(`/posts/${postId}/comments/${commentId}`, {
+        method: 'DELETE',
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.comments(postId) });
+    },
   });
 };

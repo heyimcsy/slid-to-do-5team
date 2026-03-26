@@ -50,3 +50,9 @@ export interface User {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface CommentsResponse {
+  comments: Comment[];
+  nextCursor: string | null;
+  totalCount: number;
+}

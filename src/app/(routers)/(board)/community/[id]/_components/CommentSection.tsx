@@ -1,22 +1,19 @@
 'use client';
 
+import type { Comment } from '../../types';
+
 import { useState } from 'react';
 
-import { useGetComments } from '../../_api/communityQueries';
 import { CommentItem } from './CommentItem';
 
 interface CommentSectionProps {
-  postId: number;
+  comments: Comment[];
+  userId: number | undefined;
   commentCount: number;
 }
 
-export function CommentSection({ postId, commentCount }: CommentSectionProps) {
-  const { data } = useGetComments(postId);
+export function CommentSection({ comments, userId, commentCount }: CommentSectionProps) {
   const [inputValue, setInputValue] = useState('');
-  // TODO: Auth 개발 후 현재 로그인한 유저의 ID를 가져와야 함
-  const currentUserId = 1;
-
-  const comments = data?.comments ?? [];
 
   const handleSubmit = () => {
     if (!inputValue.trim()) return;
@@ -60,11 +57,7 @@ export function CommentSection({ postId, commentCount }: CommentSectionProps) {
 
       <ul className="flex flex-col gap-8 md:gap-10">
         {comments.map((comment) => (
-          <CommentItem
-            key={comment.id}
-            comment={comment}
-            isMyComment={comment.userId === currentUserId}
-          />
+          <CommentItem key={comment.id} comment={comment} isMyComment={comment.userId === userId} />
         ))}
       </ul>
     </div>

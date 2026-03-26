@@ -11,7 +11,12 @@ import StarterKit from '@tiptap/starter-kit';
 import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { KebabMenu } from '@/components/common/KebabMenu';
 
-import { useDeletePost, useGetPostById, useGetUser } from '../_api/communityQueries';
+import {
+  useDeletePost,
+  useGetComments,
+  useGetPostById,
+  useGetUser,
+} from '../_api/communityQueries';
 import { PostErrorFallback } from '../_components/PostErrorFallback';
 import { WriterAvatar } from '../_components/WriterAvatar';
 import { formatDate } from '../_utils/formatDate';
@@ -23,7 +28,8 @@ interface PostDetailClientProps {
 }
 
 export function PostDetailClient({ postId }: PostDetailClientProps) {
-  const { data: post, isLoading, isError, refetch } = useGetPostById(postId);
+  const { data: post, isLoading: isPostLoading, isError, refetch } = useGetPostById(postId);
+  const { data: comments, isLoading: isCommentLoading } = useGetComments(postId);
   const { data: user } = useGetUser();
   const { mutate: deletePost } = useDeletePost();
   const isWriter = user?.id === post?.userId;
@@ -56,7 +62,7 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
   }, [editor, post]);
 
   if (isError) return <PostErrorFallback onRetry={refetch} />;
-  if (isLoading) return <PostDetailSkeleton />;
+  if (isPostLoading || isCommentLoading) return <PostDetailSkeleton />;
   if (!post) return <PostErrorFallback onRetry={refetch} />;
   if (!contentReady) return <PostDetailSkeleton />;
 
@@ -108,7 +114,11 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
               </div>
             </div>
 
-            <CommentSection postId={postId} commentCount={commentCount} />
+            <CommentSection
+              comments={comments?.comments ?? []}
+              userId={user?.id}
+              commentCount={commentCount}
+            />
           </div>
         </div>
       </div>
