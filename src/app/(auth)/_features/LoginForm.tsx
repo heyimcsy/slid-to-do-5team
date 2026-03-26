@@ -3,6 +3,8 @@
 import type { LoginBody } from '@/lib/auth/schemas/login';
 import type { User } from '@/lib/auth/schemas/user';
 
+
+
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { apiClient, ApiClientError } from '@/lib/apiClient';
@@ -47,6 +49,8 @@ function LoginFormBody() {
       });
       if (res.user) {
         authUserStore.getState().setUser(res.user);
+      } else {
+        authUserStore.getState().clearUser();
       }
       const nextPath = getSafeCallbackPath(searchParams.get('callbackUrl')) ?? '/';
       router.refresh();

@@ -47,6 +47,8 @@ function SignupFormBody() {
       if (res.sessionIssued) {
         if (res.user) {
           authUserStore.getState().setUser(res.user);
+        } else {
+          authUserStore.getState().clearUser();
         }
         router.refresh();
         router.push('/');
