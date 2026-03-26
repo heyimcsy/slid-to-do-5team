@@ -1,3 +1,4 @@
+import type { PaginatedResponse } from '@/api/response';
 import type { QueryClient } from '@tanstack/react-query';
 
 import { apiClient } from '@/lib/apiClient.browser';
@@ -7,8 +8,8 @@ interface TODO {
   id: number;
   title: string;
   done: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 // base 타입 하나만 정의
 export interface Goal {
@@ -18,16 +19,9 @@ export interface Goal {
   title: string;
   completedCount: number;
   todoCount: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   todos: TODO[];
-}
-
-// GET 목록 응답 - 제네릭 공통 래퍼로
-export interface PaginatedResponse<T> {
-  goals: T[];
-  nextCursor: number | null;
-  totalCount: number;
 }
 
 // POST 응답 - Goal에서 필요한 것만 Pick

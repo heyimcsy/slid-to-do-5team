@@ -1,4 +1,5 @@
 import type { Goal } from '@/api/goals';
+import type { PaginatedResponse } from '@/api/response';
 
 import { apiClient } from '@/lib/apiClient.browser';
 import { useQuery } from '@tanstack/react-query';
@@ -17,20 +18,13 @@ export interface Todo {
   done: boolean;
   fileUrl: string | null;
   linkUrl: string | null;
-  dueDate: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  dueDate: string;
+  createdAt: string;
+  updatedAt: string;
   goal: Pick<Goal, 'id' | 'title'>;
   noteIds: number[];
   tags: Tag[];
 }
-
-export type PaginatedResponse<T, K extends string = 'todos'> = {
-  [key in K]: T[];
-} & {
-  nextCursor: number | null;
-  totalCount: number;
-};
 
 const TODOS = 'todos';
 // const TODO = 'todo';
@@ -48,7 +42,7 @@ export interface Favorite {
   teamId: string;
   userId: number;
   todoId: number;
-  createdAt: Date;
+  createdAt: string;
   todo: Pick<Todo, 'id' | 'title' | 'done' | 'goal'>;
 }
 
@@ -56,7 +50,7 @@ export interface Favorite {
 export type TodoWithFavorites = Todo & { favorites: boolean };
 
 // useGetTodos 반환 response 타입
-export type TodosWithFavoriteResponse = PaginatedResponse<TodoWithFavorites>;
+export type TodosWithFavoriteResponse = PaginatedResponse<TodoWithFavorites, 'todos'>;
 
 export const useGetTodos = ({ goalId, done, limit, cursor }: GetTodosParams) => {
   return useQuery({
@@ -73,7 +67,7 @@ export const useGetTodos = ({ goalId, done, limit, cursor }: GetTodosParams) => 
 
       // 두 개 병렬 요청
       const [todosData, favoritesData] = await Promise.all([
-        apiClient<PaginatedResponse<Todo>>(url),
+        apiClient<PaginatedResponse<Todo, 'todos'>>(url),
         apiClient<PaginatedResponse<Favorite, 'favorites'>>(`${TODOS_URL}/favorites`),
       ]);
 
