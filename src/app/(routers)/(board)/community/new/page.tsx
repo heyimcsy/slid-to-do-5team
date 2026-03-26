@@ -1,3 +1,5 @@
+import { PostCreateClient } from './PostCreateClient';
+
 export default function NewPage() {
-  return <div>NewPage</div>;
+  return <PostCreateClient />;
 }
