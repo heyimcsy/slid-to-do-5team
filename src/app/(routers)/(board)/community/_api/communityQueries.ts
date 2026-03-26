@@ -47,7 +47,7 @@ export const useUpdatePost = (postId: number) => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: communityQueryKeys.post(postId) });
-      queryClient.invalidateQueries({ queryKey: communityQueryKeys.posts() });
+      queryClient.invalidateQueries({ queryKey: [...communityQueryKeys.all, 'posts'] });
     },
   });
 
@@ -63,8 +63,9 @@ export const useDeletePost = () => {
       apiClient<void>(`/posts/${postId}`, {
         method: 'DELETE',
       }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: communityQueryKeys.posts() });
+    onSuccess: (_data, deletedPostId) => {
+      queryClient.removeQueries({ queryKey: communityQueryKeys.post(deletedPostId) });
+      queryClient.invalidateQueries({ queryKey: [...communityQueryKeys.all, 'posts'] });
     },
   });
 };

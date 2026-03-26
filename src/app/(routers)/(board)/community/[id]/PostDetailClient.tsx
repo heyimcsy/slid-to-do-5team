@@ -56,8 +56,9 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
   }, [editor, post]);
 
   if (isError) return <PostErrorFallback onRetry={refetch} />;
-  if (isLoading || !contentReady) return <PostDetailSkeleton />;
+  if (isLoading) return <PostDetailSkeleton />;
   if (!post) return <PostErrorFallback onRetry={refetch} />;
+  if (!contentReady) return <PostDetailSkeleton />;
 
   const { title, viewCount, createdAt, writer, commentCount } = post;
 
