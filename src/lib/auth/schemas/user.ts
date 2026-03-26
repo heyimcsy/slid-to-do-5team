@@ -1,6 +1,12 @@
 import { z } from 'zod';
 
+
+
 import { AUTH_CONFIG } from '@/constants/auth-config';
+
+
+
+
 
 /**
  * 앱 전역에서 쓰는 사용자 모델 (camelCase). 비밀번호 등 민감 필드는 포함하지 않는다.
@@ -18,7 +24,11 @@ export const userSchema = z.object({
     .min(1, { message: '이름이 비어있습니다.' })
     .max(20, { message: '이름이 너무 깁니다.' }),
   image: z.string().nullable().optional(),
-  teamId: z.coerce.string().optional(),
+  teamId: z
+    .union([z.string(), z.number()])
+    .transform(String)
+    .pipe(z.string().trim().min(1))
+    .optional(),
   createdAt: z.iso.datetime().optional(),
   updatedAt: z.iso.datetime().optional(),
 });
