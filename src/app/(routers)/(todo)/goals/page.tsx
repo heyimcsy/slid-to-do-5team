@@ -18,7 +18,11 @@ export default function Page() {
     onSuccess: (data: GoalResponse) => alert(`Goal ${data.title} 셍성 완료`),
   });
   const { mutate: patchGoals } = usePatchGoals();
-  const { mutate: deleteGoals } = useDeleteGoals();
+  const { mutate: deleteGoals } = useDeleteGoals({
+    onSuccess: () => {
+      alert(`Goal 삭제 완료`);
+    },
+  });
 
   return (
     <div className="h-full w-fit space-y-2 bg-white p-4">
