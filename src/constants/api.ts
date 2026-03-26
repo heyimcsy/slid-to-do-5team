@@ -26,3 +26,6 @@ export const ALLOWED_ORIGINS = (() => {
   }
   return origins;
 })();
+
+/** API 호출 타임아웃 시간 (10초 = 10_000ms) */
+export const API_TIMEOUT_MS = 10_000 as const;

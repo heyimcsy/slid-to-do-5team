@@ -1,6 +1,8 @@
-import type { TodoListProps, TodoSectionProps } from '@/app/(routers)/(todo)/goals/types';
+import type { TodoWithFavorites } from '@/api/todos';
+import type { TodoSectionProps } from '@/app/(routers)/(todo)/goals/types';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import TodoList from '@/app/(routers)/(todo)/goals/[goalId]/_components/TodoList';
 import { cn } from '@/lib';
 
@@ -8,6 +10,7 @@ import { Icon } from '@/components/icon/Icon';
 import { IconButton } from '@/components/ui/button';
 
 export function TodoSection({
+  goalId,
   title,
   todos,
   bgColor,
@@ -21,14 +24,18 @@ export function TodoSection({
         <h3 className="font-base-semibold text-gray-800">{title}</h3>
         {showActions && (
           <div className="flex space-x-2">
-            <IconButton variant="ghost" className="h-10">
-              <Icon name="schedule" size={20} />
-              <span>캘린더 보기</span>
-            </IconButton>
-            <IconButton variant="default" className="h-10">
-              <Icon name="plus" />
-              <span>할 일 추가</span>
-            </IconButton>
+            <Link className="h-fit w-fit" href="/calendar">
+              <IconButton variant="ghost" className="h-10">
+                <Icon name="schedule" size={20} />
+                <span>캘린더 보기</span>
+              </IconButton>
+            </Link>
+            <Link className="h-fit w-fit" href="/goals/todos/new">
+              <IconButton variant="default" className="h-10">
+                <Icon name="plus" />
+                <span>할 일 추가</span>
+              </IconButton>
+            </Link>
           </div>
         )}
       </div>
@@ -40,7 +47,18 @@ export function TodoSection({
           )}
         >
           {todos.length > 0 ? (
-            todos.map((todo: TodoListProps) => <TodoList key={todo.id} {...todo} />)
+            todos.map((todo: TodoWithFavorites) => (
+              <TodoList
+                key={todo.id}
+                goalId={goalId}
+                id={todo.id}
+                done={todo.done}
+                title={todo.title}
+                noteIds={todo.noteIds}
+                linkUrl={todo.linkUrl}
+                favorites={todo.favorites}
+              />
+            ))
           ) : (
             <div className="flex flex-col items-center space-y-2.5">
               <Image

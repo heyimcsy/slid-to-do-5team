@@ -6,8 +6,15 @@ import { cn } from '@/lib';
 
 import { Icon } from '@/components/icon/Icon';
 
-export default function TodoList({ id, content, done, link, noteIds, favorites }: TodoListProps) {
-  const goalId = 1;
+export default function TodoList({
+  goalId,
+  id,
+  done,
+  title,
+  noteIds,
+  linkUrl,
+  favorites,
+}: TodoListProps) {
   return (
     <div
       className={cn(
@@ -28,11 +35,11 @@ export default function TodoList({ id, content, done, link, noteIds, favorites }
               'hover:font-sm-semibold hover:md:font-base-semibold hover:lg:font-lg-semibold hover:truncate hover:text-orange-500',
             )}
           >
-            {content}
+            {title}
           </p>
         </Link>
       </div>
-      <ItemActionBar noteIds={noteIds} link={link} favorites={favorites} />
+      <ItemActionBar goalId={goalId} noteIds={noteIds} linkUrl={linkUrl} favorites={favorites} />
     </div>
   );
 }

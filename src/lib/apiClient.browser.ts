@@ -1,5 +1,7 @@
 import { createApiClient } from '@/lib/apiClient.core';
 import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
+import { buildLoginRedirectUrlAfterUnauthorized } from '@/lib/navigation/loginRedirectOnUnauthorized';
+import { authUserStore } from '@/stores/authUserStore';
 
 import { AUTH_CONFIG, isAuthRouteGuardEnabled } from '@/constants/auth-config';
 
@@ -40,7 +42,8 @@ const browser = createApiClient({
   refreshTokens: refreshTokensBrowser,
   onUnauthorized: () => {
     if (typeof window !== 'undefined' && isAuthRouteGuardEnabled()) {
-      window.location.href = '/login';
+      authUserStore.getState().clearUser();
+      window.location.href = buildLoginRedirectUrlAfterUnauthorized(window.location);
     }
   },
   shouldRunGlobalInterceptors: () => typeof window !== 'undefined',

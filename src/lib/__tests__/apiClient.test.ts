@@ -1,4 +1,12 @@
-import { ApiClientError, prepareApiClientBody } from '@/lib/apiClient';
+/**
+ * apiClient 레이어 점검
+ *
+ * - `@/lib/apiClient` (바렐): `createApiClient`·타입·`prepareApiClientBody` + **브라우저 인스턴스** `apiClient` / `use*`
+ *   → Client Component·브라우저에서 쓰는 기본 경로 (서버 전용 코드 없음).
+ * - `@/lib/apiClient.server`: `apiClientServer` — Route Handler / RSC 등 **서버만** (`import 'server-only'`).
+ * - 팩토리 단위 동작은 `createApiClient` + 최소 deps로 검증.
+ */
+import { apiClient, ApiClientError, createApiClient, prepareApiClientBody } from '@/lib/apiClient';
 
 describe('prepareApiClientBody', () => {
   it('객체 → JSON 문자열 + application/json 플래그', () => {
@@ -45,5 +53,27 @@ describe('ApiClientError', () => {
     const err = new ApiClientError(500, undefined, 'Server Error');
     expect(err.code).toBeUndefined();
     expect(err.status).toBe(500);
+  });
+});
+
+describe('createApiClient — 서버형 인스턴스(allowGlobalInterceptorRegistration: false)', () => {
+  it('use* 등록 시 즉시 throw — 서버 인스턴스는 전역 인터셉터 미지원', () => {
+    const serverLike = createApiClient({
+      resolveUrl: (endpoint) => `https://jsonplaceholder.typicode.com${endpoint}`,
+      credentials: 'omit',
+      refreshTokens: async () => false,
+      shouldRunGlobalInterceptors: () => false,
+      allowGlobalInterceptorRegistration: false,
+    });
+
+    expect(() => serverLike.useRequestInterceptor((i) => i)).toThrow(/클라이언트 전용/);
+    expect(() => serverLike.useResponseInterceptor((_r, d) => d)).toThrow(/클라이언트 전용/);
+    expect(() => serverLike.useErrorInterceptor(() => {})).toThrow(/클라이언트 전용/);
+  });
+});
+
+describe('바렐 export — Client Component와 동일 진입점', () => {
+  it('apiClient는 함수(브라우저 인스턴스의 request)', () => {
+    expect(typeof apiClient).toBe('function');
   });
 });

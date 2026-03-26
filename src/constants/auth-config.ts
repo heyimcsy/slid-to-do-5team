@@ -15,6 +15,19 @@ export const AUTH_CONFIG = {
   ACCESS_TOKEN_JSON_ALTERNATE: 'accessToken',
   REFRESH_TOKEN_JSON_ALTERNATE: 'refreshToken',
 
+  /** login/refresh JSON 루트의 사용자 객체 키 (스네이크·camel 대체) */
+  USER_OBJECT_KEY: 'user',
+  USER_OBJECT_JSON_ALTERNATE: 'User',
+
+  /** 사용자 객체 내부 필드 — 백엔드 스네이크 우선, camel 대체 (`user.ts` 정규화와 동기화) */
+  USER_FIELD_ID: 'id',
+  USER_FIELD_ID_ALTERNATE: 'user_id',
+  USER_FIELD_EMAIL: 'email',
+  USER_FIELD_NAME: 'name',
+  USER_FIELD_IMAGE: 'image',
+  USER_FIELD_AVATAR_URL: 'avatar_url',
+  USER_FIELD_AVATAR_URL_ALTERNATE: 'avatarUrl',
+
   // 쿠키 만료 시간 (초 단위)
   ACCESS_TOKEN_MAX_AGE: 30 * 60, // 30분
   REFRESH_TOKEN_MAX_AGE: 7 * 24 * 60 * 60, // 7일
