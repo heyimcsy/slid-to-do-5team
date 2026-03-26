@@ -6,16 +6,20 @@ import { Icon } from '@/components/icon/Icon';
 import { Button } from '@/components/ui/button';
 
 export default function ItemActionBar({
+  goalId,
   noteIds,
-  link,
+  linkUrl,
   favorites,
 }: {
+  goalId: number;
   noteIds: number[];
-  link: string | null;
+  linkUrl: string | null;
   favorites: boolean;
 }) {
-  const goalId = 1;
   const router = useRouter();
+  const handleCopyLink = async (linkUrl: string) => {
+    await navigator.clipboard.writeText(linkUrl);
+  };
   return (
     <div className="flex h-fit shrink-0 space-x-[6px] lg:space-x-2">
       <Button
@@ -24,7 +28,6 @@ export default function ItemActionBar({
           if (noteIds.length > 0) {
             router.push(`/goals/${goalId}/notes/${noteIds[0]}`);
           } else {
-            // router.push(`/goals/${goalId}/notes/new`);
             //TODO :이게 맞누 ㅜ
             window.location.href = `/goals/${goalId}/notes/new`;
           }
@@ -35,7 +38,17 @@ export default function ItemActionBar({
       >
         <Icon name="note" variant="orange" />
       </Button>
-      {link && <Icon name="link" variant="orange" />}
+      {linkUrl && (
+        <Button
+          variant="icon"
+          size="none"
+          onClick={() => {
+            linkUrl && handleCopyLink(linkUrl);
+          }}
+        >
+          <Icon name="link" variant="orange" />
+        </Button>
+      )}
       <div className="hidden h-fit shrink-1 space-x-[6px] group-hover:flex lg:space-x-2">
         <Button
           onClick={(e) => {

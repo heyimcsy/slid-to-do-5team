@@ -1,14 +1,22 @@
+import type { TodoWithFavorites } from '@/api/todos';
+
+export interface TotalListTabProps {
+  goalId: number;
+}
+
 export interface TodoListProps {
+  goalId: number;
   id: number;
-  content: string;
   done: boolean;
-  link: string | null;
+  title: string;
   noteIds: number[];
+  linkUrl: string | null;
   favorites: boolean;
 }
 export interface TodoSectionProps {
+  goalId: number;
   title: string;
-  todos: TodoListProps[];
+  todos: TodoWithFavorites[];
   bgColor: string;
   emptyImage: string;
   emptyText: string;

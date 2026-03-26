@@ -11,7 +11,7 @@ interface TODO {
   updatedAt: Date;
 }
 // base 타입 하나만 정의
-interface Goal {
+export interface Goal {
   id: number;
   teamId: string;
   userId: number;
@@ -118,7 +118,7 @@ export const usePostGoals = (options: { onSuccess?: (response: GoalResponse) => 
   });
 };
 
-export const useDeleteGoals = () => {
+export const useDeleteGoals = (options: { onSuccess?: (response: GoalResponse) => void }) => {
   const queryClient: QueryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: DeleteGoalPayload) => {
@@ -127,9 +127,10 @@ export const useDeleteGoals = () => {
       });
       return data;
     },
-
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [GOALS] });
+    ...options,
+    onSuccess: (data: GoalResponse, payload) => {
+      queryClient.invalidateQueries({ queryKey: [GOALS, payload.id] });
+      options?.onSuccess?.(data);
     },
   });
 };
@@ -144,8 +145,9 @@ export const usePatchGoals = () => {
       });
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_, payload) => {
       queryClient.invalidateQueries({ queryKey: [GOALS] });
+      queryClient.invalidateQueries({ queryKey: [GOAL, payload.id] });
     },
   });
 };
