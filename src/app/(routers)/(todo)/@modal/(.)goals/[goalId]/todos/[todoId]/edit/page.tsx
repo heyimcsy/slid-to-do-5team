@@ -2,8 +2,7 @@
 
 import type { KeyboardEvent } from 'react';
 
-import React, { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
+import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDate } from '@/app/(routers)/(board)/community/_utils/formatDate';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -20,15 +19,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,36 +33,84 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 
 const COLORS = ['gray', 'green', 'yellow', 'red', 'purple'] as const;
 type TagColor = (typeof COLORS)[number];
+
 interface Tag {
   name: string;
   color: TagColor;
 }
 
-export default function NewPage() {
-  // 마감기한 날짜 관리 state
-  const [date, setDate] = React.useState<Date>();
-  const [tempDate, setTempDate] = React.useState<Date | undefined>(undefined);
-  const [open, setOpen] = React.useState(false);
-  const [image, setImage] = React.useState<File | null>(null);
+export interface Todo {
+  id: number;
+  teamId: string;
+  userId: number;
+  goalId: number;
+  title: string;
+  done: boolean;
+  fileUrl: string | null;
+  linkUrl: string | null;
+  dueDate: string;
+  createdAt: string;
+  updatedAt: string;
+  goal: { id: number; title: string };
+  noteIds: number[];
+  tags: { id: number; name: string }[];
+}
 
-  // 목표탭 상태 관리 state
-  const [selectedGoal, setSelectedGoal] = React.useState<string | null>(null);
+export const mockTodo: Todo = {
+  id: 827,
+  teamId: 'silk-steel-dev',
+  userId: 2225,
+  goalId: 379,
+  title: 'React Hook Form 적용해보기',
+  done: false,
+  fileUrl: null,
+  linkUrl: 'https://www.react-hook-form.com/',
+  dueDate: '2026-02-20T00:00:00.000Z',
+  createdAt: '2026-03-25T09:54:13.143Z',
+  updatedAt: '2026-03-25T09:54:13.143Z',
+  goal: { id: 379, title: '프로젝트 완성' },
+  noteIds: [],
+  tags: [
+    { id: 7, name: '폼관리' },
+    { id: 8, name: '유효성검사' },
+  ],
+};
 
-  const [tags, setTags] = useState<Tag[]>([]);
+// 컴포넌트 밖에서 초기 태그 계산
+const initialTags: Tag[] = mockTodo.tags.map((tag, index) => ({
+  name: tag.name,
+  color: COLORS[index % COLORS.length],
+}));
+
+export default function EditPage() {
+  const router = useRouter();
+  const isMobile = useIsMobile();
+
+  // 1. 모든 useState 먼저 선언
+  const [status, setStatus] = useState<'TODO' | 'DONE'>(mockTodo.done ? 'DONE' : 'TODO');
+  const [date, setDate] = useState<Date>(new Date(mockTodo.dueDate));
+  const [tempDate, setTempDate] = useState<Date | undefined>(new Date(mockTodo.dueDate));
+  const [open, setOpen] = useState(false);
+  const [image, setImage] = useState<File | null>(null);
+  const [selectedGoal, setSelectedGoal] = useState<string | null>(mockTodo.goal.title);
+  const [link, setLink] = useState(mockTodo.linkUrl ?? '');
+  const [tags, setTags] = useState<Tag[]>(initialTags);
   const [tagInput, setTagInput] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-  const colorIndexRef = useRef(0);
 
+  // 2. 모든 useRef 선언
+  const inputRef = useRef<HTMLInputElement>(null);
+  const colorIndexRef = useRef(initialTags.length); // 기존 태그 이후부터 색상 시작
+
+  // 3. useForm 선언
   const {
     register,
     formState: { errors, isValid: titleValid },
   } = useForm({
-    // 입력할 때마다 실시간으로 유효성 검증 실행
     mode: 'onChange',
-    // 초기값을 빈 문자열로 설정해서 처음부터 controlled 컴포넌트로 인식하게 함
-    defaultValues: { title: '' },
+    defaultValues: { title: mockTodo.title },
   });
 
+  // 4. 함수 선언
   const getNextColor = (): TagColor => {
     const color = COLORS[colorIndexRef.current % COLORS.length];
     colorIndexRef.current += 1;
@@ -98,33 +138,47 @@ export default function NewPage() {
       removeTag(tags.length - 1);
     }
   };
-  const [link, setLink] = useState('');
-  const router = useRouter();
 
-  // 유효성 체크 변수
+  // 5. 유효성 체크
   const isValid = titleValid && selectedGoal !== null && date !== undefined;
 
-  // ✅ 공통 폼 (Dialog 전용 컴포넌트 제거)
+  // 6. JSX
   const formContent = (
     <form>
       <div className="flex flex-col gap-2 md:gap-4">
         <Field>
           <FieldLabel className="font-sm-semi md:font-base-semibold gap-1">
+            상태<span className="text-orange-600">*</span>
+          </FieldLabel>
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              className="flex cursor-pointer items-center gap-2"
+              onClick={() => setStatus('TODO')}
+            >
+              <Icon name="checkBoxD" checked={status === 'TODO'} size={24} />
+              <span className="text-sm">TO DO</span>
+            </button>
+            <button
+              type="button"
+              className="flex cursor-pointer items-center gap-2"
+              onClick={() => setStatus('DONE')}
+            >
+              <Icon name="checkBoxD" checked={status === 'DONE'} size={24} />
+              <span className="text-sm">DONE</span>
+            </button>
+          </div>
+        </Field>
+
+        <Field>
+          <FieldLabel className="font-sm-semi md:font-base-semibold gap-1">
             제목<span className="text-orange-600">*</span>
           </FieldLabel>
-          <Input
-            className="w-full"
-            {...register('title', {
-              required: true,
-              maxLength: 50,
-            })}
-          />
+          <Input className="w-full" {...register('title', { required: true, maxLength: 50 })} />
           {errors.title?.type === 'maxLength' && (
             <p className="font-sm-medium text-red-500">제목은 50자 이내로 입력해주세요</p>
           )}
         </Field>
-
-        {/* FieldLabel 스타일링에 ! 써도되는지? */}
 
         <Field>
           <FieldLabel className="font-sm-semi md:font-base-semibold gap-1">
@@ -142,9 +196,7 @@ export default function NewPage() {
             >
               <DropdownMenuItem
                 className="p-2 focus:bg-orange-200"
-                onClick={() => {
-                  setSelectedGoal('자바스크립트로 웹 서비스 만들기');
-                }}
+                onClick={() => setSelectedGoal('자바스크립트로 웹 서비스 만들기')}
               >
                 자바스크립트로 웹 서비스 만들기
               </DropdownMenuItem>
@@ -170,25 +222,17 @@ export default function NewPage() {
               <Calendar
                 mode="single"
                 selected={tempDate}
-                onSelect={(date) => {
-                  setTempDate(date);
-                }}
+                onSelect={(d) => setTempDate(d)}
                 defaultMonth={date}
               />
               <div className="flex gap-2 p-3 pt-0">
-                <Button
-                  variant="ghost"
-                  className="flex-1"
-                  onClick={() => {
-                    setOpen(false);
-                  }}
-                >
+                <Button variant="ghost" className="flex-1" onClick={() => setOpen(false)}>
                   취소
                 </Button>
                 <Button
                   className="flex-1"
                   onClick={() => {
-                    setDate(tempDate);
+                    if (tempDate) setDate(tempDate);
                     setOpen(false);
                   }}
                 >
@@ -223,39 +267,35 @@ export default function NewPage() {
 
         <Field>
           <FieldLabel className="font-sm-semi md:font-base-semibold">링크</FieldLabel>
-          <div className="space-y-2">
-            <Input
-              type="url"
-              value={link}
-              placeholder="링크를 업로드해주세요"
-              className="w-full border-dashed bg-gray-50"
-              onChange={(e) => setLink(e.target.value)}
-              startAdornment={
-                <button>
-                  <Icon name="linkEditor" />
+          <Input
+            type="url"
+            value={link}
+            placeholder="링크를 업로드해주세요"
+            className="w-full border-dashed bg-gray-50"
+            onChange={(e) => setLink(e.target.value)}
+            startAdornment={
+              <button>
+                <Icon name="linkEditor" />
+              </button>
+            }
+            endAdornment={
+              link && (
+                <button onClick={() => setLink('')}>
+                  <Icon name="close" color="gray" />
                 </button>
-              }
-              endAdornment={
-                link && (
-                  <button onClick={() => setLink('')}>
-                    <Icon name="close" color="gray" />
-                  </button>
-                )
-              }
-            />
-          </div>
+              )
+            }
+          />
         </Field>
 
         <Field>
           <FieldLabel className="font-sm-semi md:font-base-semibold">이미지</FieldLabel>
           <ImageUploadInput value={image} onChange={setImage} />
-          <p className="font-sm-medium text-gray-400">이미지는 최대 1개만 첨바를수 있습니다</p>
+          <p className="font-sm-medium text-gray-400">이미지는 최대 1개만 첨부할 수 있습니다</p>
         </Field>
       </div>
     </form>
   );
-
-  const isMobile = useIsMobile();
 
   return (
     <>
@@ -268,14 +308,12 @@ export default function NewPage() {
         >
           <DrawerContent className="mb-4 p-6">
             <DrawerHeader className="mt-0 mb-4 flex flex-row justify-between p-0">
-              <DrawerTitle className="font-xl-semibold">할 일 생성</DrawerTitle>
+              <DrawerTitle className="font-xl-semibold">할 일 수정</DrawerTitle>
               <button className="cursor-pointer border-0" onClick={() => router.back()}>
                 <Icon name="close" color="gray" />
               </button>
             </DrawerHeader>
-
             {formContent}
-
             <div className="mt-4 flex gap-2">
               <Button
                 size="lg"
@@ -285,28 +323,25 @@ export default function NewPage() {
               >
                 취소
               </Button>
-              <Button size="lg" disabled className="flex-1">
-                확인
+              <Button size="lg" disabled={!isValid} className="flex-1">
+                수정하기
               </Button>
             </div>
           </DrawerContent>
         </Drawer>
       ) : (
         <Dialog open>
-          {/* <DialogTrigger>open</DialogTrigger> */}
           <DialogContent>
             <DialogHeader className="mb-8">
-              <DialogTitle>할 일 생성</DialogTitle>
+              <DialogTitle>할 일 수정</DialogTitle>
             </DialogHeader>
-
             {formContent}
-
             <DialogFooter className="mt-10 w-full">
               <Button size="lg" variant="ghost" className="flex-1" onClick={() => router.back()}>
                 취소
               </Button>
               <Button size="lg" variant="default" disabled={!isValid} className="flex-1">
-                확인
+                수정하기
               </Button>
             </DialogFooter>
           </DialogContent>
