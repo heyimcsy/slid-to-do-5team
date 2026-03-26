@@ -129,8 +129,9 @@ export const useDeleteGoals = (options: { onSuccess?: () => void }) => {
     },
     ...options,
     onSuccess: (_, payload) => {
+      const id = payload.id;
       queryClient.invalidateQueries({ queryKey: [GOALS] });
-      queryClient.invalidateQueries({ queryKey: [GOAL, payload.id] });
+      queryClient.invalidateQueries({ queryKey: [GOAL, id] });
       options?.onSuccess?.();
     },
   });
@@ -147,8 +148,9 @@ export const usePatchGoals = () => {
       return data;
     },
     onSuccess: (_, payload) => {
+      const id = payload.id;
       queryClient.invalidateQueries({ queryKey: [GOALS] });
-      queryClient.invalidateQueries({ queryKey: [GOAL, payload.id] });
+      queryClient.invalidateQueries({ queryKey: [GOAL, id] });
     },
   });
 };
