@@ -27,17 +27,23 @@ function loginRequest(body: unknown): NextRequest {
 }
 
 describe('POST /api/auth/login', () => {
-  const originalFetch = global.fetch;
+  const originalFetch = globalThis.fetch;
+  const originalApiUrl = process.env.API_URL;
+  const originalTeamId = process.env.TEAM_ID;
 
   beforeEach(() => {
-    global.fetch = jest.fn();
+    globalThis.fetch = jest.fn();
     mockSetAuthCookies.mockClear();
     process.env.API_URL = API_URL || '';
     process.env.TEAM_ID = TEAM_ID || '';
   });
 
   afterEach(() => {
-    global.fetch = originalFetch;
+    globalThis.fetch = originalFetch;
+    if (originalApiUrl === undefined) delete process.env.API_URL;
+    else process.env.API_URL = originalApiUrl;
+    if (originalTeamId === undefined) delete process.env.TEAM_ID;
+    else process.env.TEAM_ID = originalTeamId;
   });
 
   it('본문이 유효한 JSON이 아니면 400', async () => {
@@ -59,7 +65,7 @@ describe('POST /api/auth/login', () => {
   });
 
   it('백엔드 401 + Invalid email or password → 메시지 매핑', async () => {
-    (global.fetch as jest.Mock).mockResolvedValue(
+    (globalThis.fetch as jest.Mock).mockResolvedValue(
       new Response(JSON.stringify({ message: LOGIN_BACKEND_INVALID_CREDENTIALS_MESSAGE }), {
         status: 401,
       }),
@@ -75,7 +81,7 @@ describe('POST /api/auth/login', () => {
   });
 
   it('백엔드 !ok + 알 수 없는 메시지 → 그대로 전달', async () => {
-    (global.fetch as jest.Mock).mockResolvedValue(
+    (globalThis.fetch as jest.Mock).mockResolvedValue(
       new Response(JSON.stringify({ message: 'Custom error' }), { status: 403 }),
     );
 
@@ -87,7 +93,7 @@ describe('POST /api/auth/login', () => {
   });
 
   it('백엔드 !ok + JSON 파싱 실패 → 기본 로그인 실패 메시지', async () => {
-    (global.fetch as jest.Mock).mockResolvedValue(new Response('plain', { status: 500 }));
+    (globalThis.fetch as jest.Mock).mockResolvedValue(new Response('plain', { status: 500 }));
 
     const req = loginRequest({ email: 'a@b.com', password: 'password12' });
     const res = await POST(req);
@@ -97,7 +103,7 @@ describe('POST /api/auth/login', () => {
   });
 
   it('백엔드 200 + 토큰 쌍 → 200, setAuthCookies 호출', async () => {
-    (global.fetch as jest.Mock).mockResolvedValue(
+    (globalThis.fetch as jest.Mock).mockResolvedValue(
       new Response(
         JSON.stringify({
           [AUTH_CONFIG.ACCESS_TOKEN_KEY]: 'access',
@@ -113,7 +119,7 @@ describe('POST /api/auth/login', () => {
     const json = await res.json();
     expect(json.success).toBe(true);
     expect(mockSetAuthCookies).toHaveBeenCalledWith('access', 'refresh');
-    expect(global.fetch).toHaveBeenCalledWith(
+    expect(globalThis.fetch).toHaveBeenCalledWith(
       expect.stringContaining('/auth/login'),
       expect.objectContaining({
         method: 'POST',
@@ -123,7 +129,7 @@ describe('POST /api/auth/login', () => {
   });
 
   it('백엔드 200 + user 포함 → 응답에 user 포함', async () => {
-    (global.fetch as jest.Mock).mockResolvedValue(
+    (globalThis.fetch as jest.Mock).mockResolvedValue(
       new Response(
         JSON.stringify({
           [AUTH_CONFIG.ACCESS_TOKEN_KEY]: 'access',
@@ -143,7 +149,7 @@ describe('POST /api/auth/login', () => {
   });
 
   it('백엔드 200인데 토큰 쌍 없음 → 502 계약 위반', async () => {
-    (global.fetch as jest.Mock).mockResolvedValue(
+    (globalThis.fetch as jest.Mock).mockResolvedValue(
       new Response(JSON.stringify({}), { status: 200 }),
     );
 
@@ -157,7 +163,7 @@ describe('POST /api/auth/login', () => {
   });
 
   it('fetch 네트워크 실패 → 502', async () => {
-    (global.fetch as jest.Mock).mockRejectedValue(new Error('ECONNREFUSED'));
+    (globalThis.fetch as jest.Mock).mockRejectedValue(new Error('ECONNREFUSED'));
 
     const req = loginRequest({ email: 'a@b.com', password: 'password12' });
     const res = await POST(req);
