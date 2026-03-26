@@ -46,14 +46,17 @@ export function proxy(request: NextRequest) {
   }
 
   if (!token?.value) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    const loginUrl = new URL('/login', request.url);
+    const returnTo = `${pathname}${request.nextUrl.search}`;
+    loginUrl.searchParams.set('callbackUrl', returnTo);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/((?!_next|api|favicon\\.ico|fonts).*)'],
+  matcher: ['/((?!_next|api|favicon\\.ico|fonts|images|icons).*)'],
 };
 
 /**
