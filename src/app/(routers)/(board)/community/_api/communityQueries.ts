@@ -1,4 +1,5 @@
 import type {
+  Comment,
   CommentsResponse,
   Post,
   PostsResponse,
@@ -77,6 +78,24 @@ export const useDeletePost = () => {
   });
 };
 
+// 댓글 등록
+export const useCreateComment = (postId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (content: string) =>
+      apiClient<Comment>(`/posts/${postId}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.post(postId) });
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.comments(postId) });
+    },
+  });
+};
+
 // 댓글 목록 조회
 export const useGetComments = (postId: number) => {
   return useQuery({
@@ -97,6 +116,7 @@ export const useDeleteComment = (postId: number) => {
         method: 'DELETE',
       }),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.post(postId) });
       queryClient.invalidateQueries({ queryKey: communityQueryKeys.comments(postId) });
     },
   });

@@ -83,6 +83,7 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
         onConfirm={() => {
           deletePost(postId, {
             onSuccess: () => router.push('/community'),
+            onError: () => alert('게시물 삭제에 실패했습니다. 다시 시도해주세요.'),
           });
         }}
       />
@@ -115,6 +116,7 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
             </div>
 
             <CommentSection
+              postId={postId}
               comments={comments?.comments ?? []}
               userId={user?.id}
               commentCount={commentCount}

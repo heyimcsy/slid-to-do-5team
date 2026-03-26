@@ -34,7 +34,9 @@ export function CommentItem({ comment, isMyComment }: CommentItemProps) {
         title="정말 삭제하시겠어요?"
         description="삭제된 댓글은 복구할 수 없습니다."
         onConfirm={() => {
-          deleteComment(comment.id);
+          deleteComment(comment.id, {
+            onError: () => alert('댓글 삭제에 실패했습니다. 다시 시도해주세요.'),
+          });
         }}
       />
       <div className="flex items-center justify-between">

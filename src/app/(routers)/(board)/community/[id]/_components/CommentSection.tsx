@@ -4,20 +4,26 @@ import type { Comment } from '../../types';
 
 import { useState } from 'react';
 
+import { useCreateComment } from '../../_api/communityQueries';
 import { CommentItem } from './CommentItem';
 
 interface CommentSectionProps {
+  postId: number;
   comments: Comment[];
   userId: number | undefined;
   commentCount: number;
 }
 
-export function CommentSection({ comments, userId, commentCount }: CommentSectionProps) {
+export function CommentSection({ postId, comments, userId, commentCount }: CommentSectionProps) {
   const [inputValue, setInputValue] = useState('');
+  const { mutate: createComment } = useCreateComment(postId);
 
   const handleSubmit = () => {
     if (!inputValue.trim()) return;
-    setInputValue('');
+    createComment(inputValue, {
+      onSuccess: () => setInputValue(''),
+      onError: () => alert('댓글 등록에 실패했습니다. 다시 시도해주세요.'),
+    });
   };
 
   return (
