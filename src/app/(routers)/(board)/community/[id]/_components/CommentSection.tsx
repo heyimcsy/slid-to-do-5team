@@ -31,10 +31,12 @@ const MOCK_COMMENTS: Comment[] = [
 ];
 
 interface CommentSectionProps {
+  postId: number;
   commentCount: number;
 }
 
-export function CommentSection({ commentCount }: CommentSectionProps) {
+// TODO: 댓글 API 연동 시 postId 사용
+export function CommentSection({ postId: _postId, commentCount }: CommentSectionProps) {
   const [inputValue, setInputValue] = useState('');
 
   const handleSubmit = () => {

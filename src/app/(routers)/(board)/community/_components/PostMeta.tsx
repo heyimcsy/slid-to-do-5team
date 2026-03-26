@@ -1,5 +1,3 @@
-'use client';
-
 import type { Post } from '../types';
 
 import { cn } from '@/lib';
