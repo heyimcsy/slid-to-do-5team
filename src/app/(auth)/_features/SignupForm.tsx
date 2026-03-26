@@ -121,7 +121,7 @@ function SignupFormBody() {
 
 export default function SignupForm() {
   return (
-    <main className="mx-auto flex h-dvh w-full max-w-100 flex-col justify-center px-4 text-center md:px-0">
+    <main className="mx-auto flex min-h-dvh w-full max-w-100 flex-col justify-center px-4 text-center md:px-0">
       <AuthHeader />
       <SignupFormBody />
       <AuthFooter variant="signup" />

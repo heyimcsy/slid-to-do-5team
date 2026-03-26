@@ -3,8 +3,6 @@
 import type { LoginBody } from '@/lib/auth/schemas/login';
 import type { User } from '@/lib/auth/schemas/user';
 
-
-
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { apiClient, ApiClientError } from '@/lib/apiClient';
@@ -103,7 +101,7 @@ function LoginFormBody() {
 
 export default function LoginForm() {
   return (
-    <main className="mx-auto flex h-dvh w-full max-w-100 flex-col justify-center px-4 text-center md:px-0">
+    <main className="mx-auto flex min-h-dvh w-full max-w-100 flex-col justify-center px-4 text-center md:px-0">
       <AuthHeader />
       <Suspense fallback={null}>
         <LoginFormBody />
