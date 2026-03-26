@@ -63,13 +63,15 @@ describe('proxy', () => {
       expect(res.status).toBe(200);
     });
 
-    it('비공개 path + 토큰 없음 → redirect /login', () => {
+    it('비공개 path + 토큰 없음 → redirect /login + callbackUrl', () => {
       const prev = process.env.NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED;
       process.env.NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED = 'true';
       const req = createRequest('/dashboard', undefined);
       const res = proxy(req);
       expect(res.status).toBe(307);
-      expect(res.headers.get('location')).toContain('/login');
+      const loc = res.headers.get('location');
+      expect(loc).toContain('/login');
+      expect(loc).toContain('callbackUrl=%2Fdashboard');
       process.env.NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED = prev;
     });
 

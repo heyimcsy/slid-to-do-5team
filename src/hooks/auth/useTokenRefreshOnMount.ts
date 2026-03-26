@@ -1,6 +1,9 @@
 'use client';
 
+import type { User } from '@/lib/auth/schemas/user';
+
 import { useEffect } from 'react';
+import { authUserStore } from '@/stores/authUserStore';
 
 import { AUTH_CONFIG } from '@/constants/auth-config';
 
@@ -16,14 +19,36 @@ export function useTokenRefreshOnMount(): void {
   useEffect(() => {
     let cancelled = false;
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    /** 리프레시 토큰 없음(401) 등 — 세션이 없을 때는 주기 호출을 멈춤. 재로그인 시 다시 돌림 */
+    let sessionPaused = false;
+
+    const clearScheduled = () => {
+      if (timeoutId !== undefined) {
+        clearTimeout(timeoutId);
+        timeoutId = undefined;
+      }
+    };
 
     const runRefresh = async () => {
       try {
-        await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
+        const response = await fetch('/api/auth/refresh', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = (await response.json()) as { success?: boolean; user?: User };
+          if (data.user) {
+            authUserStore.getState().setUser(data.user);
+          }
+          sessionPaused = false;
+        } else if (response.status === 401) {
+          sessionPaused = true;
+          return;
+        }
       } catch {
         // 네트워크 오류 등 — 다음 주기는 유지
       } finally {
-        if (!cancelled) {
+        if (!cancelled && !sessionPaused) {
           timeoutId = setTimeout(() => void runRefresh(), AUTH_CONFIG.REFRESH_CHECK_INTERVAL_MS);
         }
       }
@@ -31,11 +56,24 @@ export function useTokenRefreshOnMount(): void {
 
     void runRefresh();
 
+    let prevUser = authUserStore.getState().user;
+    const unsub = authUserStore.subscribe((state) => {
+      const next = state.user;
+      if (prevUser !== null && next === null) {
+        sessionPaused = true;
+        clearScheduled();
+      }
+      if (prevUser === null && next !== null && sessionPaused) {
+        sessionPaused = false;
+        void runRefresh();
+      }
+      prevUser = next;
+    });
+
     return () => {
       cancelled = true;
-      if (timeoutId !== undefined) {
-        clearTimeout(timeoutId);
-      }
+      clearScheduled();
+      unsub();
     };
   }, []);
 }

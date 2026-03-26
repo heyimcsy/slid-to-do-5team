@@ -1,3 +1,7 @@
+import type { User } from '@/lib/auth/schemas/user';
+
+import { parseUserFromBackendUnknown } from '@/lib/auth/schemas/user';
+
 import { AUTH_CONFIG } from '@/constants/auth-config';
 
 /**
@@ -7,6 +11,7 @@ import { AUTH_CONFIG } from '@/constants/auth-config';
 export function parseTokenPairFromBackendJson(data: Record<string, unknown>): {
   accessToken: string | undefined;
   refreshToken: string | undefined;
+  user: User | undefined;
 } {
   const accessToken =
     pickString(data, AUTH_CONFIG.ACCESS_TOKEN_KEY) ??
@@ -16,7 +21,18 @@ export function parseTokenPairFromBackendJson(data: Record<string, unknown>): {
     pickString(data, AUTH_CONFIG.REFRESH_TOKEN_KEY) ??
     pickString(data, AUTH_CONFIG.REFRESH_TOKEN_JSON_ALTERNATE);
 
-  return { accessToken, refreshToken };
+  const userRaw = pickUserObject(data);
+  const user = userRaw ? parseUserFromBackendUnknown(userRaw) : undefined;
+
+  return { accessToken, refreshToken, user };
+}
+
+function pickUserObject(data: Record<string, unknown>): unknown {
+  const primary = data[AUTH_CONFIG.USER_OBJECT_KEY];
+  const alternate = data[AUTH_CONFIG.USER_OBJECT_JSON_ALTERNATE];
+  const v = primary !== undefined && primary !== null ? primary : alternate;
+  if (v !== null && typeof v === 'object' && !Array.isArray(v)) return v;
+  return undefined;
 }
 
 function pickString(data: Record<string, unknown>, key: string): string | undefined {

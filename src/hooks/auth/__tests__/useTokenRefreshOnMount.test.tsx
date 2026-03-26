@@ -21,7 +21,7 @@ describe('useTokenRefreshOnMount', () => {
 
   beforeEach(() => {
     jest.useFakeTimers();
-    globalThis.fetch = jest.fn().mockResolvedValue({ ok: true });
+    globalThis.fetch = jest.fn().mockResolvedValue({ ok: true, status: 200 });
   });
 
   afterEach(() => {
@@ -83,5 +83,19 @@ describe('useTokenRefreshOnMount', () => {
 
     // Assert: 두 번째 주기에서 2회째 호출
     await waitFor(() => expect(globalThis.fetch).toHaveBeenCalledTimes(2));
+  });
+
+  it('401(세션 없음)이면 이후 주기에서 fetch를 반복하지 않음', async () => {
+    (globalThis.fetch as jest.Mock).mockResolvedValue({ ok: false, status: 401 });
+
+    renderHook(() => useTokenRefreshOnMount());
+
+    await waitFor(() => expect(globalThis.fetch).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      jest.advanceTimersByTime(5_000);
+    });
+
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
   });
 });

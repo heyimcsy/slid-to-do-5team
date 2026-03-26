@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { email, password } = parsedBody.data;
+  const { email, name, password } = parsedBody.data;
 
   const base = API_BASE_URL?.replace(/\/$/, '') ?? '';
 
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     const response = await fetch(`${base}/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, name, password }),
     });
 
     if (!response.ok) {
@@ -62,14 +62,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { accessToken, refreshToken } = parseTokenPairFromBackendJson(data);
+  const { accessToken, refreshToken, user } = parseTokenPairFromBackendJson(data);
 
   if (!accessToken || !refreshToken) {
     return NextResponse.json(
       {
         success: true,
         sessionIssued: false,
-        emailVerificationRequired: true,
+        // emailVerificationRequired: true,
         message: '회원가입이 완료되었습니다. 로그인해 주세요.',
       },
       { status: 200 },
@@ -82,8 +82,8 @@ export async function POST(request: NextRequest) {
     {
       success: true,
       sessionIssued: true,
-      emailVerificationRequired: false,
       message: '회원가입이 완료되었습니다.',
+      ...(user ? { user } : {}),
     },
     { status: 201 },
   );

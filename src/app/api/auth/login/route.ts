@@ -1,25 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { setAuthCookies } from '@/lib/auth/cookies';
 import { parseTokenPairFromBackendJson } from '@/lib/auth/parseTokenPairFromBackendJson';
-import { z } from 'zod';
+import {
+  loginBodySchema,
+  loginValidationMessage,
+  mapLoginBackendFailureMessage,
+} from '@/lib/auth/schemas/login';
 
-import { API_BASE_URL } from '@/constants/api';
+import { API_BASE_URL, API_TIMEOUT_MS } from '@/constants/api';
 import { AUTH_CONFIG } from '@/constants/auth-config';
-
-const loginBodySchema = z.object({
-  email: z.string().trim().email({ message: '유효한 이메일을 입력하세요.' }),
-  password: z.string().min(1, { message: '비밀번호를 입력하세요.' }),
-});
-
-const loginValidationMessage = (error: z.ZodError): string => {
-  const issue = error.issues[0];
-  // 오류가 없으면 기본 메시지 반환
-  if (!issue) return '이메일과 비밀번호를 올바르게 입력하세요.';
-  // 숫자·객체 등 비문자열은 Zod 기본 영문 메시지 대신 고정 문구
-  if (issue.code === 'invalid_type') return '이메일과 비밀번호를 올바른 형식으로 입력하세요.';
-  // 오류 메시지 반환
-  return issue.message;
-};
 
 export async function POST(request: NextRequest) {
   let rawBody: unknown;
@@ -43,17 +32,25 @@ export async function POST(request: NextRequest) {
 
   /** 백엔드 연결 실패·성공 본문 JSON 파싱 실패 등 → 제어된 502 (미처리 시 Route Handler 500) */
   let data: Record<string, unknown>;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
   try {
     const response = await fetch(`${base}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
+      signal: controller.signal,
     });
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
+      const raw =
+        err && typeof err === 'object' && 'message' in err && typeof err.message === 'string'
+          ? err.message
+          : '로그인 실패';
       return NextResponse.json(
-        { success: false, message: (err as { message?: string }).message ?? '로그인 실패' },
+        { success: false, message: mapLoginBackendFailureMessage(raw) },
         { status: response.status },
       );
     }
@@ -67,9 +64,11 @@ export async function POST(request: NextRequest) {
       },
       { status: 502 },
     );
+  } finally {
+    clearTimeout(timeout);
   }
 
-  const { accessToken, refreshToken } = parseTokenPairFromBackendJson(data);
+  const { accessToken, refreshToken, user } = parseTokenPairFromBackendJson(data);
 
   /**
    * 로그인은 **반드시** 세션(토큰 쌍) 확보가 목적이다. 2xx인데 토큰이 없으면 signup과 달리
@@ -87,5 +86,5 @@ export async function POST(request: NextRequest) {
 
   await setAuthCookies(accessToken, refreshToken);
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json(user ? { success: true as const, user } : { success: true as const });
 }

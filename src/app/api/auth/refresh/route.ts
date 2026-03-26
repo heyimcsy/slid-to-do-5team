@@ -54,8 +54,11 @@ export async function POST() {
     );
   }
 
-  const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-    parseTokenPairFromBackendJson(data);
+  const {
+    accessToken: newAccessToken,
+    refreshToken: newRefreshToken,
+    user,
+  } = parseTokenPairFromBackendJson(data);
 
   if (!newAccessToken || !newRefreshToken) {
     return NextResponse.json(
@@ -69,5 +72,5 @@ export async function POST() {
 
   await setAuthCookies(newAccessToken, newRefreshToken);
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json(user ? { success: true as const, user } : { success: true as const });
 }
