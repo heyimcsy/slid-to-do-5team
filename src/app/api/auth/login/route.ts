@@ -7,7 +7,7 @@ import {
   mapLoginBackendFailureMessage,
 } from '@/lib/auth/schemas/login';
 
-import { API_BASE_URL } from '@/constants/api';
+import { API_BASE_URL, API_TIMEOUT_MS } from '@/constants/api';
 import { AUTH_CONFIG } from '@/constants/auth-config';
 
 export async function POST(request: NextRequest) {
@@ -32,18 +32,23 @@ export async function POST(request: NextRequest) {
 
   /** 백엔드 연결 실패·성공 본문 JSON 파싱 실패 등 → 제어된 502 (미처리 시 Route Handler 500) */
   let data: Record<string, unknown>;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
   try {
     const response = await fetch(`${base}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
       const raw =
-        typeof (err as { message?: unknown }).message === 'string'
-          ? (err as { message: string }).message
+        err && typeof err === 'object' && 'message' in err && typeof err.message === 'string'
+          ? err.message
           : '로그인 실패';
       return NextResponse.json(
         { success: false, message: mapLoginBackendFailureMessage(raw) },
@@ -62,7 +67,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { accessToken, refreshToken } = parseTokenPairFromBackendJson(data);
+  const { accessToken, refreshToken, user } = parseTokenPairFromBackendJson(data);
 
   /**
    * 로그인은 **반드시** 세션(토큰 쌍) 확보가 목적이다. 2xx인데 토큰이 없으면 signup과 달리
@@ -80,5 +85,5 @@ export async function POST(request: NextRequest) {
 
   await setAuthCookies(accessToken, refreshToken);
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json(user ? { success: true as const, user } : { success: true as const });
 }

@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { accessToken, refreshToken } = parseTokenPairFromBackendJson(data);
+  const { accessToken, refreshToken, user } = parseTokenPairFromBackendJson(data);
 
   if (!accessToken || !refreshToken) {
     return NextResponse.json(
@@ -82,8 +82,8 @@ export async function POST(request: NextRequest) {
     {
       success: true,
       sessionIssued: true,
-      // emailVerificationRequired: false,
       message: '회원가입이 완료되었습니다.',
+      ...(user ? { user } : {}),
     },
     { status: 201 },
   );

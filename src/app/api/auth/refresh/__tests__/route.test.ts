@@ -56,6 +56,34 @@ describe('POST /api/auth/refresh', () => {
     expect(mockCookies.set).toHaveBeenCalled();
   });
 
+  it('백엔드 응답에 user 포함 시 JSON에 user 반환', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          accessToken: 'new-access',
+          refreshToken: 'new-refresh',
+          user: { id: 'u1', email: 'u@example.com', name: 'User' },
+        }),
+        { status: 200 },
+      ),
+    );
+    const { cookies } = await import('next/headers');
+    const mockCookies = await cookies();
+    (mockCookies.get as jest.Mock).mockImplementation((name: string) =>
+      name === 'refresh_token' ? { value: 'valid-refresh' } : undefined,
+    );
+
+    const res = await POST();
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.success).toBe(true);
+    expect(json.user).toEqual({
+      id: 'u1',
+      email: 'u@example.com',
+      name: 'User',
+    });
+  });
+
   it('백엔드 401 → 401 응답', async () => {
     (global.fetch as jest.Mock).mockResolvedValue(
       new Response(JSON.stringify({}), { status: 401 }),
