@@ -27,3 +27,24 @@ export interface Post {
   writer: Writer;
   commentCount: number;
 }
+
+export interface PostsResponse {
+  posts: Post[];
+  nextCursor: string | null;
+  totalCount: number;
+}
+
+export interface UpdatePostInput {
+  title: string;
+  content: string;
+  image?: string | null;
+}
+
+export interface User {
+  id: number;
+  email: string;
+  name: string;
+  image: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
