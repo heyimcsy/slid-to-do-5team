@@ -3,6 +3,8 @@
 import type { SignupBody } from '@/lib/auth/schemas/signup';
 import type { User } from '@/lib/auth/schemas/user';
 
+
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient, ApiClientError } from '@/lib/apiClient';
@@ -54,6 +56,7 @@ function SignupFormBody() {
         router.push('/');
         return;
       }
+      authUserStore.getState().clearUser();
       router.push('/login');
     } catch (err) {
       if (err instanceof ApiClientError) {
