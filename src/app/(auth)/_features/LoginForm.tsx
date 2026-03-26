@@ -1,11 +1,14 @@
 'use client';
 
 import type { LoginBody } from '@/lib/auth/schemas/login';
+import type { User } from '@/lib/auth/schemas/user';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { apiClient, ApiClientError } from '@/lib/apiClient';
 import { loginBodySchema } from '@/lib/auth/schemas/login';
+import { getSafeCallbackPath } from '@/lib/navigation/safeCallbackPath';
+import { authUserStore } from '@/stores/authUserStore';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useFormState } from 'react-hook-form';
 
@@ -18,6 +21,7 @@ import { PasswordFieldWithToggle } from '../_components/PasswordFieldWithToggle'
 
 function LoginFormBody() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [submitError, setSubmitError] = useState('');
 
   const { control, handleSubmit } = useForm<LoginBody>({
@@ -30,18 +34,23 @@ function LoginFormBody() {
   const onSubmit = async (data: LoginBody) => {
     setSubmitError('');
     try {
-      await apiClient('/login', {
+      /**
+       * 로그인 성공 시 세션(토큰 쌍) 확보가 목적이다. 2xx인데 토큰이 없으면 signup과 달리
+       * 정상 분기가 아니라 **BFF·백엔드 응답 계약 위반**으로 본다 (`/api/auth/signup` 주석 참고).
+       * 이런 경우 `ApiClientError` 예외가 발생하므로 처리.
+       */
+      const res = await apiClient<{ success?: boolean; user?: User }>('/login', {
         method: 'POST',
         body: data,
         clientPublicBase: '/api/auth',
         retry: false,
       });
-      try {
-        await apiClient('/users/me', { method: 'GET' });
-      } catch {
-        // 네트워크 등 - BFF 경로는 검증됨
+      if (res.user) {
+        authUserStore.getState().setUser(res.user);
       }
-      router.push('/');
+      const nextPath = getSafeCallbackPath(searchParams.get('callbackUrl')) ?? '/';
+      router.refresh();
+      router.push(nextPath);
     } catch (err) {
       if (err instanceof ApiClientError) {
         setSubmitError(err.message || '로그인 실패');
@@ -92,7 +101,9 @@ export default function LoginForm() {
   return (
     <main className="mx-auto flex h-dvh w-full max-w-100 flex-col justify-center px-4 text-center md:px-0">
       <AuthHeader />
-      <LoginFormBody />
+      <Suspense fallback={null}>
+        <LoginFormBody />
+      </Suspense>
       <AuthFooter variant="login" />
     </main>
   );

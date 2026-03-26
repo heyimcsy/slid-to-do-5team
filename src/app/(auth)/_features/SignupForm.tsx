@@ -1,11 +1,13 @@
 'use client';
 
 import type { SignupBody } from '@/lib/auth/schemas/signup';
+import type { User } from '@/lib/auth/schemas/user';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient, ApiClientError } from '@/lib/apiClient';
 import { signupBodySchema } from '@/lib/auth/schemas/signup';
+import { authUserStore } from '@/stores/authUserStore';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useFormState } from 'react-hook-form';
 
@@ -35,6 +37,7 @@ function SignupFormBody() {
         message?: string;
         sessionIssued?: boolean;
         emailVerificationRequired?: boolean;
+        user?: User;
       }>('/signup', {
         method: 'POST',
         body: data,
@@ -42,11 +45,10 @@ function SignupFormBody() {
         retry: false,
       });
       if (res.sessionIssued) {
-        try {
-          await apiClient('/users/me', { method: 'GET' });
-        } catch {
-          // 네트워크 등 - BFF 경로는 검증됨
+        if (res.user) {
+          authUserStore.getState().setUser(res.user);
         }
+        router.refresh();
         router.push('/');
         return;
       }
