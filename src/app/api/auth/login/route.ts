@@ -42,7 +42,6 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({ email, password }),
       signal: controller.signal,
     });
-    clearTimeout(timeout);
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
@@ -65,6 +64,8 @@ export async function POST(request: NextRequest) {
       },
       { status: 502 },
     );
+  } finally {
+    clearTimeout(timeout);
   }
 
   const { accessToken, refreshToken, user } = parseTokenPairFromBackendJson(data);
