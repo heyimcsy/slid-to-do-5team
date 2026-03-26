@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Icon } from '@/components/icon/Icon';
@@ -50,15 +51,17 @@ export default function ItemActionBar({
         </Button>
       )}
       <div className="hidden h-fit shrink-1 space-x-[6px] group-hover:flex lg:space-x-2">
-        <Button
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-          variant="icon"
-          size="none"
-        >
-          <Icon name="edit" />
-        </Button>
+        <Link href={`/goals/${goalId}/notes/${noteIds[0]}/edit`}>
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+            variant="icon"
+            size="none"
+          >
+            <Icon name="edit" />
+          </Button>
+        </Link>
         <Button
           onClick={(e) => {
             e.stopPropagation();
