@@ -118,7 +118,7 @@ export const usePostGoals = (options: { onSuccess?: (response: GoalResponse) => 
   });
 };
 
-export const useDeleteGoals = (options: { onSuccess?: (response: GoalResponse) => void }) => {
+export const useDeleteGoals = (options: { onSuccess?: () => void }) => {
   const queryClient: QueryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: DeleteGoalPayload) => {
@@ -128,9 +128,10 @@ export const useDeleteGoals = (options: { onSuccess?: (response: GoalResponse) =
       return data;
     },
     ...options,
-    onSuccess: (data: GoalResponse, payload) => {
-      queryClient.invalidateQueries({ queryKey: [GOALS, payload.id] });
-      options?.onSuccess?.(data);
+    onSuccess: (_, payload) => {
+      queryClient.invalidateQueries({ queryKey: [GOALS] });
+      queryClient.invalidateQueries({ queryKey: [GOAL, payload.id] });
+      options?.onSuccess?.();
     },
   });
 };
