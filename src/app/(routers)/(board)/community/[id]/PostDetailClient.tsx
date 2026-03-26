@@ -98,7 +98,7 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
 
               <EditorContent
                 editor={editor}
-                className="mt-6 [&_img]:mt-4 [&_img]:aspect-square [&_img]:w-full [&_img]:max-w-[232px] [&_img]:rounded-[20px] [&_img]:object-cover"
+                className="mt-6 [&_img]:mt-4 [&_img]:h-auto [&_img]:w-full [&_img]:max-w-[232px] [&_img]:rounded-[20px]"
               />
 
               <div className="font-xs-regular mt-4 flex gap-1 text-gray-400">
