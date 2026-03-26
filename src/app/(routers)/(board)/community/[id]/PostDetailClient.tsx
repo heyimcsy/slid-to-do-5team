@@ -29,7 +29,12 @@ interface PostDetailClientProps {
 
 export function PostDetailClient({ postId }: PostDetailClientProps) {
   const { data: post, isLoading: isPostLoading, isError, refetch } = useGetPostById(postId);
-  const { data: comments, isLoading: isCommentLoading } = useGetComments(postId);
+  const {
+    data: comments,
+    isLoading: isCommentsLoading,
+    isError: isCommentsError,
+    refetch: refetchComments,
+  } = useGetComments(postId);
   const { data: user } = useGetUser();
   const { mutate: deletePost } = useDeletePost();
   const isWriter = user?.id === post?.userId;
@@ -61,12 +66,20 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
     }
   }, [editor, post]);
 
-  if (isError) return <PostErrorFallback onRetry={refetch} />;
-  if (isPostLoading || isCommentLoading) return <PostDetailSkeleton />;
+  if (isError || isCommentsError)
+    return (
+      <PostErrorFallback
+        onRetry={() => {
+          void refetch();
+          void refetchComments();
+        }}
+      />
+    );
+  if (isPostLoading || isCommentsLoading) return <PostDetailSkeleton />;
   if (!post) return <PostErrorFallback onRetry={refetch} />;
   if (!contentReady) return <PostDetailSkeleton />;
 
-  const { title, viewCount, createdAt, writer, commentCount } = post;
+  const { title, viewCount, createdAt, writer } = post;
 
   const kebabItems = [
     { label: '수정하기', onClick: () => router.push(`/community/${postId}/edit`) },
@@ -115,12 +128,7 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
               </div>
             </div>
 
-            <CommentSection
-              postId={postId}
-              comments={comments?.comments ?? []}
-              userId={user?.id}
-              commentCount={commentCount}
-            />
+            <CommentSection postId={postId} comments={comments} userId={user?.id} />
           </div>
         </div>
       </div>

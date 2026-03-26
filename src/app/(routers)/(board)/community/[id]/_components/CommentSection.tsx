@@ -1,6 +1,6 @@
 'use client';
 
-import type { Comment } from '../../types';
+import type { CommentsResponse } from '../../types';
 
 import { useState } from 'react';
 
@@ -9,17 +9,18 @@ import { CommentItem } from './CommentItem';
 
 interface CommentSectionProps {
   postId: number;
-  comments: Comment[];
+  comments: CommentsResponse | undefined;
   userId: number | undefined;
-  commentCount: number;
 }
 
-export function CommentSection({ postId, comments, userId, commentCount }: CommentSectionProps) {
+export function CommentSection({ postId, comments, userId }: CommentSectionProps) {
+  const commentList = comments?.comments ?? [];
+  const totalCount = comments?.totalCount ?? 0;
   const [inputValue, setInputValue] = useState('');
-  const { mutate: createComment } = useCreateComment(postId);
+  const { mutate: createComment, isPending: isCreating } = useCreateComment(postId);
 
   const handleSubmit = () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || isCreating) return;
     createComment(inputValue, {
       onSuccess: () => setInputValue(''),
       onError: () => alert('댓글 등록에 실패했습니다. 다시 시도해주세요.'),
@@ -30,9 +31,7 @@ export function CommentSection({ postId, comments, userId, commentCount }: Comme
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-0.5">
         <span className="font-base-semibold md:font-lg-semibold text-gray-800">댓글</span>
-        <span className="font-base-semibold md:font-lg-semibold text-orange-600">
-          {commentCount}
-        </span>
+        <span className="font-base-semibold md:font-lg-semibold text-orange-600">{totalCount}</span>
       </div>
 
       <div className="flex gap-3 md:gap-4">
@@ -54,7 +53,7 @@ export function CommentSection({ postId, comments, userId, commentCount }: Comme
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={!inputValue.trim()}
+          disabled={!inputValue.trim() || isCreating}
           className="font-sm-semibold md:font-base-semibold w-16 shrink-0 rounded-full bg-orange-500 py-2.5 text-white disabled:cursor-not-allowed disabled:bg-gray-300 md:w-20 md:py-3"
         >
           등록
@@ -62,7 +61,7 @@ export function CommentSection({ postId, comments, userId, commentCount }: Comme
       </div>
 
       <ul className="flex flex-col gap-8 md:gap-10">
-        {comments.map((comment) => (
+        {commentList.map((comment) => (
           <CommentItem key={comment.id} comment={comment} isMyComment={comment.userId === userId} />
         ))}
       </ul>
