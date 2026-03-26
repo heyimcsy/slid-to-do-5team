@@ -7,7 +7,7 @@ import { AUTH_CONFIG } from '@/constants/auth-config';
  * 백엔드 JSON은 `parseUserFromBackendUnknown` / `normalizeBackendUserRecord`로 정규화 후 검증한다.
  */
 export const userSchema = z.object({
-  id: z.coerce.string().min(1),
+  id: z.union([z.string(), z.number()]).transform(String).pipe(z.string().trim().min(1)),
   email: z
     .string()
     .trim()
