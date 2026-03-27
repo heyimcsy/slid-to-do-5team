@@ -87,15 +87,15 @@ export default function EditPage() {
   const isMobile = useIsMobile();
 
   // 1. 모든 useState 먼저 선언
-  const [status, setStatus] = useState<'TODO' | 'DONE'>(mockTodo.done ? 'DONE' : 'TODO');
-  const [date, setDate] = useState<Date>(new Date(mockTodo.dueDate));
-  const [tempDate, setTempDate] = useState<Date | undefined>(new Date(mockTodo.dueDate));
-  const [open, setOpen] = useState(false);
-  const [image, setImage] = useState<File | null>(null);
-  const [selectedGoal, setSelectedGoal] = useState<string | null>(mockTodo.goal.title);
-  const [link, setLink] = useState(mockTodo.linkUrl ?? '');
-  const [tags, setTags] = useState<Tag[]>(initialTags);
-  const [tagInput, setTagInput] = useState('');
+  const [status, setStatus] = React.useState<'TODO' | 'DONE'>(mockTodo.done ? 'DONE' : 'TODO');
+  const [date, setDate] = React.useState<Date>(new Date(mockTodo.dueDate));
+  const [tempDate, setTempDate] = React.useState<Date | undefined>(new Date(mockTodo.dueDate));
+  const [open, setOpen] = React.useState(false);
+  const [image, setImage] = React.useState<File | null>(null);
+  const [selectedGoal, setSelectedGoal] = React.useState<string | null>(mockTodo.goal.title);
+  const [link, setLink] = React.useState(mockTodo.linkUrl ?? '');
+  const [tags, setTags] = React.useState<Tag[]>(initialTags);
+  const [tagInput, setTagInput] = React.useState('');
 
   // 2. 모든 useRef 선언
   const inputRef = useRef<HTMLInputElement>(null);

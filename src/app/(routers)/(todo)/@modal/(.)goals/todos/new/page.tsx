@@ -2,8 +2,7 @@
 
 import type { KeyboardEvent } from 'react';
 
-import React, { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
+import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDate } from '@/app/(routers)/(board)/community/_utils/formatDate';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -20,15 +19,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,6 +48,9 @@ export default function NewPage() {
   // 목표탭 상태 관리 state
   const [selectedGoal, setSelectedGoal] = React.useState<string | null>(null);
 
+  // const [linkOpen, setLinkOpen] = React.useState(false);
+
+  // 태그 관리
   const [tags, setTags] = useState<Tag[]>([]);
   const [tagInput, setTagInput] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -123,8 +118,6 @@ export default function NewPage() {
             <p className="font-sm-medium text-red-500">제목은 50자 이내로 입력해주세요</p>
           )}
         </Field>
-
-        {/* FieldLabel 스타일링에 ! 써도되는지? */}
 
         <Field>
           <FieldLabel className="font-sm-semi md:font-base-semibold gap-1">
@@ -230,6 +223,7 @@ export default function NewPage() {
               placeholder="링크를 업로드해주세요"
               className="w-full border-dashed bg-gray-50"
               onChange={(e) => setLink(e.target.value)}
+              // onClick={() => setLinkOpen(true)}
               startAdornment={
                 <button>
                   <Icon name="linkEditor" />
@@ -293,7 +287,6 @@ export default function NewPage() {
         </Drawer>
       ) : (
         <Dialog open>
-          {/* <DialogTrigger>open</DialogTrigger> */}
           <DialogContent>
             <DialogHeader className="mb-8">
               <DialogTitle>할 일 생성</DialogTitle>
@@ -312,6 +305,26 @@ export default function NewPage() {
           </DialogContent>
         </Dialog>
       )}
+      {/* 링크 입력 모달
+      <Dialog open={linkOpen} onOpenChange={setLinkOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>링크 업로드</DialogTitle>
+          </DialogHeader>
+          <Input
+            type="url"
+            placeholder="링크를 입력해주세요"
+            value={link}
+            onChange={(e) => setLink(e.target.value)}
+          />
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setLinkOpen(false)}>
+              취소
+            </Button>
+            <Button onClick={() => setLinkOpen(false)}>확인</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog> */}
     </>
   );
 }
