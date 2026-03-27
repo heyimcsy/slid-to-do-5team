@@ -6,7 +6,9 @@ import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDate } from '@/app/(routers)/(board)/community/_utils/formatDate';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import z from 'zod';
 
 import { ImageUploadInput } from '@/components/common/ImageUploadInput';
 import { Icon } from '@/components/icon/Icon';
@@ -31,12 +33,28 @@ import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
-const COLORS = ['gray', 'green', 'yellow', 'red', 'purple'] as const;
 type TagColor = (typeof COLORS)[number];
+type FormValues = z.infer<typeof schema>;
+
 interface Tag {
   name: string;
   color: TagColor;
 }
+
+const COLORS = ['gray', 'green', 'yellow', 'red', 'purple'] as const;
+
+// zod 스키마 선언
+const schema = z.object({
+  title: z.string().min(1, '제목을 입력해주세요').max(50, '제목은 50자 이내로 입력해주세요'),
+  link: z
+    .string()
+    .regex(
+      /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/,
+      '올바른 URL 형식을 입력해주세요 (예: http://www.naver.com)',
+    )
+    .optional()
+    .or(z.literal('')),
+});
 
 export default function NewPage() {
   // 마감기한 날짜 관리 state
@@ -48,22 +66,24 @@ export default function NewPage() {
   // 목표탭 상태 관리 state
   const [selectedGoal, setSelectedGoal] = React.useState<string | null>(null);
 
-  // const [linkOpen, setLinkOpen] = React.useState(false);
-
   // 태그 관리
   const [tags, setTags] = useState<Tag[]>([]);
   const [tagInput, setTagInput] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const colorIndexRef = useRef(0);
 
+  //RHF + Zod
   const {
     register,
-    formState: { errors, isValid: titleValid },
-  } = useForm({
+    watch,
+    setValue,
+    formState: { isValid: titleValid },
+  } = useForm<FormValues>({
     // 입력할 때마다 실시간으로 유효성 검증 실행
     mode: 'onChange',
+    resolver: zodResolver(schema),
     // 초기값을 빈 문자열로 설정해서 처음부터 controlled 컴포넌트로 인식하게 함
-    defaultValues: { title: '' },
+    defaultValues: { title: '', link: '' },
   });
 
   const getNextColor = (): TagColor => {
@@ -72,9 +92,15 @@ export default function NewPage() {
     return color;
   };
 
+  //태그 추가 함수
   const addTag = () => {
     const trimmed = tagInput.trim();
     if (!trimmed) return;
+
+    // 중복된 태그 체크
+    const isDuplicate = tags.some((tag) => tag.name === trimmed);
+    if (isDuplicate) return;
+
     setTags((prev) => [...prev, { name: trimmed, color: getNextColor() }]);
     setTagInput('');
   };
@@ -93,8 +119,9 @@ export default function NewPage() {
       removeTag(tags.length - 1);
     }
   };
-  const [link, setLink] = useState('');
+
   const router = useRouter();
+  const link = watch('link');
 
   // 유효성 체크 변수
   const isValid = titleValid && selectedGoal !== null && date !== undefined;
@@ -107,16 +134,7 @@ export default function NewPage() {
           <FieldLabel className="font-sm-semi md:font-base-semibold gap-1">
             제목<span className="text-orange-600">*</span>
           </FieldLabel>
-          <Input
-            className="w-full"
-            {...register('title', {
-              required: true,
-              maxLength: 50,
-            })}
-          />
-          {errors.title?.type === 'maxLength' && (
-            <p className="font-sm-medium text-red-500">제목은 50자 이내로 입력해주세요</p>
-          )}
+          <Input className="w-full" {...register('title', {})} />
         </Field>
 
         <Field>
@@ -219,10 +237,9 @@ export default function NewPage() {
           <div className="space-y-2">
             <Input
               type="url"
-              value={link}
               placeholder="링크를 업로드해주세요"
               className="w-full border-dashed bg-gray-50"
-              onChange={(e) => setLink(e.target.value)}
+              {...register('link')}
               // onClick={() => setLinkOpen(true)}
               startAdornment={
                 <button>
@@ -231,7 +248,8 @@ export default function NewPage() {
               }
               endAdornment={
                 link && (
-                  <button onClick={() => setLink('')}>
+                  //link태그의 값을 빈문자열로 변경 ->setValue
+                  <button onClick={() => setValue('link', '')}>
                     <Icon name="close" color="gray" />
                   </button>
                 )
