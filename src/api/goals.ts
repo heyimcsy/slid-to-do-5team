@@ -141,10 +141,28 @@ export const usePatchGoals = () => {
       });
       return data;
     },
-    onSuccess: (_, payload) => {
-      const id = payload.id;
+
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({ queryKey: [GOAL, payload.id] });
+      const previousGoal = queryClient.getQueryData([GOAL, payload.id]);
+      queryClient.setQueryData(
+        [GOAL, payload.id],
+        (old: Omit<Goal, 'completedCount' | 'todoCount'>) => {
+          if (!old) return old;
+          return { ...old, title: payload.title };
+        },
+      );
+
+      return { previousGoal };
+    },
+
+    onError: (_, payload, context) => {
+      queryClient.setQueryData([GOAL, payload.id], context?.previousGoal);
+    },
+
+    onSettled: (_, __, payload) => {
       queryClient.invalidateQueries({ queryKey: [GOALS] });
-      queryClient.invalidateQueries({ queryKey: [GOAL, id] });
+      queryClient.invalidateQueries({ queryKey: [GOAL, payload.id] });
     },
   });
 };

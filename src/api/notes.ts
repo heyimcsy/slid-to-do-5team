@@ -1,7 +1,9 @@
+import type { PaginatedResponse } from '@/api/response';
 import type { Todo } from '@/api/todos';
+import type { QueryClient } from '@tanstack/react-query';
 
 import { apiClient } from '@/lib/apiClient.browser';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 // ── 마크(인라인 스타일) ──────────────────────────
 type BoldMark = { type: 'bold' };
@@ -103,7 +105,7 @@ export interface TipTapDoc {
   content: TipTapNode[];
 }
 
-export interface Note {
+export interface Notes {
   id: number;
   content: string;
   createdAt: string;
@@ -116,14 +118,92 @@ export interface Note {
   userId: number;
 }
 const NOTE = 'NOTE';
+const NOTES = 'NOTES';
 const NOTES_URL = '/notes';
+
+interface GetNotesParams {
+  todoId?: number;
+  goalId?: number;
+  cursor?: number;
+  limit?: number;
+}
+
+export type NotesGetResponse = PaginatedResponse<Notes, 'notes'>;
+type CreateNotePayload = Pick<Notes, 'todoId' | 'title'> &
+  Partial<Pick<Notes, 'content' | 'linkUrl'>>;
+
+type PatchNotePayload = Pick<Notes, 'id'> & Partial<Pick<Notes, 'title' | 'content' | 'linkUrl'>>;
+export const useGetNotes = ({ todoId, goalId, cursor, limit }: GetNotesParams = {}) => {
+  return useQuery({
+    queryKey: [NOTES, { todoId, goalId, cursor, limit }],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (todoId !== undefined) params.append('todoId', String(todoId));
+      if (goalId !== undefined) params.append('goalId', String(goalId));
+      if (cursor !== undefined) params.append('cursor', String(cursor));
+      if (limit !== undefined) params.append('limit', String(limit));
+
+      const queryString = params.toString();
+      const url = queryString ? `${NOTES_URL}?${queryString}` : NOTES_URL;
+
+      return await apiClient<NotesGetResponse>(url);
+    },
+    enabled: !!goalId,
+  });
+};
+
 export const useGetNote = ({ id }: { id: number }) => {
   return useQuery({
     queryKey: [NOTE, id],
     queryFn: async () => {
-      const data = await apiClient<Note>(`${NOTES_URL}/${id}`);
-      return data;
+      return await apiClient<Notes>(`${NOTES_URL}/${id}`);
     },
     enabled: !!id,
+  });
+};
+
+export const usePostNote = () => {
+  const queryClient: QueryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: CreateNotePayload) => {
+      return await apiClient<Notes>(NOTES_URL, {
+        method: 'POST',
+        body: payload,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [NOTES] });
+    },
+  });
+};
+
+export const usePatchNote = () => {
+  const queryClient: QueryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: PatchNotePayload) => {
+      const { id, ...rest } = payload;
+      const body = Object.fromEntries(Object.entries(rest).filter(([_, v]) => v !== undefined));
+      return await apiClient<Notes>(`${NOTES_URL}/${id}`, {
+        method: 'PATCH',
+        body,
+      });
+    },
+    onSuccess: (_, payload) => {
+      queryClient.invalidateQueries({ queryKey: [NOTES] });
+      queryClient.invalidateQueries({ queryKey: [NOTE, payload.id] });
+    },
+  });
+};
+
+export const useDeleteNote = () => {
+  const queryClient: QueryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id }: { id: number }) => {
+      return await apiClient(`${NOTES_URL}/${id}`, { method: 'DELETE' });
+    },
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: [NOTES] });
+      queryClient.removeQueries({ queryKey: [NOTE, id] });
+    },
   });
 };
