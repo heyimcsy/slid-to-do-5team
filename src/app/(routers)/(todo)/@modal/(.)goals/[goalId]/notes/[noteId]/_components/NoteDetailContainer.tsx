@@ -243,7 +243,7 @@ const MOCK_NOTE: Note = {
 };
 export default function NoteDetailContainer({ noteId }: { noteId: number }) {
   const router = useRouter();
-
+  console.log(noteId, '곧 사용할것입니다.');
   const onClose = () => router.back();
 
   return (
