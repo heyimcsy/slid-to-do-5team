@@ -52,6 +52,15 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  if (/^\/goals\/\d+\/notes\/new$/.test(pathname)) {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.delete('next-url');
+
+    return NextResponse.rewrite(request.nextUrl, {
+      request: { headers: requestHeaders },
+    });
+  }
+
   return NextResponse.next();
 }
 

@@ -8,7 +8,7 @@ import { TodoSection } from '@/app/(routers)/(todo)/goals/[goalId]/_components/T
 import { TodoSectionSkeleton } from '@/app/(routers)/(todo)/goals/[goalId]/_components/TodoSectionSkeleton';
 
 export default function TotalListTab({ goalId }: TotalListTabProps) {
-  const { data, isSuccess, isLoading } = useGetTodos({ goalId });
+  const { data, isSuccess, isLoading } = useGetTodos({ goalId, limit: 20 });
 
   const todoLists = data?.todos.filter((todo: TodoWithFavorites) => !todo.done) ?? [];
   const todoListsDone = data?.todos.filter((todo: TodoWithFavorites) => todo.done) ?? [];
