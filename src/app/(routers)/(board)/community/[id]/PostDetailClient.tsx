@@ -36,10 +36,12 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
     refetch: refetchComments,
   } = useGetComments(postId);
   const { data: user } = useGetUser();
-  const { mutate: deletePost } = useDeletePost();
+  const { mutate: deletePost, isPending: isPostDeleting } = useDeletePost();
   const isWriter = user?.id === post?.userId;
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isCommentBusy, setIsCommentBusy] = useState(false);
+  const isBusy = isCommentBusy || isPostDeleting;
   const [contentReady, setContentReady] = useState(false);
   const router = useRouter();
 
@@ -106,7 +108,7 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
             <div className="w-full">
               <div className="flex items-start justify-between gap-2">
                 <h1 className="font-base-semibold md:font-xl-semibold text-gray-800">{title}</h1>
-                {isWriter && <KebabMenu items={kebabItems} />}
+                {isWriter && <KebabMenu items={kebabItems} disabled={isBusy} />}
               </div>
 
               <div className="mt-6 flex items-center gap-1">
@@ -128,7 +130,13 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
               </div>
             </div>
 
-            <CommentSection postId={postId} comments={comments} userId={user?.id} />
+            <CommentSection
+              postId={postId}
+              comments={comments}
+              userId={user?.id}
+              isBusy={isBusy}
+              onPendingChange={setIsCommentBusy}
+            />
           </div>
         </div>
       </div>

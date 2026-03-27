@@ -7,19 +7,19 @@ import { useState } from 'react';
 import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { KebabMenu } from '@/components/common/KebabMenu';
 
-import { useDeleteComment } from '../../_api/communityQueries';
 import { WriterAvatar } from '../../_components/WriterAvatar';
 import { formatRelativeTime } from '../../_utils/formatRelativeTime';
 
 interface CommentItemProps {
   comment: Comment;
   isMyComment: boolean;
+  onDelete: (commentId: number, options?: { onError?: () => void }) => void;
+  isDeleting: boolean;
 }
 
-export function CommentItem({ comment, isMyComment }: CommentItemProps) {
+export function CommentItem({ comment, isMyComment, onDelete, isDeleting }: CommentItemProps) {
   const { content, createdAt, writer } = comment;
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const { mutate: deleteComment } = useDeleteComment(comment.postId);
 
   const kebabItems = [
     { label: '수정하기', onClick: () => {} /* TODO: 댓글 수정 API 연동 */ },
@@ -34,7 +34,7 @@ export function CommentItem({ comment, isMyComment }: CommentItemProps) {
         title="정말 삭제하시겠어요?"
         description="삭제된 댓글은 복구할 수 없습니다."
         onConfirm={() => {
-          deleteComment(comment.id, {
+          onDelete(comment.id, {
             onError: () => alert('댓글 삭제에 실패했습니다. 다시 시도해주세요.'),
           });
         }}
@@ -49,7 +49,7 @@ export function CommentItem({ comment, isMyComment }: CommentItemProps) {
             </span>
           )}
         </div>
-        {isMyComment && <KebabMenu items={kebabItems} />}
+        {isMyComment && <KebabMenu items={kebabItems} disabled={isDeleting} />}
       </div>
 
       <div className="flex flex-col gap-2">

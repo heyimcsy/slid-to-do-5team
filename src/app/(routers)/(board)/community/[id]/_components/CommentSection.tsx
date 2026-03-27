@@ -2,22 +2,35 @@
 
 import type { CommentsResponse } from '../../types';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { useCreateComment } from '../../_api/communityQueries';
+import { useCreateComment, useDeleteComment } from '../../_api/communityQueries';
 import { CommentItem } from './CommentItem';
 
 interface CommentSectionProps {
   postId: number;
   comments: CommentsResponse | undefined;
   userId: number | undefined;
+  isBusy?: boolean;
+  onPendingChange?: (isPending: boolean) => void;
 }
 
-export function CommentSection({ postId, comments, userId }: CommentSectionProps) {
+export function CommentSection({
+  postId,
+  comments,
+  userId,
+  isBusy = false,
+  onPendingChange,
+}: CommentSectionProps) {
   const commentList = comments?.comments ?? [];
   const totalCount = comments?.totalCount ?? 0;
   const [inputValue, setInputValue] = useState('');
   const { mutate: createComment, isPending: isCreating } = useCreateComment(postId);
+  const { mutate: deleteComment, isPending: isDeleting } = useDeleteComment(postId);
+
+  useEffect(() => {
+    onPendingChange?.(isCreating || isDeleting);
+  }, [isCreating, isDeleting, onPendingChange]);
 
   const handleSubmit = () => {
     if (!inputValue.trim() || isCreating) return;
@@ -46,14 +59,15 @@ export function CommentSection({ postId, comments, userId }: CommentSectionProps
               handleSubmit();
             }
           }}
+          disabled={isBusy}
           placeholder="댓글을 입력해주세요"
           aria-label="댓글 입력"
-          className="font-sm-regular md:font-base-regular flex-1 rounded-xl border border-gray-300 px-3 py-3 text-gray-700 outline-none placeholder:text-gray-500 md:rounded-2xl md:px-4 md:py-4"
+          className="font-sm-regular md:font-base-regular flex-1 rounded-xl border border-gray-300 px-3 py-3 text-gray-700 outline-none placeholder:text-gray-500 disabled:bg-gray-50 md:rounded-2xl md:px-4 md:py-4"
         />
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={!inputValue.trim() || isCreating}
+          disabled={!inputValue.trim() || isBusy}
           className="font-sm-semibold md:font-base-semibold w-16 shrink-0 rounded-full bg-orange-500 py-2.5 text-white disabled:cursor-not-allowed disabled:bg-gray-300 md:w-20 md:py-3"
         >
           등록
@@ -62,7 +76,13 @@ export function CommentSection({ postId, comments, userId }: CommentSectionProps
 
       <ul className="flex flex-col gap-8 md:gap-10">
         {commentList.map((comment) => (
-          <CommentItem key={comment.id} comment={comment} isMyComment={comment.userId === userId} />
+          <CommentItem
+            key={comment.id}
+            comment={comment}
+            isMyComment={comment.userId === userId}
+            onDelete={deleteComment}
+            isDeleting={isBusy}
+          />
         ))}
       </ul>
     </div>

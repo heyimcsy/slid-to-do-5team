@@ -51,6 +51,7 @@ export const useUpdatePost = (postId: number) => {
     mutationFn: (updatePost: UpdatePostInput) =>
       apiClient<Post>(`/posts/${postId}`, {
         method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatePost),
       }),
     onSuccess: () => {
@@ -59,7 +60,7 @@ export const useUpdatePost = (postId: number) => {
     },
   });
 
-  return { ...mutation, postId };
+  return { ...mutation };
 };
 
 // 게시물 삭제
