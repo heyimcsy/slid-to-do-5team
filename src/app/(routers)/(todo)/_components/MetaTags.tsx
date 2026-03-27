@@ -1,4 +1,4 @@
-import type { Tags } from '@/app/(routers)/(todo)/@modal/(.)goals/[goalId]/todos/[todoId]/_components/TodoDetailContent';
+import type { Tags } from '@/api/todos';
 
 import { cn } from '@/lib';
 
@@ -47,8 +47,8 @@ export default function MetaTags({
         <span className="flex size-4.5 shrink-0 items-center justify-center text-gray-400">#</span>
         <span className="shrink-0 text-gray-400">태그</span>
         <div className="flex flex-wrap gap-1">
-          {tags.map((tag: Tags, index: number) => (
-            <Badge key={index} color={tag.color}>
+          {tags.map((tag: Tags) => (
+            <Badge key={tag.id} color={tag.color}>
               {tag.name}
             </Badge>
           ))}
