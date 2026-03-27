@@ -50,7 +50,10 @@ function SelectTrigger({
       data-size={size}
       className={
         isIconMode
-          ? 'flex size-8 items-center justify-center rounded-full border-none bg-transparent outline-none data-popup-open:ring-[1px] data-popup-open:ring-orange-500/30'
+          ? cn(
+              'flex size-8 cursor-pointer items-center justify-center rounded-full border-none bg-transparent outline-none data-popup-open:ring-[1px] data-popup-open:ring-orange-500/30',
+              className,
+            )
           : cn(
               // 레이아웃
               'flex h-fit w-full items-center justify-between gap-1.5 bg-gray-50 whitespace-nowrap data-[size=sm]:w-[102px] data-[size=sm]:border-0',

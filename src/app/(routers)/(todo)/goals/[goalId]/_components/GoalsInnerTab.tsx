@@ -12,8 +12,11 @@ import { DonutProgress } from '@/components/common/DonutProgress';
 import { Icon } from '@/components/icon/Icon';
 
 export default function GoalsInnerTab({ goalId }: { goalId: number }) {
-  const { data, isLoading, isSuccess } = useGetGoal({ id: goalId });
+  const userInfo = localStorage.getItem('user-info');
+  const parsedUserInfo = userInfo ? JSON.parse(userInfo).state : null;
+  const userName: string = parsedUserInfo.user.name ? parsedUserInfo.user.name : '';
 
+  const { data, isLoading, isSuccess } = useGetGoal({ id: goalId });
   const todoCount: number = data?.todos.filter((todo) => todo.done).length ?? 0;
   const totalCount: number = data?.todos.length ?? 0;
   const progressPercent = totalCount === 0 ? 0 : Math.round((todoCount / totalCount) * 100);
@@ -22,6 +25,9 @@ export default function GoalsInnerTab({ goalId }: { goalId: number }) {
   if (isSuccess)
     return (
       <>
+        <h1 className="font-xl-semibold lg:text-2xl-semibold hidden pt-12 pb-7 text-black md:block md:pt-20 md:pb-10">
+          {userName}님의 목표
+        </h1>
         <div className="w-full space-y-4 md:space-y-6 lg:flex lg:space-x-8">
           {/*흰색 목표 표기*/}
           <GoalsTab goalId={goalId} data={data} />

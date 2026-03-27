@@ -1,6 +1,6 @@
 'use client';
 
-import type { Tags } from '@/app/(routers)/(todo)/@modal/(.)goals/[goalId]/todos/[todoId]/_components/TodoDetailContent';
+import type { Tags } from '@/api/todos';
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
@@ -24,11 +24,10 @@ export interface NoteDraft {
 export default function NewNotePage() {
   const NOTE_CREATE: string = 'note-create';
   const tags: Tags[] = [
-    { name: '코딩', color: 'green' },
-    { name: '자기계발', color: 'yellow' },
-    { name: '공부', color: 'red' },
+    { id: 1, name: '코딩', color: 'green' },
+    { id: 2, name: '자기계발', color: 'yellow' },
+    { id: 3, name: '공부', color: 'red' },
   ];
-
   // 임시 mock — 나중에 params.goalId로 API 호출
   const note = {
     id: 1,

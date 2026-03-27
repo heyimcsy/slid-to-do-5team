@@ -1,12 +1,21 @@
 import type { Goal } from '@/api/goals';
 import type { PaginatedResponse } from '@/api/response';
+import type { TagColor } from '@/utils/tag';
 
 import { apiClient } from '@/lib/apiClient.browser';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+import { mapTagsWithColor } from '@/utils/tag';
 
 export interface Tag {
   id: number;
-  title: string;
+  name: string;
+}
+
+export interface Tags {
+  id: number;
+  name: string;
+  color: TagColor;
 }
 
 export interface Todo {
@@ -27,7 +36,7 @@ export interface Todo {
 }
 
 const TODOS = 'todos';
-// const TODO = 'todo';
+const TODO = 'todo';
 const TODOS_URL = '/todos';
 
 interface GetTodosParams {
@@ -82,6 +91,97 @@ export const useGetTodos = ({ goalId, done, limit, cursor }: GetTodosParams) => 
         ...todosData,
         todos: todosWithFavorite,
       };
+    },
+  });
+};
+
+export const useGetTodo = ({ id }: { id: number }) => {
+  return useQuery({
+    queryKey: [TODO, id],
+    queryFn: async () => {
+      const data = await apiClient<Todo>(`${TODOS_URL}/${id}`);
+      return {
+        ...data,
+        tags: mapTagsWithColor(data.tags),
+      };
+    },
+    enabled: !!id,
+  });
+};
+
+type PatchTodoPayload = Pick<Todo, 'id'> &
+  Partial<Pick<Todo, 'title' | 'done' | 'linkUrl' | 'tags' | 'dueDate' | 'fileUrl'>>;
+
+export const usePatchTodos = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: PatchTodoPayload) => {
+      const { id, ...rest } = payload;
+      const body = Object.fromEntries(Object.entries(rest).filter(([_, v]) => v !== undefined));
+      return await apiClient(`${TODOS_URL}/${id}`, { method: 'PATCH', body });
+    },
+    onMutate: async (payload: PatchTodoPayload) => {
+      // 진행 중인 refetch 취소 (덮어쓰기 방지)
+      await queryClient.cancelQueries({ queryKey: [TODOS] });
+      // 현재 캐시 스냅샷 저장 (롤백용)
+      const previousTodos = queryClient.getQueriesData({ queryKey: [TODOS] });
+      // 캐시 즉시 업데이트
+      queryClient.setQueriesData({ queryKey: [TODOS] }, (old: PaginatedResponse<Todo, 'todos'>) => {
+        if (!old) return old;
+        return {
+          ...old,
+          todos: old.todos.map((todo: Todo) =>
+            todo.id === payload.id ? { ...todo, ...payload } : todo,
+          ),
+        };
+      });
+
+      return { previousTodos }; // context로 전달
+    },
+
+    onError: (_: Error, __: PatchTodoPayload, context) => {
+      // 실패 시 스냅샷으로 롤백
+      context?.previousTodos.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+    },
+
+    onSettled: (_, __, payload) => {
+      // 성공/실패 상관없이 최종적으로 서버 데이터로 동기화
+      queryClient.invalidateQueries({ queryKey: [TODOS] });
+      queryClient.invalidateQueries({ queryKey: [TODO, payload.id] });
+    },
+  });
+};
+
+export const useDeleteTodos = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id }: { id: number }) => {
+      return await apiClient(`${TODOS_URL}/${id}`, { method: 'DELETE' });
+    },
+    onMutate: async ({ id }: { id: number }) => {
+      await queryClient.cancelQueries({ queryKey: [TODOS] });
+      const previousTodos = queryClient.getQueriesData({ queryKey: [TODOS] });
+      queryClient.setQueriesData({ queryKey: [TODOS] }, (old: PaginatedResponse<Todo, 'todos'>) => {
+        if (!old) return old;
+        return {
+          ...old,
+          todos: old.todos.filter((todo: Todo) => todo.id !== id),
+          totalCount: old.totalCount - 1,
+        };
+      });
+      return { previousTodos };
+    },
+    onError: (_: Error, __, context) => {
+      context?.previousTodos.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+    },
+    onSettled: (_, __, payload) => {
+      queryClient.invalidateQueries({ queryKey: [TODOS] });
+      queryClient.invalidateQueries({ queryKey: [TODO, payload.id] });
     },
   });
 };
