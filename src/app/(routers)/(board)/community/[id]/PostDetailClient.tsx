@@ -68,7 +68,7 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
     }
   }, [editor, post]);
 
-  if (isError || isCommentsError)
+  if ((isError && !post) || (isCommentsError && !comments))
     return (
       <PostErrorFallback
         onRetry={() => {
