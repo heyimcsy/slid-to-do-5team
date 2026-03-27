@@ -1,16 +1,17 @@
-import type { Notes, NotesWithGoalResponse } from '@/api/notes';
+import type { Notes } from '@/api/notes';
 
 import Image from 'next/image';
 import emptyImage from '@/../public/images/big-zero-done.svg';
 
 import NoteCard from './NoteCard';
 
-export interface NoteListProps {
-  notesResponse: NotesWithGoalResponse;
+interface NoteListProps {
+  notes: Notes[];
+  goalId: number;
 }
 
-export default function NoteList({ notesResponse }: NoteListProps) {
-  if (notesResponse.notes.length === 0) {
+export default function NoteList({ notes, goalId }: NoteListProps) {
+  if (notes.length === 0) {
     return (
       <div className="flex min-h-[60vh] w-full items-center justify-center">
         <div className="flex h-fit w-fit flex-col items-center space-y-4">
@@ -29,10 +30,10 @@ export default function NoteList({ notesResponse }: NoteListProps) {
 
   return (
     <div className="grid w-full grid-cols-1 gap-4 pb-10 lg:grid-cols-2">
-      {notesResponse.notes.map((note: Notes) => (
+      {notes.map((note: Notes) => (
         <NoteCard
           key={note.id}
-          goalId={notesResponse.goalId as number}
+          goalId={goalId}
           id={note.id}
           title={note.title}
           todo={note.todo}
