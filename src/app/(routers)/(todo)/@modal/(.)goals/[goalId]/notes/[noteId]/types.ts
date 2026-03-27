@@ -1,9 +1,4 @@
-export type TagColor = 'gray' | 'red' | 'green' | 'purple' | 'yellow';
-
-export interface NoteTag {
-  name: string;
-  color: TagColor;
-}
+import type { Tags } from '@/api/todos';
 
 export interface Note {
   id: number;
@@ -12,7 +7,7 @@ export interface Note {
   todoTitle: string;
   isDone: boolean;
   updatedAt: string; // 'YYYY. MM. DD'
-  tags: NoteTag[];
+  tags: Tags[];
   linkUrl?: string;
   linkTitle?: string;
   content: string; // JSON.stringify(TipTapDoc)
