@@ -1,28 +1,35 @@
 'use client';
 
+import type { Todo } from '@/api/todos';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import imgNote from '@/../public/images/img-note.svg';
 import { cn } from '@/lib';
+
+import { formatDate } from '@/utils/date';
 
 import { Chips } from '@/components/common/Chips';
 import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { Icon } from '@/components/icon/Icon';
 import { Button } from '@/components/ui/button';
 
-interface NoteCardProps {
+export default function NoteCard({
+  goalId,
+  id,
+  title,
+  todo,
+  createdAt,
+}: {
+  goalId: number;
   id: number;
   title: string;
-  todoTitle: string;
-  isDone: boolean;
-  updatedAt: string; // 'YYYY.MM.DD'
-}
-
-export default function NoteCard({ id, title, todoTitle, isDone, updatedAt }: NoteCardProps) {
+  todo: Pick<Todo, 'id' | 'title' | 'done'>;
+  createdAt: string;
+}) {
   return (
     <Link
-      // href={`/goals/${goalId}/notes/${id}`}
-      href={`/goals/1/notes/${id}`}
+      href={`/goals/${goalId}/notes/${id}`}
       className={cn(
         'group flex cursor-pointer flex-col space-y-3 md:space-y-4',
         'h-24 w-full rounded-[16px] bg-white p-4 md:h-[138px] md:px-[38px] md:pt-7 md:pb-8',
@@ -73,10 +80,10 @@ export default function NoteCard({ id, title, todoTitle, isDone, updatedAt }: No
       {/* 하단: 뱃지 + 할일 제목 + 날짜 */}
       <div className="flex h-5 items-center justify-between md:h-5.5">
         <div className="flex items-center gap-1.5 overflow-hidden">
-          <Chips variant={isDone ? 'done' : 'todo'} />
-          <p className="font-xs-regular md:font-sm-regular truncate text-gray-600">{todoTitle}</p>
+          <Chips variant={todo.done ? 'done' : 'todo'} />
+          <p className="font-xs-regular md:font-sm-regular truncate text-gray-600">{todo.title}</p>
         </div>
-        <p className="font-xs-regular text-right text-gray-400">{updatedAt}</p>
+        <p className="font-xs-regular text-right text-gray-400">{formatDate(createdAt)}</p>
       </div>
     </Link>
   );
