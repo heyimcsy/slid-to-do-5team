@@ -1,19 +1,17 @@
 'use client';
 
-import type {
-  Note,
-  NoteTag,
-} from '@/app/(routers)/(todo)/@modal/(.)goals/[goalId]/notes/[noteId]/types';
+import type { Tags } from '@/api/todos';
+import type { Note } from '@/app/(routers)/(todo)/@modal/(.)goals/[goalId]/notes/[noteId]/types';
 
 import { useRouter } from 'next/navigation';
 import NoteDetailContent from '@/app/(routers)/(todo)/@modal/(.)goals/[goalId]/notes/[noteId]/_components/NoteDetailContent';
 
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 
-const tags: NoteTag[] = [
-  { name: '코딩', color: 'green' },
-  { name: '자기계발', color: 'yellow' },
-  { name: '공부', color: 'red' },
+const tags: Tags[] = [
+  { id: 1, name: '코딩', color: 'green' },
+  { id: 2, name: '자기계발', color: 'yellow' },
+  { id: 3, name: '공부', color: 'red' },
 ];
 
 const MOCK_NOTE: Note = {
