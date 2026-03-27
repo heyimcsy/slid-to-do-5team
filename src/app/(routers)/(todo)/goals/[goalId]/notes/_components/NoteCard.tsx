@@ -5,6 +5,7 @@ import type { Todo } from '@/api/todos';
 import Image from 'next/image';
 import Link from 'next/link';
 import imgNote from '@/../public/images/img-note.svg';
+import { useDeleteNote } from '@/api/notes';
 import { cn } from '@/lib';
 
 import { formatDate } from '@/utils/date';
@@ -27,6 +28,7 @@ export default function NoteCard({
   todo: Pick<Todo, 'id' | 'title' | 'done'>;
   createdAt: string;
 }) {
+  const { mutate: deleteNote } = useDeleteNote();
   return (
     <Link
       href={`/goals/${goalId}/notes/${id}`}
@@ -72,7 +74,7 @@ export default function NoteCard({
             title="정말 삭제하시겠어요?"
             description="삭제된 노트는 복구할 수 없습니다."
             onConfirm={() => {
-              console.log('delete');
+              deleteNote({ id });
             }}
           />
         </div>

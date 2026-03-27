@@ -201,9 +201,30 @@ export const useDeleteNote = () => {
     mutationFn: async ({ id }: { id: number }) => {
       return await apiClient(`${NOTES_URL}/${id}`, { method: 'DELETE' });
     },
-    onSuccess: (_, { id }) => {
+    onMutate: async ({ id }: { id: number }) => {
+      await queryClient.cancelQueries({ queryKey: [NOTES] });
+      const previousTodos = queryClient.getQueriesData({ queryKey: [NOTES] });
+      queryClient.setQueriesData(
+        { queryKey: [NOTES] },
+        (old: PaginatedResponse<Notes, 'notes'>) => {
+          if (!old) return old;
+          return {
+            ...old,
+            notes: old.notes.filter((note: Notes) => note.id !== id),
+            totalCount: old.totalCount - 1,
+          };
+        },
+      );
+      return { previousTodos };
+    },
+    onError: (_: Error, __, context) => {
+      context?.previousTodos.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+    },
+    onSettled: (_, __, payload) => {
       queryClient.invalidateQueries({ queryKey: [NOTES] });
-      queryClient.removeQueries({ queryKey: [NOTE, id] });
+      queryClient.invalidateQueries({ queryKey: [NOTE, payload.id] });
     },
   });
 };
