@@ -1,4 +1,3 @@
-import type { Goal } from '@/api/goals';
 import type { PaginatedResponse } from '@/api/response';
 import type { Todo } from '@/api/todos';
 import type { QueryClient } from '@tanstack/react-query';
@@ -129,10 +128,7 @@ interface GetNotesParams {
   limit?: number;
 }
 
-export type NotesWithGoalResponse = PaginatedResponse<Notes, 'notes'> & {
-  goalTitle: string | null;
-  goalId?: number;
-};
+export type NotesGetResponse = PaginatedResponse<Notes, 'notes'>;
 type CreateNotePayload = Pick<Notes, 'todoId' | 'title'> &
   Partial<Pick<Notes, 'content' | 'linkUrl'>>;
 
@@ -150,16 +146,7 @@ export const useGetNotes = ({ todoId, goalId, cursor, limit }: GetNotesParams = 
       const queryString = params.toString();
       const url = queryString ? `${NOTES_URL}?${queryString}` : NOTES_URL;
 
-      const [notesData, goalData] = await Promise.all([
-        apiClient<PaginatedResponse<Notes, 'notes'>>(url),
-        goalId ? apiClient<Goal>(`/goals/${goalId}`) : Promise.resolve(null),
-      ]);
-
-      return {
-        ...notesData,
-        goalTitle: goalData?.title ?? null,
-        goalId,
-      };
+      return await apiClient<NotesGetResponse>(url);
     },
     enabled: !!goalId,
   });
