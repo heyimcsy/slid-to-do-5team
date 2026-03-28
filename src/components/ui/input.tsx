@@ -8,17 +8,19 @@ import { FieldDescription } from './field';
 
 /**
  * @param errorMessage 에러 메시지(optional)
+ * @param invalid 인라인 메시지 없이도 검증 실패 상태(테두리·`aria-invalid`)를 표시할 때
  * @param startAdornment 입력 필드 좌측(세로 중앙) — 예: 검색 아이콘(optional)
  * @param endAdornment 입력 필드 우측(세로 중앙) — 예: 비밀번호 표시 토글(optional)
  */
 export interface InputProps extends Omit<React.ComponentProps<'input'>, 'ref'> {
   errorMessage?: string;
+  invalid?: boolean;
   startAdornment?: React.ReactNode;
   endAdornment?: React.ReactNode;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(function Input(
-  { className, type, errorMessage, startAdornment, endAdornment, ...props },
+  { className, type, errorMessage, invalid, startAdornment, endAdornment, ...props },
   ref,
 ) {
   const hasAdornment = startAdornment != null || endAdornment != null;
@@ -45,14 +47,14 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(function Input(
       ref={ref}
       type={type}
       data-slot="input"
-      aria-invalid={!!errorMessage}
+      aria-invalid={invalid ?? !!errorMessage}
       className={inputClassName}
       {...props}
     />
   );
 
   return (
-    <div className="flex flex-col">
+    <>
       {hasAdornment ? (
         <div className="relative flex w-full">
           {primitiveInput}
@@ -77,7 +79,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(function Input(
           {errorMessage}
         </FieldDescription>
       )}
-    </div>
+    </>
   );
 });
 
