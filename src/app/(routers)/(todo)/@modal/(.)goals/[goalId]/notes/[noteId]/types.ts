@@ -5,8 +5,8 @@ export interface Note {
   title: string;
   goalTitle: string;
   todoTitle: string;
-  isDone: boolean;
-  updatedAt: string; // 'YYYY. MM. DD'
+  done: boolean;
+  createdAt: string; // 'YYYY. MM. DD'
   tags: Tags[];
   linkUrl?: string;
   linkTitle?: string;

@@ -2,24 +2,26 @@ import type { Tags } from '@/api/todos';
 
 import { cn } from '@/lib';
 
+import { formatDate } from '@/utils/date';
+
 import { Chips } from '@/components/common/Chips';
 import { Icon } from '@/components/icon/Icon';
 import { Badge } from '@/components/ui/badge';
 
 export default function MetaTags({
   goalTitle,
-  updatedAt,
+  createdAt,
   todoTitle,
-  isDone,
+  done,
   tags,
   className,
 }: {
   goalTitle: string;
-  updatedAt: string;
+  createdAt: string;
   todoTitle: string;
   tags: Tags[];
   className?: string;
-  isDone: boolean;
+  done: boolean;
 }) {
   return (
     <div className={cn(className, 'grid grid-cols-1 gap-2 md:grid-cols-2 md:gap-x-8')}>
@@ -33,14 +35,14 @@ export default function MetaTags({
       <div className="font-sm-regular flex items-center gap-2">
         <Icon name="calendar" size={18} className="shrink-0" />
         <span className="text-gray-400">작성일</span>
-        <span className="text-gray-700">{updatedAt}</span>
+        <span className="text-gray-700">{formatDate(createdAt)}</span>
       </div>
       {/* 할일 + 상태 뱃지 */}
       <div className="font-sm-regular flex items-center gap-2">
         <Icon name="checkMini" size={18} className="shrink-0" />
         <span className="shrink-0 text-gray-400">할 일</span>
         <span className="truncate text-gray-700">{todoTitle}</span>
-        <Chips variant={isDone ? 'done' : 'todo'} />
+        <Chips variant={done ? 'done' : 'todo'} />
       </div>
       {/* 태그 */}
       <div className="font-sm-regular flex items-center gap-2">

@@ -1,9 +1,9 @@
 'use client';
 
 import type { FilterType } from './_components/TodoTabs';
-import type { Task } from './types';
 
 import { useState } from 'react';
+import { useGetTodos } from '@/api/todos';
 
 import { Button } from '@/components/ui/button';
 
@@ -11,61 +11,16 @@ import TodoHeader from './_components/TodoHeader';
 import TodoList from './_components/TodoList';
 import TodoTabs from './_components/TodoTabs';
 
-const todolists: Task[] = [
-  {
-    id: 1,
-    content: '사용자 데이터 렌더링 구현',
-    checked: false,
-    link: true,
-    note: true,
-    favorites: true,
-  },
-  {
-    id: 2,
-    content: '개발 폴더 구조 세팅 (src, public, components)',
-    checked: false,
-    link: true,
-    note: true,
-    favorites: false,
-  },
-  {
-    id: 3,
-    content: '자바스크립트 기초 챕터4 듣기',
-    checked: false,
-    link: true,
-    note: true,
-    favorites: false,
-  },
-  {
-    id: 4,
-    content: 'JSON 서버 또는 mock API 연동',
-    checked: true,
-    link: true,
-    note: true,
-    favorites: true,
-  },
-  {
-    id: 5,
-    content: '반응형 레이아웃을 설계하고 미디어쿼리를 적용',
-    checked: false,
-    link: true,
-    note: true,
-    favorites: true,
-  },
-  {
-    id: 6,
-    content: '자바스크립 기초 챕터3기 듣기',
-    checked: false,
-    link: true,
-    note: true,
-    favorites: true,
-  },
-];
 export default function TodosPage() {
   const [filter, setFilter] = useState<FilterType>('ALL');
-  const filteredTasks = todolists.filter((todo) => {
-    if (filter === 'TODO') return !todo.checked;
-    if (filter === 'DONE') return todo.checked;
+  const { data, isLoading, error } = useGetTodos({ limit: 40 });
+
+  if (isLoading) return <div>로딩중...</div>;
+  if (error || !data) return <div>에러</div>;
+
+  const filteredTasks = data.todos.filter((todo) => {
+    if (filter === 'TODO') return !todo.done;
+    if (filter === 'DONE') return todo.done;
     return true;
   });
 
@@ -73,7 +28,7 @@ export default function TodosPage() {
     <div className="flex h-full w-full flex-col items-center px-4 py-10">
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
         <div className="mb-4 hidden px-2 md:block">
-          <TodoHeader count={todolists.length} />
+          <TodoHeader count={data.todos.length} />
         </div>
 
         <div className="mb-2 flex items-center justify-between">

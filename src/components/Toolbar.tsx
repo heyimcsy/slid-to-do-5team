@@ -4,12 +4,15 @@ import { useToolbar } from '@/hooks/editor';
 import { cn } from '@/lib';
 import { type Editor } from '@tiptap/react';
 
+import { LinkModal } from '@/components/common/LinkModal';
+
 interface ToolbarProps {
   editor: Editor | null;
   variant: 'note' | 'post';
   onImageUpload?: (file: File) => Promise<string>;
   onImageLimitExceeded?: () => void;
   imageLimit?: number;
+  onLinkConfirm?: (url: string) => void;
 }
 
 export function Toolbar({
@@ -18,14 +21,16 @@ export function Toolbar({
   onImageUpload,
   onImageLimitExceeded,
   imageLimit = 2,
+  onLinkConfirm,
 }: ToolbarProps) {
-  const { toolbarItems, fileInputRef, handleFileChange } = useToolbar({
-    editor,
-    variant,
-    onImageUpload,
-    onImageLimitExceeded,
-    imageLimit,
-  });
+  const { toolbarItems, fileInputRef, handleFileChange, showLinkModal, setShowLinkModal } =
+    useToolbar({
+      editor,
+      variant,
+      onImageUpload,
+      onImageLimitExceeded,
+      imageLimit,
+    });
 
   if (!editor) return null;
 
@@ -59,6 +64,13 @@ export function Toolbar({
             {item.label}
           </button>
         ),
+      )}
+      {showLinkModal && (
+        <LinkModal
+          editor={editor}
+          onClose={() => setShowLinkModal(false)}
+          onLinkConfirm={onLinkConfirm}
+        />
       )}
     </div>
   );

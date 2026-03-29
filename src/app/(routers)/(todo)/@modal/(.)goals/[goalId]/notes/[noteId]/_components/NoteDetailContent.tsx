@@ -41,8 +41,8 @@ export default function NoteDetailContent({ note }: { note: Note }) {
         <MetaTags
           goalTitle={note.goalTitle}
           todoTitle={note.todoTitle}
-          updatedAt={note.updatedAt}
-          isDone={note.isDone}
+          createdAt={note.createdAt}
+          done={note.done}
           tags={note.tags}
         />
       </SheetHeader>

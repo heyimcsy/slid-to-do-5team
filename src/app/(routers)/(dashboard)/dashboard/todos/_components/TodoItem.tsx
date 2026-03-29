@@ -3,6 +3,7 @@
 import type { Task } from '../types';
 
 import { useState } from 'react';
+import { useDeleteTodos, usePatchTodos } from '@/api/todos';
 import { cn } from '@/lib';
 
 import { Icon } from '@/components/icon/Icon';
@@ -19,6 +20,20 @@ interface TodoItemProps {
 
 export default function TodoItem({ task }: TodoItemProps) {
   const [hovered, setHovered] = useState(false);
+  const { mutate: patchTodo } = usePatchTodos();
+  const { mutate: deleteTodo } = useDeleteTodos();
+
+  const handleToggle = () => {
+    patchTodo({
+      id: task.id,
+      done: !task.done,
+    });
+  };
+
+  const handleDelete = () => {
+    deleteTodo({ id: task.id });
+  };
+
   return (
     <ul>
       <li
@@ -29,8 +44,8 @@ export default function TodoItem({ task }: TodoItemProps) {
         )}
       >
         {/* 체크박스 */}
-        <button className="shrink-0 cursor-pointer">
-          {task.checked ? (
+        <button onClick={handleToggle} className="shrink-0 cursor-pointer">
+          {task.done ? (
             <Icon name="checkBox" size={18} checked={true} />
           ) : (
             <Icon name="checkBox" size={18} />
@@ -42,10 +57,10 @@ export default function TodoItem({ task }: TodoItemProps) {
           <span
             className={cn(
               'font-sm-medium md:font-base-medium min-w-0 flex-1 truncate',
-              task.checked && 'text-orange-500',
+              task.done && 'text-orange-500',
             )}
           >
-            {task.content}
+            {task.title}
           </span>
           <div className="flex shrink-0 items-center gap-2">
             <Icon name="note" variant="orange" />
@@ -62,9 +77,7 @@ export default function TodoItem({ task }: TodoItemProps) {
                       <DropdownMenuItem onClick={() => console.log('수정', task.id)}>
                         수정하기
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => console.log('삭제', task.id)}>
-                        삭제하기
-                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleDelete}>삭제하기</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>

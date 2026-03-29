@@ -184,7 +184,7 @@ export function useToolbar({
         makeItem('italic', editor.isActive('italic'), () =>
           editor.chain().focus().toggleItalic().run(),
         ),
-        makeItem('underline', editor.isActive('underline'), () =>
+        makeItem('underline', editor.isActive('underlein'), () =>
           editor.chain().focus().toggleUnderline().run(),
         ),
         { type: 'gap' },
