@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { cookies } from 'next/headers';
-import { getJwtExp, isAccessTokenExpiringSoon } from '@/lib/auth/cookies';
+import { getJwtExp, isAccessTokenExpired } from '@/lib/auth/cookies';
 
 import { AUTH_CONFIG } from '@/constants/auth-config';
 
@@ -39,7 +39,7 @@ describe('cookies', () => {
     });
   });
 
-  describe('isAccessTokenExpiringSoon', () => {
+  describe('isAccessTokenExpired', () => {
     const mockCookieStore = { get: jest.fn(), set: jest.fn(), delete: jest.fn() };
 
     beforeEach(() => {
@@ -49,32 +49,32 @@ describe('cookies', () => {
 
     it('accessToken 없음 → true', async () => {
       mockCookieStore.get.mockReturnValue(undefined);
-      expect(await isAccessTokenExpiringSoon()).toBe(true);
+      expect(await isAccessTokenExpired()).toBe(true);
     });
 
-    it('exp가 REFRESH_BUFFER_SECONDS 이내 → true', async () => {
-      const exp = Math.floor(Date.now() / 1000) + 30; // 30초 후 만료
+    it('exp가 현재 이전 → true', async () => {
+      const exp = Math.floor(Date.now() / 1000) - 60;
       const token = createJwt(exp);
       mockCookieStore.get.mockImplementation((name: string) =>
         name === AUTH_CONFIG.ACCESS_TOKEN_KEY ? { value: token } : undefined,
       );
-      expect(await isAccessTokenExpiringSoon()).toBe(true);
+      expect(await isAccessTokenExpired()).toBe(true);
     });
 
-    it('exp가 REFRESH_BUFFER_SECONDS 초과 → false', async () => {
-      const exp = Math.floor(Date.now() / 1000) + 120; // 120초 후 만료
+    it('exp가 현재보다 미래 → false', async () => {
+      const exp = Math.floor(Date.now() / 1000) + 120;
       const token = createJwt(exp);
       mockCookieStore.get.mockImplementation((name: string) =>
         name === AUTH_CONFIG.ACCESS_TOKEN_KEY ? { value: token } : undefined,
       );
-      expect(await isAccessTokenExpiringSoon()).toBe(false);
+      expect(await isAccessTokenExpired()).toBe(false);
     });
 
-    it('exp가 null (잘못된 JWT) → true (안전하게 갱신 시도)', async () => {
+    it('잘못된 JWT → true', async () => {
       mockCookieStore.get.mockImplementation((name: string) =>
         name === AUTH_CONFIG.ACCESS_TOKEN_KEY ? { value: 'invalid-jwt' } : undefined,
       );
-      expect(await isAccessTokenExpiringSoon()).toBe(true);
+      expect(await isAccessTokenExpired()).toBe(true);
     });
   });
 });

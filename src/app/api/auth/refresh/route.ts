@@ -1,66 +1,71 @@
 import { NextResponse } from 'next/server';
-import { setAuthCookies } from '@/lib/auth/cookies';
-import { parseTokenPairFromBackendJson } from '@/lib/auth/parseTokenPairFromBackendJson';
+import { isAccessTokenExpired } from '@/lib/auth/cookies';
+import { refreshSessionWithMutex } from '@/lib/auth/refreshSession.server';
+import { isPublicPath } from '@/lib/navigation/publicPaths';
 
-import { API_BASE_URL } from '@/constants/api';
 import { AUTH_CONFIG } from '@/constants/auth-config';
+import {
+  AUTH_MISSING_REFRESH_TOKEN_MESSAGE_KO,
+  AUTH_SERVICE_ERROR_MESSAGE_KO,
+} from '@/constants/error-message';
 
-export async function POST() {
-  const { getRefreshToken, isAccessTokenExpiringSoon } = await import('@/lib/auth/cookies');
-
-  const refreshToken = await getRefreshToken();
-  if (!refreshToken) {
+/**
+ * 리프레시 없음:
+ * - 액세스만 있음 → 401
+ * - 둘 다 없음 + `clientPathname`이 공개 경로(`isPublicPath`) 또는 헤더 없음 → 200 (비로그인 노이즈·불필요 리다이렉트 방지)
+ * - 둘 다 없음 + 비공개 경로 → 401 → 클라이언트 `logoutAndRedirect`가 `/login`으로 이동
+ */
+function missingRefreshResponse(
+  accessToken: string | undefined,
+  clientPathname: string | null,
+): NextResponse {
+  if (accessToken) {
     return NextResponse.json(
-      { success: false, message: '리프레시 토큰이 없습니다.' },
+      { success: false, message: AUTH_MISSING_REFRESH_TOKEN_MESSAGE_KO },
       { status: 401 },
     );
   }
+  if (clientPathname && !isPublicPath(clientPathname)) {
+    return NextResponse.json(
+      { success: false, message: AUTH_MISSING_REFRESH_TOKEN_MESSAGE_KO },
+      { status: 401 },
+    );
+  }
+  return NextResponse.json({ success: true as const });
+}
 
-  // accessToken이 만료 직전(REFRESH_BUFFER_SECONDS) 일때만 백엔드로 토큰 갱신 요청
-  // isAccessTokenExpiringSoon() === false → 200 OK → 토큰 갱신 필요 없음
-  // isAccessTokenExpiringSoon() === true → 백엔드 호출 후 새 토큰 교체
-  if (!(await isAccessTokenExpiringSoon())) {
-    return NextResponse.json({ success: true }); // 아직 유효, 200 OK 반환
+export async function POST(request: Request) {
+  const clientPathname = request.headers.get(AUTH_CONFIG.CLIENT_PATHNAME_HEADER);
+  const { getRefreshToken, getAccessToken } = await import('@/lib/auth/cookies');
+
+  const refreshToken = await getRefreshToken();
+  const accessToken = await getAccessToken();
+
+  if (!refreshToken) {
+    return missingRefreshResponse(accessToken, clientPathname);
   }
 
-  const base = API_BASE_URL?.replace(/\/$/, '') ?? '';
+  // access가 아직 유효하면 백엔드 회전 없이 OK (선제 갱신·만료 임박 갱신 없음)
+  if (!(await isAccessTokenExpired())) {
+    return NextResponse.json({ success: true });
+  }
 
-  /** 백엔드 연결 실패·성공 본문 JSON 파싱 실패 등 → 제어된 502 (미처리 시 Route Handler 500) */
-  let data: Record<string, unknown>;
-  try {
-    const response = await fetch(`${base}/auth/refresh`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ [AUTH_CONFIG.REFRESH_TOKEN_KEY]: refreshToken }),
-    });
+  const result = await refreshSessionWithMutex();
 
-    if (!response.ok) {
-      const errBody = await response.json().catch(() => ({}));
-      const message =
-        (errBody as { message?: string }).message ??
-        (errBody as { error?: string }).error ??
-        '토큰 갱신 실패';
-      return NextResponse.json({ success: false, message }, { status: response.status });
-    }
-
-    data = (await response.json()) as Record<string, unknown>;
-  } catch {
+  if (result.ok) {
     return NextResponse.json(
-      {
-        success: false,
-        message: '인증 서버와 통신 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
-      },
+      result.user ? { success: true as const, user: result.user } : { success: true as const },
+    );
+  }
+
+  if (result.reason === 'network') {
+    return NextResponse.json(
+      { success: false, message: AUTH_SERVICE_ERROR_MESSAGE_KO },
       { status: 502 },
     );
   }
 
-  const {
-    accessToken: newAccessToken,
-    refreshToken: newRefreshToken,
-    user,
-  } = parseTokenPairFromBackendJson(data);
-
-  if (!newAccessToken || !newRefreshToken) {
+  if (result.reason === 'invalid_token_body') {
     return NextResponse.json(
       {
         success: false,
@@ -70,7 +75,16 @@ export async function POST() {
     );
   }
 
-  await setAuthCookies(newAccessToken, newRefreshToken);
+  if (result.reason === 'backend_rejected') {
+    return NextResponse.json(
+      { success: false, message: result.message },
+      { status: result.status },
+    );
+  }
 
-  return NextResponse.json(user ? { success: true as const, user } : { success: true as const });
+  // no_refresh_token — 위에서 refreshToken 있음을 확인했으나 동시성으로 드물게 빈 경우
+  return NextResponse.json(
+    { success: false, message: AUTH_MISSING_REFRESH_TOKEN_MESSAGE_KO },
+    { status: 401 },
+  );
 }
