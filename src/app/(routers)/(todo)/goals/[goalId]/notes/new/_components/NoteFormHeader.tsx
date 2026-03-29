@@ -1,4 +1,4 @@
-import SpeachComponent from '@/app/(routers)/(todo)/goals/[goalId]/notes/new/_components/SpeachComponent';
+import { SpeechComponent } from '@/app/(routers)/(todo)/goals/[goalId]/notes/new/_components';
 
 import { Button } from '@/components/ui/button';
 
@@ -28,7 +28,7 @@ export default function NoteFormHeader({
         </Button>
       </div>
 
-      <SpeachComponent
+      <SpeechComponent
         loadDraft={loadDraft}
         clearDraft={clearDraft}
         className="top-5 right-4 hidden md:block"

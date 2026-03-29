@@ -10,7 +10,7 @@ import {
   NoteEditor,
   NoteFormHeader,
   SaveCheckToast,
-  SpeachComponent,
+  SpeechComponent,
 } from '@/app/(routers)/(todo)/goals/[goalId]/notes/new/_components';
 import { useLinkEmbed } from '@/app/(routers)/(todo)/goals/[goalId]/notes/new/hooks/useLinkEmbed';
 import { useNoteDraft } from '@/app/(routers)/(todo)/goals/[goalId]/notes/new/hooks/useNoteDraft';
@@ -115,7 +115,7 @@ export default function NewNotePage() {
             handleLinkClick={handleLinkClick}
           />
         </div>
-        <SpeachComponent
+        <SpeechComponent
           loadDraft={loadDraft}
           clearDraft={clearDraft}
           className="bottom-20 md:hidden"

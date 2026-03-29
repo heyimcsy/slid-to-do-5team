@@ -19,7 +19,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 
-export default function SpeachComponent({
+export default function SpeechComponent({
   loadDraft,
   clearDraft,
   className,
