@@ -35,6 +35,23 @@ export interface Todo {
   tags: Tag[];
 }
 
+export interface TodoResponse {
+  id: number;
+  teamId: string;
+  userId: number;
+  goalId: number;
+  title: string;
+  done: boolean;
+  fileUrl: string | null;
+  linkUrl: string | null;
+  dueDate: string;
+  createdAt: string;
+  updatedAt: string;
+  goal: Pick<Goal, 'id' | 'title'>;
+  noteIds: number[];
+  tags: Tags[];
+}
+
 const TODOS = 'todos';
 const TODO = 'todo';
 const TODOS_URL = '/todos';

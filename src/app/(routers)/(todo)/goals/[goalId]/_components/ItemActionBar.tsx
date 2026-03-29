@@ -111,7 +111,7 @@ export default function ItemActionBar({
           variant="icon"
           size="none"
         >
-          <Link href={`/goals/${goalId}/notes/new`}>
+          <Link href={`/goals/${goalId}/notes/new?todoId=${id}`}>
             <Icon name="edit" />
           </Link>
         </Button>
