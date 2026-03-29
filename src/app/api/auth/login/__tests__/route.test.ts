@@ -12,9 +12,13 @@ import {
 import { API_URL, TEAM_ID } from '@/constants/api';
 import { AUTH_CONFIG } from '@/constants/auth-config';
 
-jest.mock('@/lib/auth/cookies', () => ({
-  setAuthCookies: jest.fn().mockResolvedValue(undefined),
-}));
+jest.mock('@/lib/auth/cookies', () => {
+  const actual = jest.requireActual<typeof import('@/lib/auth/cookies')>('@/lib/auth/cookies');
+  return {
+    ...actual,
+    setAuthCookies: jest.fn().mockResolvedValue(undefined),
+  };
+});
 
 const mockSetAuthCookies = setAuthCookies as jest.MockedFunction<typeof setAuthCookies>;
 
@@ -90,6 +94,29 @@ describe('POST /api/auth/login', () => {
     expect(res.status).toBe(403);
     const json = await res.json();
     expect(json.message).toBe('Custom error');
+  });
+
+  it('백엔드 409(이메일 중복 등) → BFF도 409', async () => {
+    (globalThis.fetch as jest.Mock).mockResolvedValue(
+      new Response(JSON.stringify({ message: '이미 가입된 이메일입니다.' }), { status: 409 }),
+    );
+
+    const req = loginRequest({ email: 'a@b.com', password: 'password12' });
+    const res = await POST(req);
+    expect(res.status).toBe(409);
+    const json = await res.json();
+    expect(json.success).toBe(false);
+    expect(json.message).toBe('이미 가입된 이메일입니다.');
+  });
+
+  it('백엔드 400 + 중복 메시지 → BFF는 409로 통일', async () => {
+    (globalThis.fetch as jest.Mock).mockResolvedValue(
+      new Response(JSON.stringify({ message: '이미 가입된 이메일입니다.' }), { status: 400 }),
+    );
+
+    const req = loginRequest({ email: 'a@b.com', password: 'password12' });
+    const res = await POST(req);
+    expect(res.status).toBe(409);
   });
 
   it('백엔드 !ok + JSON 파싱 실패 → 기본 로그인 실패 메시지', async () => {

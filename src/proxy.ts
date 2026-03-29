@@ -3,38 +3,36 @@ import 'server-only';
 import type { NextRequest } from 'next/server';
 
 import { NextResponse } from 'next/server';
-import { parseTokenPairFromBackendJson } from '@/lib/auth/parseTokenPairFromBackendJson';
-import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
+import { isPublicPath } from '@/lib/navigation/publicPaths';
 
 import { ALLOWED_ORIGINS, API_BASE_URL } from '@/constants/api';
 import { AUTH_CONFIG, isAuthRouteGuardEnabled } from '@/constants/auth-config';
+import { AUTH_MISSING_REFRESH_TOKEN_MESSAGE_KO } from '@/constants/error-message';
 
 /** 갱신 실패·액세스 토큰 없음 — 백엔드로 무인증 프록시하지 않음 */
 function proxyAuthRequiredResponse(): Response {
   return new Response(
     JSON.stringify({
       success: false,
-      message: '인증이 만료되었습니다. 다시 로그인해 주세요.',
+      message: AUTH_MISSING_REFRESH_TOKEN_MESSAGE_KO,
     }),
     { status: 401, headers: { 'Content-Type': 'application/json' } },
   );
 }
 
-// PUBLIC_PATHS 에서는 인증을 거치지 않음(로그인 이전에 접근 가능한 페이지)
-const PUBLIC_PATHS = ['/', '/login', '/signup', '/com'];
-
-/** @internal 테스트용 export */
-export function isPublicPath(pathname: string): boolean {
-  return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
-}
+/** @internal 테스트용 re-export */
+export { isPublicPath, PUBLIC_PATHS } from '@/lib/navigation/publicPaths';
 
 /**
  * @description proxy - Next.js 16 라우트 보호 (proxy.ts = 구 middleware.ts)
+ * @note access만 없고 refresh가 있으면 **통과** — 세션 복구 가능(클라이언트 `POST /api/auth/refresh` 등으로 access 재발급).
+ *       둘 다 없을 때만 로그인으로 보냄.
  * @param request - NextRequest
  * @returns {NextResponse} - NextResponse
  */
 export function proxy(request: NextRequest) {
-  const token = request.cookies.get(AUTH_CONFIG.ACCESS_TOKEN_KEY);
+  const accessCookie = request.cookies.get(AUTH_CONFIG.ACCESS_TOKEN_KEY);
+  const refreshCookie = request.cookies.get(AUTH_CONFIG.REFRESH_TOKEN_KEY);
   const { pathname } = request.nextUrl;
 
   if (isPublicPath(pathname)) {
@@ -45,7 +43,10 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (!token?.value) {
+  const hasAccess = Boolean(accessCookie?.value);
+  const hasRefresh = Boolean(refreshCookie?.value);
+
+  if (!hasAccess && !hasRefresh) {
     const loginUrl = new URL('/login', request.url);
     const returnTo = `${pathname}${request.nextUrl.search}`;
     loginUrl.searchParams.set('callbackUrl', returnTo);
@@ -127,39 +128,20 @@ export async function forwardToBackend(request: Request, path: string): Promise<
     });
   }
 
-  const { getAccessToken, getRefreshToken, isAccessTokenExpiringSoon, setAuthCookies } =
+  const { getAccessToken, getRefreshToken, isAccessTokenExpired } =
     await import('@/lib/auth/cookies');
+  const { refreshSessionWithMutex } = await import('@/lib/auth/refreshSession.server');
 
   const apiBase = API_BASE_URL?.replace(/\/$/, '') ?? '';
-  const refreshTimeoutMs = AUTH_CONFIG.REFRESH_FETCH_TIMEOUT_MS;
 
-  /** 만료 임박(또는 액세스 없음) 시 선행 refresh — 실패 시 백엔드로 보내지 않음(BFF) */
-  if (await isAccessTokenExpiringSoon()) {
+  /** access 만료(또는 없음) 시에만 refresh — 실패 시 백엔드로 무인증 프록시하지 않음 */
+  if (await isAccessTokenExpired()) {
     const refreshToken = await getRefreshToken();
     if (!refreshToken) {
       return proxyAuthRequiredResponse();
     }
-    try {
-      const res = await fetchWithTimeout(
-        `${apiBase}/auth/refresh`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ [AUTH_CONFIG.REFRESH_TOKEN_KEY]: refreshToken }),
-        },
-        refreshTimeoutMs,
-      );
-      if (!res.ok) {
-        return proxyAuthRequiredResponse();
-      }
-      const data = (await res.json()) as Record<string, unknown>;
-      const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-        parseTokenPairFromBackendJson(data);
-      if (!newAccessToken || !newRefreshToken) {
-        return proxyAuthRequiredResponse();
-      }
-      await setAuthCookies(newAccessToken, newRefreshToken);
-    } catch {
+    const refreshed = await refreshSessionWithMutex();
+    if (!refreshed.ok) {
       return proxyAuthRequiredResponse();
     }
   }
