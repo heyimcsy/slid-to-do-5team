@@ -13,7 +13,7 @@ import TodoTabs from './_components/TodoTabs';
 
 export default function TodosPage() {
   const [filter, setFilter] = useState<FilterType>('ALL');
-  const { data, isLoading, error } = useGetTodos({});
+  const { data, isLoading, error } = useGetTodos({ limit: 40 });
 
   if (isLoading) return <div>로딩중...</div>;
   if (error || !data) return <div>에러</div>;

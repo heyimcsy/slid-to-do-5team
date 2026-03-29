@@ -61,6 +61,12 @@ export type TodoWithFavorites = Todo & { favorites: boolean };
 // useGetTodos 반환 response 타입
 export type TodosWithFavoriteResponse = PaginatedResponse<TodoWithFavorites, 'todos'>;
 
+// usePostTodo 타입
+type CreateTodoPayload = Pick<Todo, 'title' | 'goalId' | 'dueDate'> &
+  Partial<Pick<Todo, 'linkUrl' | 'fileUrl'>> & {
+    tags?: { name: string }[];
+  };
+
 export const useGetTodos = ({ goalId, done, limit, cursor }: GetTodosParams) => {
   return useQuery({
     queryKey: [TODOS, { goalId, done, limit, cursor }],
@@ -182,6 +188,21 @@ export const useDeleteTodos = () => {
     onSettled: (_, __, payload) => {
       queryClient.invalidateQueries({ queryKey: [TODOS] });
       queryClient.invalidateQueries({ queryKey: [TODO, payload.id] });
+    },
+  });
+};
+
+export const usePostTodo = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: CreateTodoPayload) => {
+      return await apiClient<Todo>(TODOS_URL, {
+        method: 'POST',
+        body: payload,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [TODOS] });
     },
   });
 };
