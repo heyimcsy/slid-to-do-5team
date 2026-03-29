@@ -8,9 +8,13 @@ import { setAuthCookies } from '@/lib/auth/cookies';
 import { API_URL, TEAM_ID } from '@/constants/api';
 import { AUTH_CONFIG } from '@/constants/auth-config';
 
-jest.mock('@/lib/auth/cookies', () => ({
-  setAuthCookies: jest.fn().mockResolvedValue(undefined),
-}));
+jest.mock('@/lib/auth/cookies', () => {
+  const actual = jest.requireActual<typeof import('@/lib/auth/cookies')>('@/lib/auth/cookies');
+  return {
+    ...actual,
+    setAuthCookies: jest.fn().mockResolvedValue(undefined),
+  };
+});
 
 const mockSetAuthCookies = setAuthCookies as jest.MockedFunction<typeof setAuthCookies>;
 

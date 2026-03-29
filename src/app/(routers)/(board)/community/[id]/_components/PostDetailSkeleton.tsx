@@ -25,6 +25,30 @@ export function PostDetailSkeleton() {
 
             <div className="mt-4 h-3 w-32 animate-pulse rounded-md bg-gray-200" />
           </div>
+
+          <div className="flex flex-col gap-6">
+            <div className="h-5 w-16 animate-pulse rounded-md bg-gray-200" />
+
+            <div className="flex gap-3 md:gap-4">
+              <div className="h-12 flex-1 animate-pulse rounded-xl bg-gray-200 md:h-14 md:rounded-2xl" />
+              <div className="h-12 w-16 animate-pulse rounded-full bg-gray-200 md:h-14 md:w-20" />
+            </div>
+
+            <ul className="flex flex-col gap-8 md:gap-10">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <li key={i} className="flex flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="size-8 animate-pulse rounded-full bg-gray-200" />
+                    <div className="h-4 w-20 animate-pulse rounded-md bg-gray-200" />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <div className="h-4 w-full animate-pulse rounded-md bg-gray-200" />
+                    <div className="h-3 w-16 animate-pulse rounded-md bg-gray-200" />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </div>

@@ -3,6 +3,8 @@ import type { Metadata } from 'next';
 import { cn } from '@/lib';
 import { AppProviders } from '@/providers';
 
+import { Toaster } from '@/components/ui/sonner';
+
 import { pretendard } from './fonts';
 
 import './globals.css';
@@ -21,7 +23,12 @@ export default function RootLayout({
   return (
     <html lang="ko" className={cn('font-pretendard antialiased', pretendard.variable)}>
       <body>
+        {/*
+          Toaster는 React Query 등 AppProviders 내부 리렌더와 분리함
+          toast()는 모듈 단위 큐로 동작하므로 형제 배치여도 동일하게 표시됨
+        */}
         <AppProviders>{children}</AppProviders>
+        <Toaster />
       </body>
     </html>
   );

@@ -3,8 +3,11 @@
 import type { IconName } from '../icon/Icon';
 
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useLogout } from '@/hooks/auth/useLogout';
+import { authUserStore } from '@/stores/authUserStore';
 import { AnimatePresence, motion } from 'motion/react';
 
 import {
@@ -27,7 +30,6 @@ const navItems: { label: string; href: string; icon: IconName; hasArrow?: boolea
 
 const middleItems: { label: string; href: string; icon: IconName }[] = [
   { label: '설정', href: '/settings', icon: 'setting' },
-  { label: '로그아웃', href: '/logout', icon: 'logout' },
 ];
 
 const bottomItems: {
@@ -62,10 +64,13 @@ const tempGoals = [
 
 export default function SidebarNav() {
   const pathname = usePathname();
+  /** `useState`/`useRef`를 `useLogout`·zustand보다 먼저 — HMR 시 이전 스냅샷과 슬롯이 맞고 Rules of Hooks 위반 방지 */
   const [isGoalsOpen, setIsGoalsOpen] = React.useState(false);
   // 목표탭 하위에 Input을 보여주는 상태 관리
   const [isInputVisible, setIsInputVisible] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const logout = useLogout();
+  const user = authUserStore((s) => s.user);
   const handleNewGoal = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsGoalsOpen(!isGoalsOpen);
@@ -156,6 +161,18 @@ export default function SidebarNav() {
               </Link>
             </SidebarMenuItem>
           ))}
+          <SidebarMenuItem key="logout">
+            <button
+              type="button"
+              onClick={() => void logout()}
+              className="flex w-full items-center gap-2 px-2 py-3 text-left"
+            >
+              <Icon name="logout" className="group-data-[collapsible=icon]:hidden" />
+              <span className="font-lg-semibold text-gray-500 group-data-[collapsible=icon]:hidden">
+                로그아웃
+              </span>
+            </button>
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarGroup>
 
@@ -178,13 +195,24 @@ export default function SidebarNav() {
         </SidebarMenu>
         <div className="mt-4 flex items-center gap-2">
           <div className="flex flex-1 items-center gap-2 rounded-full border border-gray-200 px-3 py-2 group-data-[collapsible=icon]:hidden">
-            <div>img</div>
+            <Image
+              src={user?.image ?? '/globe.svg'}
+              alt={`${user?.name ?? '손'}님 프로필 이미지`}
+              width={40}
+              height={40}
+              className="min-h-[40px] min-w-[40px] rounded-full object-cover"
+              priority
+            />
             <div className="flex flex-col">
               <div className="flex items-center gap-1">
-                <span className="font-sm-medium">체다치즈</span>
+                <span className="font-sm-medium" title={user?.name}>
+                  {user?.name}
+                </span>
                 <Icon name="arrow" direction="right" size={12} />
               </div>
-              <span className="font-sm-regular text-gray-300">chedacheese@slid.kr</span>
+              <span className="font-sm-regular max-w-32 truncate text-gray-300" title={user?.email}>
+                {user?.email}
+              </span>
             </div>
           </div>
           <div className="relative hidden group-data-[collapsible=icon]:hidden md:block">

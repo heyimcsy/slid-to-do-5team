@@ -7,15 +7,18 @@ import { useState } from 'react';
 import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { KebabMenu } from '@/components/common/KebabMenu';
 
-import { formatRelativeTime } from '../../_utils/formatRelativeTime';
 import { WriterAvatar } from '../../_components/WriterAvatar';
+import { formatRelativeTime } from '../../_utils/formatRelativeTime';
 
 interface CommentItemProps {
   comment: Comment;
+  isMyComment: boolean;
+  onDelete: (commentId: number, options?: { onError?: () => void }) => void;
+  isDeleting: boolean;
 }
 
-export function CommentItem({ comment }: CommentItemProps) {
-  const { content, createdAt, writer, isMyComment } = comment;
+export function CommentItem({ comment, isMyComment, onDelete, isDeleting }: CommentItemProps) {
+  const { content, createdAt, writer } = comment;
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const kebabItems = [
@@ -31,28 +34,30 @@ export function CommentItem({ comment }: CommentItemProps) {
         title="정말 삭제하시겠어요?"
         description="삭제된 댓글은 복구할 수 없습니다."
         onConfirm={() => {
-          // TODO: 댓글 삭제 API 연동
+          onDelete(comment.id, {
+            onError: () => alert('댓글 삭제에 실패했습니다. 다시 시도해주세요.'),
+          });
         }}
       />
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <WriterAvatar name={writer.name} image={writer.image} />
-            <span className="font-xs-regular md:font-sm-regular text-gray-500">{writer.name}</span>
-            {isMyComment && (
-              <span className="font-xs-medium rounded-full border border-amber-200 bg-amber-50 px-2 py-1 text-amber-700">
-                내 댓글
-              </span>
-            )}
-          </div>
-          {isMyComment && <KebabMenu items={kebabItems} />}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <WriterAvatar name={writer.name} image={writer.image} />
+          <span className="font-xs-regular md:font-sm-regular text-gray-500">{writer.name}</span>
+          {isMyComment && (
+            <span className="font-xs-medium rounded-full border border-amber-200 bg-amber-50 px-2 py-1 text-amber-700">
+              내 댓글
+            </span>
+          )}
         </div>
+        {isMyComment && <KebabMenu items={kebabItems} disabled={isDeleting} />}
+      </div>
 
-        <div className="flex flex-col gap-2">
-          <p className="font-sm-regular md:font-base-regular text-gray-700">{content}</p>
-          <span className="font-xs-regular md:font-sm-regular text-gray-400">
-            {formatRelativeTime(createdAt)}
-          </span>
-        </div>
+      <div className="flex flex-col gap-2">
+        <p className="font-sm-regular md:font-base-regular text-gray-700">{content}</p>
+        <span className="font-xs-regular md:font-sm-regular text-gray-400">
+          {formatRelativeTime(createdAt)}
+        </span>
+      </div>
     </li>
   );
 }

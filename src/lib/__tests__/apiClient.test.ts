@@ -8,6 +8,8 @@
  */
 import { apiClient, ApiClientError, createApiClient, prepareApiClientBody } from '@/lib/apiClient';
 
+import { AUTH_TOKENS_EXPIRED_MESSAGE_KO } from '@/constants/error-message';
+
 describe('prepareApiClientBody', () => {
   it('객체 → JSON 문자열 + application/json 플래그', () => {
     const r = prepareApiClientBody({ a: 1 });
@@ -42,10 +44,10 @@ describe('prepareApiClientBody', () => {
 
 describe('ApiClientError', () => {
   it('status, code, message 생성', () => {
-    const err = new ApiClientError(401, 'UNAUTHORIZED', '인증이 만료되었습니다.');
+    const err = new ApiClientError(401, 'UNAUTHORIZED', AUTH_TOKENS_EXPIRED_MESSAGE_KO);
     expect(err.status).toBe(401);
     expect(err.code).toBe('UNAUTHORIZED');
-    expect(err.message).toBe('인증이 만료되었습니다.');
+    expect(err.message).toBe(AUTH_TOKENS_EXPIRED_MESSAGE_KO);
     expect(err.name).toBe('ApiClientError');
   });
 

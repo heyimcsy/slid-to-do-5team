@@ -3,17 +3,22 @@
 import type { LoginBody } from '@/lib/auth/schemas/login';
 import type { User } from '@/lib/auth/schemas/user';
 
-import { Suspense, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+
+
+import { Suspense, useEffect } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { apiClient, ApiClientError } from '@/lib/apiClient';
+import { getOAuthUserFacingMessageKo } from '@/lib/auth/oauthUserFacingMessage';
+import { toastRhfValidationErrors } from '@/lib/auth/rhfToastValidationError';
 import { loginBodySchema } from '@/lib/auth/schemas/login';
 import { getSafeCallbackPath } from '@/lib/navigation/safeCallbackPath';
 import { authUserStore } from '@/stores/authUserStore';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useFormState } from 'react-hook-form';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 
 import { AuthFooter, AuthHeader } from '../_components/AuthHeaderFooter';
 import { AuthRHFTextField } from '../_components/AuthRHFTextField';
@@ -21,8 +26,18 @@ import { PasswordFieldWithToggle } from '../_components/PasswordFieldWithToggle'
 
 function LoginFormBody() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [submitError, setSubmitError] = useState('');
+  /** OAuth 콜백 실패 시 서버가 `/login?error=...`로만 알려줌 — 클라이언트 분기(footer toast)는 리다이렉트 플로우에서 타지 않음 */
+  useEffect(() => {
+    const err = searchParams.get('error');
+    if (!err?.trim()) return;
+    toast.error(getOAuthUserFacingMessageKo(err), { id: 'oauth-callback-error' });
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('error');
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname);
+  }, [pathname, router, searchParams]);
 
   const { control, handleSubmit } = useForm<LoginBody>({
     resolver: zodResolver(loginBodySchema),
@@ -32,7 +47,6 @@ function LoginFormBody() {
   const { isSubmitting } = useFormState({ control });
 
   const onSubmit = async (data: LoginBody) => {
-    setSubmitError('');
     try {
       /**
        * 로그인 성공 시 세션(토큰 쌍) 확보가 목적이다. 2xx인데 토큰이 없으면 signup과 달리
@@ -50,20 +64,24 @@ function LoginFormBody() {
       } else {
         authUserStore.getState().clearUser();
       }
-      const nextPath = getSafeCallbackPath(searchParams.get('callbackUrl')) ?? '/';
+      const nextPath = getSafeCallbackPath(searchParams.get('callbackUrl')) ?? '/dashboard';
       router.refresh();
       router.push(nextPath);
     } catch (err) {
       if (err instanceof ApiClientError) {
-        setSubmitError(err.message || '로그인 실패');
+        toast.error(err.message || '로그인 실패', { id: 'login-api-error' });
         return;
       }
-      setSubmitError(err instanceof Error ? err.message : '로그인 실패');
+      toast.error(err instanceof Error ? err.message : '로그인 실패', { id: 'login-api-error' });
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex w-full flex-col" noValidate>
+    <form
+      onSubmit={handleSubmit(onSubmit, toastRhfValidationErrors)}
+      className="flex w-full flex-col"
+      noValidate
+    >
       <FieldGroup className="pb-8 **:data-[slot=field-description]:gap-x-1 **:data-[slot=field-description]:pt-2 **:data-[slot=field-error]:text-justify">
         <Field>
           <FieldLabel className="sr-only" htmlFor="login-email">
@@ -76,6 +94,7 @@ function LoginFormBody() {
             type="email"
             autoComplete="email"
             placeholder="이메일을 입력해 주세요"
+            hideValidationMessage
           />
         </Field>
         <Field>
@@ -88,10 +107,10 @@ function LoginFormBody() {
             id="login-password"
             autoComplete="current-password"
             placeholder="비밀번호를 입력해 주세요"
+            hideValidationMessage
           />
         </Field>
       </FieldGroup>
-      {submitError ? <FieldError>{submitError}</FieldError> : null}
       <Button type="submit" disabled={isSubmitting} size="lg">
         {isSubmitting ? '로그인 중...' : '로그인'}
       </Button>
