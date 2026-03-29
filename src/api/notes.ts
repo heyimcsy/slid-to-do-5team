@@ -162,7 +162,7 @@ export const useGetNote = ({ id }: { id: number }) => {
   });
 };
 
-export const usePostNote = () => {
+export const usePostNote = (options: { onSuccess?: () => void }) => {
   const queryClient: QueryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: CreateNotePayload) => {
@@ -171,8 +171,10 @@ export const usePostNote = () => {
         body: payload,
       });
     },
+    ...options,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [NOTES] });
+      options?.onSuccess?.();
     },
   });
 };
