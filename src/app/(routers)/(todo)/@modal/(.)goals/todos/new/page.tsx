@@ -4,6 +4,8 @@ import type { KeyboardEvent } from 'react';
 
 import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useGetGoals } from '@/api/goals';
+import { usePostTodo } from '@/api/todos';
 import { formatDate } from '@/app/(routers)/(board)/community/_utils/formatDate';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -57,6 +59,7 @@ const schema = z.object({
 });
 
 export default function NewPage() {
+  const { data: goalsData } = useGetGoals();
   // 마감기한 날짜 관리 state
   const [date, setDate] = React.useState<Date>();
   const [tempDate, setTempDate] = React.useState<Date | undefined>(undefined);
@@ -77,6 +80,7 @@ export default function NewPage() {
     register,
     watch,
     setValue,
+    getValues,
     formState: { isValid: titleValid },
   } = useForm<FormValues>({
     // 입력할 때마다 실시간으로 유효성 검증 실행
@@ -124,7 +128,30 @@ export default function NewPage() {
   const link = watch('link');
 
   // 유효성 체크 변수
-  const isValid = titleValid && selectedGoal !== null && date !== undefined;
+
+  const [selectedGoalId, setSelectedGoalId] = React.useState<number | null>(null);
+  const isValid = titleValid && selectedGoalId !== null && date !== undefined;
+
+  const { mutate: createTodo } = usePostTodo();
+
+  const handleSubmit = () => {
+    if (!selectedGoalId || !date) return;
+
+    createTodo(
+      {
+        title: getValues('title'),
+        goalId: selectedGoalId,
+        dueDate: date.toISOString(),
+        linkUrl: link || undefined,
+        tags: tags.map(({ name }) => ({ name })), // color는 프론트 전용이라 제외
+      },
+      {
+        onSuccess: () => {
+          router.back(); // ← 전송 성공 후 모달 닫기
+        },
+      },
+    );
+  };
 
   // ✅ 공통 폼 (Dialog 전용 컴포넌트 제거)
   const formContent = (
@@ -151,14 +178,18 @@ export default function NewPage() {
               className="p-2"
               style={{ width: 'var(--anchor-width)' }}
             >
-              <DropdownMenuItem
-                className="p-2 focus:bg-orange-200"
-                onClick={() => {
-                  setSelectedGoal('자바스크립트로 웹 서비스 만들기');
-                }}
-              >
-                자바스크립트로 웹 서비스 만들기
-              </DropdownMenuItem>
+              {goalsData?.goals.map((goal) => (
+                <DropdownMenuItem
+                  key={goal.id}
+                  className="p-2 focus:bg-orange-200"
+                  onClick={() => {
+                    setSelectedGoal(goal.title);
+                    setSelectedGoalId(goal.id); // ← 이게 없음
+                  }}
+                >
+                  {goal.title}
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
         </Field>
@@ -316,7 +347,13 @@ export default function NewPage() {
               <Button size="lg" variant="ghost" className="flex-1" onClick={() => router.back()}>
                 취소
               </Button>
-              <Button size="lg" variant="default" disabled={!isValid} className="flex-1">
+              <Button
+                onClick={handleSubmit}
+                size="lg"
+                variant="default"
+                disabled={!isValid}
+                className="flex-1"
+              >
                 확인
               </Button>
             </DialogFooter>
