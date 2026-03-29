@@ -50,13 +50,6 @@ export default function GoalsTab({ goalId, data }: GoalsTabProps) {
     { label: '삭제하기', value: 'delete' },
   ];
 
-  const onEditChange = () => {
-    setEditDialogOpen(!editDialogOpen);
-  };
-  const onEditChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setTitle(value);
-  };
   const handleSelectChange = (value: string | null) => {
     if (value === null) return;
     if (value === 'delete') {
@@ -73,14 +66,29 @@ export default function GoalsTab({ goalId, data }: GoalsTabProps) {
     deleteGoal({ id: goalId });
   };
 
+  const onEditChange = () => {
+    setEditDialogOpen(!editDialogOpen);
+  };
+
+  const onEditChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value: string = event.target.value;
+    if (value.length > 100) return;
+    setTitle(value);
+  };
+
   const onEditConfirm = () => {
     editGoal({ id: goalId, title: title });
+    setEditDialogOpen(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') onEditConfirm();
   };
 
   return (
     <>
-      <div className="flex h-16 w-full items-center justify-between rounded-[16px] bg-white p-4 lg:h-40 lg:w-1/2">
-        <div className="flex items-center space-x-3">
+      <div className="flex h-16 w-full min-w-0 items-center justify-between rounded-[16px] bg-white p-4 lg:h-40 lg:w-1/2">
+        <div className="flex min-w-0 items-center space-x-3">
           <Image
             src={goalImage}
             alt="describe goal icon"
@@ -88,10 +96,10 @@ export default function GoalsTab({ goalId, data }: GoalsTabProps) {
             height={32}
             className="object-contain"
           />
-          <h2 className="font-base-semibold text-gray-700">{data?.title}</h2>
+          <h2 className="font-base-semibold w-full truncate text-gray-700">{data?.title}</h2>
         </div>
         <Select items={selectValue} onValueChange={handleSelectChange}>
-          <SelectTrigger size="sm" iconTrigger>
+          <SelectTrigger size="sm" iconTrigger className="shrink-0">
             <Icon name="more" />
           </SelectTrigger>
           <SelectContent>
@@ -112,7 +120,14 @@ export default function GoalsTab({ goalId, data }: GoalsTabProps) {
         >
           <DialogHeader>
             <DialogTitle>목표를 수정하시겠습니까 ?</DialogTitle>
-            <Input value={title} onChange={onEditChangeHandler} />
+            <Input
+              value={title}
+              onChange={onEditChangeHandler}
+              onKeyDown={handleKeyDown}
+              autoFocus
+              aria-label="목표 제목 입력"
+              placeholder="목표 제목을 입력하세요"
+            />
           </DialogHeader>
           <DialogFooter>
             <DialogClose
@@ -124,7 +139,13 @@ export default function GoalsTab({ goalId, data }: GoalsTabProps) {
             />
             <DialogClose
               render={
-                <Button onClick={onEditConfirm} type="button" variant="default" className="w-1/2">
+                <Button
+                  onClick={onEditConfirm}
+                  type="button"
+                  variant="default"
+                  className="w-1/2"
+                  disabled={!title.trim() || title === data.title}
+                >
                   확인
                 </Button>
               }

@@ -1,21 +1,16 @@
+import type { Notes } from '@/api/notes';
+
 import Image from 'next/image';
 import emptyImage from '@/../public/images/big-zero-done.svg';
 
 import NoteCard from './NoteCard';
 
-export interface NoteList {
-  id: number;
-  title: string;
-  todoTitle: string;
-  isDone: boolean;
-  updatedAt: string;
+interface NoteListProps {
+  notes: Notes[];
+  goalId: number;
 }
 
-export interface NoteListProps {
-  notes: NoteList[];
-}
-
-export default function NoteList({ notes }: NoteListProps) {
+export default function NoteList({ notes, goalId }: NoteListProps) {
   if (notes.length === 0) {
     return (
       <div className="flex min-h-[60vh] w-full items-center justify-center">
@@ -34,9 +29,16 @@ export default function NoteList({ notes }: NoteListProps) {
   }
 
   return (
-    <div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-2">
-      {notes.map((note: NoteList) => (
-        <NoteCard key={note.id} {...note} />
+    <div className="grid w-full grid-cols-1 gap-4 pb-10 lg:grid-cols-2">
+      {notes.map((note: Notes) => (
+        <NoteCard
+          key={note.id}
+          goalId={goalId}
+          id={note.id}
+          title={note.title}
+          todo={note.todo}
+          createdAt={note.createdAt}
+        />
       ))}
     </div>
   );

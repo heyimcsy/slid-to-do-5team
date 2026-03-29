@@ -35,6 +35,28 @@ export function mapLoginBackendFailureMessage(message: string): string {
 }
 
 /**
+ * 백엔드가 이메일 중복·충돌을 다른 상태코드(예: 400)로 줄 때 BFF에서 **409 Conflict**로 맞추기 위한 판별.
+ * `code` 필드 또는 `message` 휴리스틱 — 백엔드 스펙에 맞게 조정.
+ */
+export function resolveLoginFailureHttpStatus(backendStatus: number, err: unknown): number {
+  if (backendStatus === 409) return 409;
+  if (typeof err !== 'object' || err === null) return backendStatus;
+
+  const o = err as Record<string, unknown>;
+  const code = typeof o.code === 'string' ? o.code : '';
+  if (/duplicate|conflict|email_?taken|already_?registered/i.test(code)) {
+    return 409;
+  }
+
+  const msg = typeof o.message === 'string' ? o.message : '';
+  if (/이미\s*가입|이메일\s*중복|duplicate|already\s*registered|already\s*exists/i.test(msg)) {
+    return 409;
+  }
+
+  return backendStatus;
+}
+
+/**
  * POST `/api/auth/login` BFF JSON 응답 형태 (클라이언트에서 `safeParse`로 계약 검증 가능).
  * 실패 `message`는 BFF가 `mapLoginBackendFailureMessage` 등으로 정규화한 뒤 내려준다.
  */

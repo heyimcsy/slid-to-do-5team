@@ -6,6 +6,7 @@ import type { DehydratedState } from '@tanstack/react-query';
 import type { ComponentType } from 'react';
 
 import { useEffect, useState } from 'react';
+import { useOAuthUserFlashSync } from '@/hooks/auth/useOAuthUserFlashSync';
 import { useTokenRefreshOnMount } from '@/hooks/auth/useTokenRefreshOnMount';
 import { createQueryPersister } from '@/providers/createQueryPersister';
 import { PersistRehydrationProvider } from '@/providers/PersistRehydrationProvider';
@@ -53,7 +54,8 @@ export function AppProviders({
   persistStores = PERSIST_STORES,
   queryPersistStorage = 'localStorage',
 }: AppProvidersProps) {
-  // accessToken 만료 직전 자동 갱신하는 custom hook 호출
+  /** OAuth redirect 콜백 직후 `authUserStore` 동기화 (그 다음 refresh 주기와 겹치지 않게 먼저) */
+  useOAuthUserFlashSync();
   useTokenRefreshOnMount();
   const [queryClient] = useState(
     () =>

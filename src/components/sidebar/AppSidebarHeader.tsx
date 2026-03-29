@@ -17,7 +17,15 @@ export default function AppSidebarHeader() {
               <SidebarTrigger />
             </div>
             <Link href="/dashboard">
-              <Image src="/images/logo-large.svg" width={335} height={48} alt="Logo" />
+              <Image
+                src="/images/logo-large.svg"
+                width={335}
+                height={48}
+                alt="Logo"
+                priority
+                style={{ width: 'auto', height: 'auto' }}
+                className="max-w-full"
+              />
             </Link>
           </>
         ) : (
@@ -31,7 +39,15 @@ export default function AppSidebarHeader() {
       {!isMobile && (
         <Link href="/dashboard" className="mt-8">
           {state === 'expanded' ? (
-            <Image src="/images/logo-large.svg" width={276} height={48} alt="Logo" />
+            <Image
+              src="/images/logo-large.svg"
+              width={276}
+              height={48}
+              alt="Logo"
+              priority
+              style={{ width: 'auto', height: 'auto' }}
+              className="max-w-full"
+            />
           ) : (
             <>
               <Image

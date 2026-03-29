@@ -12,9 +12,10 @@ export interface KebabMenuItem {
 
 interface KebabMenuProps {
   items: KebabMenuItem[];
+  disabled?: boolean;
 }
 
-export function KebabMenu({ items }: KebabMenuProps) {
+export function KebabMenu({ items, disabled = false }: KebabMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const menuId = useId();
@@ -41,7 +42,8 @@ export function KebabMenu({ items }: KebabMenuProps) {
         aria-expanded={isOpen}
         aria-controls={menuId}
         aria-label="더보기"
-        className="flex cursor-pointer items-center justify-center rounded-lg p-1 hover:bg-gray-100"
+        disabled={disabled}
+        className="flex cursor-pointer items-center justify-center rounded-lg p-1 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
       >
         <Icon name="more" size={24} />
       </button>

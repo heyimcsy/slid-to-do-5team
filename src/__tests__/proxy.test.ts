@@ -22,9 +22,9 @@ function mockAccessTokenValidLong(): string {
   return `h.${payload}.s`;
 }
 
-/** REFRESH_BUFFER_SECONDS(60) 이내 만료 → 선행 refresh 분기 */
-function mockAccessTokenExpiringSoon(): string {
-  const payload = Buffer.from(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 30 })).toString(
+/** access JWT exp가 과거 → isAccessTokenExpired → refresh 분기 */
+function mockAccessTokenExpired(): string {
+  const payload = Buffer.from(JSON.stringify({ exp: Math.floor(Date.now() / 1000) - 60 })).toString(
     'base64url',
   );
   return `h.${payload}.s`;
@@ -48,17 +48,21 @@ describe('proxy', () => {
   });
 
   describe('proxy()', () => {
-    function createRequest(pathname: string, token?: string): NextRequest {
+    function createRequest(
+      pathname: string,
+      cookies?: { access?: string; refresh?: string },
+    ): NextRequest {
       const url = `${TEST_APP_URL.replace(/\/$/, '')}${pathname}`;
       const headers = new Headers();
-      if (token) {
-        headers.set('cookie', `access_token=${token}`);
-      }
+      const parts: string[] = [];
+      if (cookies?.access) parts.push(`access_token=${cookies.access}`);
+      if (cookies?.refresh) parts.push(`refresh_token=${cookies.refresh}`);
+      if (parts.length) headers.set('cookie', parts.join('; '));
       return new NextRequest(url, { headers });
     }
 
     it('PUBLIC path + 토큰 없음 → next()', () => {
-      const req = createRequest('/login', undefined);
+      const req = createRequest('/login');
       const res = proxy(req);
       expect(res.status).toBe(200);
     });
@@ -66,7 +70,7 @@ describe('proxy', () => {
     it('비공개 path + 토큰 없음 → redirect /login + callbackUrl', () => {
       const prev = process.env.NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED;
       process.env.NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED = 'true';
-      const req = createRequest('/dashboard', undefined);
+      const req = createRequest('/dashboard');
       const res = proxy(req);
       expect(res.status).toBe(307);
       const loc = res.headers.get('location');
@@ -75,17 +79,26 @@ describe('proxy', () => {
       process.env.NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED = prev;
     });
 
+    it('비공개 path + access 없음 + refresh 있음 → next() (세션 복구 가능)', () => {
+      const prev = process.env.NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED;
+      process.env.NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED = 'true';
+      const req = createRequest('/dashboard', { refresh: 'refresh-only' });
+      const res = proxy(req);
+      expect(res.status).toBe(200);
+      process.env.NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED = prev;
+    });
+
     it('비공개 path + 토큰 없음 + guard OFF → next()', () => {
       const prev = process.env.NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED;
       process.env.NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED = 'false';
-      const req = createRequest('/dashboard', undefined);
+      const req = createRequest('/dashboard');
       const res = proxy(req);
       expect(res.status).toBe(200);
       process.env.NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED = prev;
     });
 
     it('비공개 path + 토큰 있음 → next()', () => {
-      const req = createRequest('/dashboard', 'valid-token');
+      const req = createRequest('/dashboard', { access: 'valid-token' });
       const res = proxy(req);
       expect(res.status).toBe(200);
     });
@@ -312,7 +325,7 @@ describe('proxy', () => {
       expect(forwardedJson).toEqual(payload);
     });
 
-    it('만료 임박 + refresh 실패 시 401, 백엔드 업스트림 fetch 없음', async () => {
+    it('access 만료 + refresh 실패 시 401, 업스트림 API fetch 없음', async () => {
       (globalThis.fetch as jest.Mock).mockResolvedValue(new Response(null, { status: 401 }));
 
       const { cookies } = await import('next/headers');
@@ -321,7 +334,7 @@ describe('proxy', () => {
         name === 'refresh_token'
           ? { value: 'rt' }
           : name === 'access_token'
-            ? { value: mockAccessTokenExpiringSoon() }
+            ? { value: mockAccessTokenExpired() }
             : undefined,
       );
 
@@ -333,6 +346,27 @@ describe('proxy', () => {
       expect(json.success).toBe(false);
       expect(globalThis.fetch).toHaveBeenCalledTimes(1);
       expect((globalThis.fetch as jest.Mock).mock.calls[0][0]).toContain('/auth/refresh');
+    });
+
+    it('access 아직 유효(만료 아님) → /auth/refresh 호출 없이 업스트림만', async () => {
+      (globalThis.fetch as jest.Mock).mockResolvedValue(
+        new Response(JSON.stringify({ data: [] }), { status: 200 }),
+      );
+      const { cookies } = await import('next/headers');
+      const mockCookies = await cookies();
+      (mockCookies.get as jest.Mock).mockImplementation((name: string) =>
+        name === 'refresh_token'
+          ? { value: 'rt' }
+          : name === 'access_token'
+            ? { value: mockAccessTokenValidLong() }
+            : undefined,
+      );
+
+      const req = new Request(`${TEST_APP_URL}/api/proxy/todos`, { method: 'GET' });
+      await forwardToBackend(req, 'todos');
+
+      expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+      expect((globalThis.fetch as jest.Mock).mock.calls[0][0]).toContain('/todos');
     });
   });
 });

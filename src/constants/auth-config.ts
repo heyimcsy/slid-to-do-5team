@@ -32,16 +32,16 @@ export const AUTH_CONFIG = {
   ACCESS_TOKEN_MAX_AGE: 30 * 60, // 30분
   REFRESH_TOKEN_MAX_AGE: 7 * 24 * 60 * 60, // 7일
 
-  // 토큰 갱신 버퍼 — 만료 N초 전에 미리 갱신 (레이스 컨디션 방지)
-  REFRESH_BUFFER_SECONDS: 60,
-
-  // 클라이언트 주기적 refresh 체크 간격 (ms, 5분)
-  REFRESH_CHECK_INTERVAL_MS: 5 * 60 * 1000,
-
   /**
    * `apiClient` 토큰 갱신 fetch 상한 (ms). 백엔드/BFF 무응답 시 서버·클라이언트 무한 대기 방지.
    */
   REFRESH_FETCH_TIMEOUT_MS: 15_000,
+
+  /**
+   * 브라우저가 `POST /api/auth/refresh`에 붙이는 현재 `pathname`.
+   * 서버에서 `isPublicPath`와 함께 써서 비로그인 시 401(→`/login`) vs 200을 나눈다.
+   */
+  CLIENT_PATHNAME_HEADER: 'x-client-pathname',
 } as const;
 
 /**

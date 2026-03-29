@@ -1,6 +1,6 @@
 'use client';
 
-import { useGetNote } from '@/api/note';
+import { useGetNote } from '@/api/notes';
 import { useGetTodo } from '@/api/todos';
 import { TodoDetailContent } from '@/app/(routers)/(todo)/@modal/(.)goals/[goalId]/todos/[todoId]/_components/TodoDetailContent';
 import { TodoDetailSkeleton } from '@/app/(routers)/(todo)/@modal/(.)goals/[goalId]/todos/[todoId]/_components/TodoDetailSkeleton';

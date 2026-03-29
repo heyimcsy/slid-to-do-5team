@@ -2,6 +2,8 @@
  * 환경 무관 `createApiClient` 팩토리 — `cookies` / `server-only` import 금지.
  */
 
+import { AUTH_TOKENS_EXPIRED_MESSAGE_KO } from '@/constants/error-message';
+
 /**
  * @description NextFetchConfig - Next.js fetch 확장 — cache, revalidate, tags는 서버에서만 유효함
  */
@@ -123,8 +125,7 @@ export interface CreateApiClientDeps {
   resolveUrl: (endpoint: string, config: ApiClientConfig) => string;
   credentials: RequestCredentials;
   /**
-   * 서버: 만료 임박 시 refresh 후 `request` 재귀, 또는 Authorization 주입.
-   * `T | undefined` — 값이 있으면 해당 값으로 요청이 종료(재귀 결과).
+   * 서버: Authorization 주입 등. `T | undefined` — 값이 있으면 해당 값으로 요청이 종료(재귀 결과).
    */
   onBeforeAuth?: <T>(
     headers: Headers,
@@ -245,7 +246,7 @@ export function createApiClient(deps: CreateApiClientDeps): ApiClientInstance {
         return request<T>(endpoint, { ...config, retry: false });
       }
 
-      const err = new ApiClientError(401, 'UNAUTHORIZED', '인증이 만료되었습니다.');
+      const err = new ApiClientError(401, 'UNAUTHORIZED', AUTH_TOKENS_EXPIRED_MESSAGE_KO);
       runErrorInterceptors(err, onError);
       deps.onUnauthorized?.();
       throw err;

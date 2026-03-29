@@ -2,12 +2,14 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useLogout } from '@/hooks/auth/useLogout';
 import { authUserStore } from '@/stores/authUserStore';
 
 import { Button } from '@/components/ui/button';
 
 export default function Home() {
   const router = useRouter();
+  const logout = useLogout();
   const user = authUserStore((s) => s.user);
 
   return (
@@ -24,7 +26,7 @@ export default function Home() {
             ) : (
               <Image src="/globe.svg" alt="프로필 이미지" width={40} height={40} priority />
             )}
-            <Button onClick={() => router.push('/logout')} variant="outline">
+            <Button onClick={() => void logout()} variant="outline">
               로그아웃
             </Button>
           </>
