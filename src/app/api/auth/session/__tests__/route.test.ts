@@ -1,0 +1,33 @@
+/**
+ * @jest-environment node
+ */
+import { GET } from '@/app/api/auth/session/route';
+
+import { AUTH_CONFIG } from '@/constants/auth-config';
+
+describe('GET /api/auth/session', () => {
+  it('refresh 있음 → hasRefreshToken true', async () => {
+    const { cookies } = await import('next/headers');
+    const mockCookies = await cookies();
+    (mockCookies.get as jest.Mock).mockImplementation((name: string) => {
+      if (name === AUTH_CONFIG.REFRESH_TOKEN_KEY) return { value: 'rt' };
+      return undefined;
+    });
+
+    const res = await GET();
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.hasRefreshToken).toBe(true);
+  });
+
+  it('refresh 없음 → hasRefreshToken false', async () => {
+    const { cookies } = await import('next/headers');
+    const mockCookies = await cookies();
+    (mockCookies.get as jest.Mock).mockReturnValue(undefined);
+
+    const res = await GET();
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.hasRefreshToken).toBe(false);
+  });
+});

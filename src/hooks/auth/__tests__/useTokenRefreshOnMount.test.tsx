@@ -4,24 +4,28 @@
 import { useTokenRefreshOnMount } from '@/hooks/auth/useTokenRefreshOnMount';
 import { act, renderHook, waitFor } from '@testing-library/react';
 
-jest.mock('@/constants/auth-config', () => ({
-  AUTH_CONFIG: { REFRESH_CHECK_INTERVAL_MS: 5_000 },
+/** jsdom은 `location.href` 할당 시 "Not implemented: navigation" — 리다이렉트만 스텁 */
+jest.mock('@/lib/auth/logoutAndRedirect', () => ({
+  logoutAndRedirect: jest.fn(),
 }));
 
 /**
  * @description `useTokenRefreshOnMount` 훅 테스트
- * @note `useTokenRefreshOnMount` 훅은 마운트 시 + 일정 간격으로 `/api/auth/refresh` 호출하여 access_token 만료 직전 자동 갱신을 담당합니다.
- * @note 이 훅은 클라이언트에서 명시적으로 `/api/auth/refresh`를 호출하여 갱신을 트리거합니다.
- * @note SPA 장시간 사용 시 마운트 1회만으로는 부족하므로 주기적 호출 추가합니다.
- * @note `setInterval` 대신 **이전 요청 완료 후** 다음 간격을 잡습니다. refresh 토큰 회전 시 POST가 겹치며
- *       쿠키가 꼬이거나 이미 소진된 refresh로 두 번째 요청이 나가는 것을 방지 (BFF 쿠키 세션과 정합).
+ * @note 마운트 시 1회 + visibilitychange(탭 복귀) 시 `/api/auth/refresh`를 호출하여 세션을 검증한다.
+ * @note 주기적 polling 대신 탭 복귀 이벤트 기반으로 동작하며, 60초 디바운스로 스팸을 방지한다.
  */
 describe('useTokenRefreshOnMount', () => {
   const originalFetch = globalThis.fetch;
 
   beforeEach(() => {
     jest.useFakeTimers();
-    globalThis.fetch = jest.fn().mockResolvedValue({ ok: true, status: 200 });
+    /** 비 auth-flow 경로 — `/login`·`/signup`이 아닌 곳에서 마운트 refresh가 돈다 */
+    window.history.pushState({}, '', '/dashboard');
+    globalThis.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ success: true }),
+    });
   });
 
   afterEach(() => {
@@ -29,73 +33,144 @@ describe('useTokenRefreshOnMount', () => {
     globalThis.fetch = originalFetch;
   });
 
-  it('첫 요청이 끝나기 전에 interval만 경과해도 두 번째 fetch는 나가지 않음', async () => {
-    // Arrange: 첫 fetch만 지연되도록 Promise 수동 resolve
+  /** visibilitychange 이벤트를 발생시키며 visibilityState를 설정 */
+  function simulateVisibilityChange(state: 'visible' | 'hidden') {
+    Object.defineProperty(document, 'visibilityState', {
+      value: state,
+      writable: true,
+      configurable: true,
+    });
+    document.dispatchEvent(new Event('visibilitychange'));
+  }
+
+  it('/login 에서는 마운트 시 refresh를 호출하지 않음', async () => {
+    window.history.pushState({}, '', '/login');
+    renderHook(() => useTokenRefreshOnMount());
+    await act(async () => {});
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it('홈(/)에서는 마운트 시 refresh를 호출하지 않음', async () => {
+    window.history.pushState({}, '', '/');
+    renderHook(() => useTokenRefreshOnMount());
+    await act(async () => {});
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it('/signup 에서는 마운트 시 refresh를 호출하지 않음', async () => {
+    window.history.pushState({}, '', '/signup');
+    renderHook(() => useTokenRefreshOnMount());
+    await act(async () => {});
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it('마운트 시 즉시 1회 fetch 호출', async () => {
+    renderHook(() => useTokenRefreshOnMount());
+
+    await waitFor(() => expect(globalThis.fetch).toHaveBeenCalledTimes(1));
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      '/api/auth/refresh',
+      expect.objectContaining({
+        method: 'POST',
+        credentials: 'include',
+      }),
+    );
+  });
+
+  it('탭 복귀(visibilitychange → visible) 시 디바운스 간격(60초) 이후에만 재호출', async () => {
+    renderHook(() => useTokenRefreshOnMount());
+
+    await waitFor(() => expect(globalThis.fetch).toHaveBeenCalledTimes(1));
+
+    // 탭 복귀 — 아직 60초 미경과 → fetch 안 됨
+    await act(async () => {
+      simulateVisibilityChange('hidden');
+      simulateVisibilityChange('visible');
+    });
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+
+    // 60초 경과 후 탭 복귀 → fetch 호출
+    jest.advanceTimersByTime(60_000);
+    await act(async () => {
+      simulateVisibilityChange('hidden');
+      simulateVisibilityChange('visible');
+    });
+
+    await waitFor(() => expect(globalThis.fetch).toHaveBeenCalledTimes(2));
+  });
+
+  it('401(세션 없음)이면 탭 복귀해도 fetch를 반복하지 않음', async () => {
+    (globalThis.fetch as jest.Mock).mockResolvedValue({
+      ok: false,
+      status: 401,
+    });
+
+    renderHook(() => useTokenRefreshOnMount());
+
+    await waitFor(() => expect(globalThis.fetch).toHaveBeenCalledTimes(1));
+
+    // 60초 경과 후 탭 복귀해도 sessionPaused라 호출 안 됨
+    jest.advanceTimersByTime(60_000);
+    await act(async () => {
+      simulateVisibilityChange('hidden');
+      simulateVisibilityChange('visible');
+    });
+
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('첫 요청이 진행 중일 때 visibilitychange가 발생해도 중복 fetch하지 않음', async () => {
     let resolveFirst!: (v: unknown) => void;
     const firstPromise = new Promise((r) => {
       resolveFirst = r;
     });
     (globalThis.fetch as jest.Mock).mockImplementationOnce(() => firstPromise);
 
-    // Act: 훅 마운트 → 즉시 첫 /api/auth/refresh
     renderHook(() => useTokenRefreshOnMount());
 
-    // Assert: 첫 fetch 호출 확인
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
 
-    // Act: interval 시간만 경과(첫 요청은 아직 pending)
-    jest.advanceTimersByTime(5_000);
-
-    // Assert: 직렬화로 두 번째 fetch는 아직 없음
+    // 첫 요청 pending 중 탭 복귀 → in-flight guard로 중복 방지
+    jest.advanceTimersByTime(60_000);
+    await act(async () => {
+      simulateVisibilityChange('hidden');
+      simulateVisibilityChange('visible');
+    });
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
 
-    // Act: 첫 fetch 완료 → finally에서 다음 주기 setTimeout만 예약
+    // 첫 요청 완료
     await act(async () => {
-      resolveFirst(undefined);
-      await Promise.resolve();
+      resolveFirst({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ success: true }),
+      });
     });
 
-    // Assert: 아직 interval 전이라 두 번째 호출 없음
-    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
-
-    // Act: 다음 주기 타이머 호출
+    // 이제 탭 복귀 시 호출 가능
+    jest.advanceTimersByTime(60_000);
     await act(async () => {
-      jest.advanceTimersByTime(5_000);
+      simulateVisibilityChange('hidden');
+      simulateVisibilityChange('visible');
     });
 
-    // Assert: 두 번째 fetch 실행
-    expect(globalThis.fetch).toHaveBeenCalledTimes(2);
-  });
-
-  it('첫 요청 완료 후 interval 경과 시에만 다음 fetch', async () => {
-    // Arrange: beforeEach의 즉시 resolve fetch 사용(추가 설정 없음)
-
-    // Act: 훅 마운트
-    renderHook(() => useTokenRefreshOnMount());
-
-    // Assert: 마운트 직후 1회 호출
-    await waitFor(() => expect(globalThis.fetch).toHaveBeenCalledTimes(1));
-
-    // Act: interval 경과
-    await act(async () => {
-      jest.advanceTimersByTime(5_000);
-    });
-
-    // Assert: 두 번째 주기에서 2회째 호출
     await waitFor(() => expect(globalThis.fetch).toHaveBeenCalledTimes(2));
   });
 
-  it('401(세션 없음)이면 이후 주기에서 fetch를 반복하지 않음', async () => {
-    (globalThis.fetch as jest.Mock).mockResolvedValue({ ok: false, status: 401 });
-
-    renderHook(() => useTokenRefreshOnMount());
+  it('언마운트 시 visibilitychange 리스너가 제거됨', async () => {
+    const { unmount } = renderHook(() => useTokenRefreshOnMount());
 
     await waitFor(() => expect(globalThis.fetch).toHaveBeenCalledTimes(1));
 
+    unmount();
+
+    jest.advanceTimersByTime(60_000);
     await act(async () => {
-      jest.advanceTimersByTime(5_000);
+      simulateVisibilityChange('hidden');
+      simulateVisibilityChange('visible');
     });
 
+    // 언마운트 후에는 추가 호출 없음
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
   });
 });

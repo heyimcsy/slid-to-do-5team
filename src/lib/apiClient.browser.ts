@@ -1,9 +1,9 @@
 import { createApiClient } from '@/lib/apiClient.core';
+import { logoutAndRedirect } from '@/lib/auth/logoutAndRedirect';
+import { getRefreshRequestHeaders } from '@/lib/auth/refreshRequestHeaders';
 import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
-import { buildLoginRedirectUrlAfterUnauthorized } from '@/lib/navigation/loginRedirectOnUnauthorized';
-import { authUserStore } from '@/stores/authUserStore';
 
-import { AUTH_CONFIG, isAuthRouteGuardEnabled } from '@/constants/auth-config';
+import { AUTH_CONFIG } from '@/constants/auth-config';
 
 let clientRefreshInFlight: Promise<boolean> | null = null;
 
@@ -21,6 +21,7 @@ async function refreshTokensBrowser(): Promise<boolean> {
         {
           method: 'POST',
           credentials: 'include',
+          headers: getRefreshRequestHeaders(),
         },
         timeoutMs,
       );
@@ -41,10 +42,7 @@ const browser = createApiClient({
   credentials: 'include',
   refreshTokens: refreshTokensBrowser,
   onUnauthorized: () => {
-    if (typeof window !== 'undefined' && isAuthRouteGuardEnabled()) {
-      authUserStore.getState().clearUser();
-      window.location.href = buildLoginRedirectUrlAfterUnauthorized(window.location);
-    }
+    logoutAndRedirect();
   },
   shouldRunGlobalInterceptors: () => typeof window !== 'undefined',
   allowGlobalInterceptorRegistration: true,

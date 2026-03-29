@@ -13,6 +13,10 @@ import { parseTokenPairFromBackendJson } from '@/lib/auth/parseTokenPairFromBack
 import { signupBodySchema, signupValidationMessage } from '@/lib/auth/schemas/signup';
 
 import { API_BASE_URL } from '@/constants/api';
+import {
+  AUTH_SERVICE_ERROR_MESSAGE_KO,
+  DUPLICATE_ACCOUNT_MESSAGE_KO,
+} from '@/constants/error-message';
 
 export async function POST(request: NextRequest) {
   let rawBody: unknown;
@@ -45,8 +49,17 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
+      const backendMessage = (err as { message?: string }).message;
+
+      if (response.status === 409) {
+        return NextResponse.json(
+          { success: false, message: DUPLICATE_ACCOUNT_MESSAGE_KO },
+          { status: 409 },
+        );
+      }
+
       return NextResponse.json(
-        { success: false, message: (err as { message?: string }).message ?? '회원가입 실패' },
+        { success: false, message: backendMessage ?? '회원가입 실패' },
         { status: response.status },
       );
     }
@@ -56,7 +69,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        message: '인증 서버와 통신 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
+        message: AUTH_SERVICE_ERROR_MESSAGE_KO,
       },
       { status: 502 },
     );

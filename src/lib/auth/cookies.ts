@@ -1,6 +1,9 @@
 import 'server-only'; // Client Component에서 import 시 빌드 에러 발생하므로 server-only 사용
 
+import type { NextResponse } from 'next/server';
+
 import { cookies } from 'next/headers';
+import { COOKIE_OAUTH_USER_FLASH } from '@/lib/auth/oauth-urls';
 
 import { AUTH_CONFIG } from '@/constants/auth-config';
 
@@ -23,6 +26,20 @@ function baseCookieOptions(maxAge: number): CookieOptions {
   };
 }
 
+/**
+ * OAuth 콜백에서 심는 `oauth_user_flash`와 동일 속성.
+ * 삭제(Set-Cookie maxAge:0) 시에도 httpOnly/secure/sameSite가 같아야 브라우저가 제거함.
+ */
+export function oauthUserFlashCookieOptions(maxAge: number): CookieOptions {
+  return baseCookieOptions(maxAge);
+}
+/**
+ * @description OAuth로 들어온 임시 사용자 정보 쿠키 삭제 시 쿠키 옵션을 사용하여 쿠키를 삭제합니다.
+ */
+export function clearOAuthUserFlashCookie(res: NextResponse): void {
+  res.cookies.delete({ name: COOKIE_OAUTH_USER_FLASH, ...oauthUserFlashCookieOptions(0) });
+}
+
 /** JWT 만료 시간(exp) 추출(단순 디코딩만) - @internal 테스트용 export */
 export function getJwtExp(token: string): number | null {
   try {
@@ -37,16 +54,16 @@ export function getJwtExp(token: string): number | null {
 }
 
 /**
- * @description accessToken이 토큰 갱신 버퍼(REFRESH_BUFFER_SECONDS) 이내에 만료되는지 확인
- * @returns {Promise<boolean>} - accessToken 만료 여부 반환
+ * @description accessToken이 없거나 JWT exp가 현재 시각 이하이면 true (갱신·재발급 대상).
+ * 파싱 불가 시 안전하게 true.
  */
-export async function isAccessTokenExpiringSoon(): Promise<boolean> {
+export async function isAccessTokenExpired(): Promise<boolean> {
   const accessToken = await getAccessToken();
-  if (!accessToken) return true; // 없음 = 만료 = 401 Unauthorized 반환
+  if (!accessToken) return true;
   const exp = getJwtExp(accessToken);
-  if (exp === null) return true; // 파싱 불가/만료시간 없음 = 안전하게 갱신 시도
+  if (exp === null) return true;
   const now = Date.now() / 1000;
-  return exp - now < AUTH_CONFIG.REFRESH_BUFFER_SECONDS;
+  return exp <= now;
 }
 
 /** Route Handler에서 인증 쿠키 설정 */

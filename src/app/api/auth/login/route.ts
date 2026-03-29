@@ -5,10 +5,12 @@ import {
   loginBodySchema,
   loginValidationMessage,
   mapLoginBackendFailureMessage,
+  resolveLoginFailureHttpStatus,
 } from '@/lib/auth/schemas/login';
 
 import { API_BASE_URL, API_TIMEOUT_MS } from '@/constants/api';
 import { AUTH_CONFIG } from '@/constants/auth-config';
+import { AUTH_SERVICE_ERROR_MESSAGE_KO } from '@/constants/error-message';
 
 export async function POST(request: NextRequest) {
   let rawBody: unknown;
@@ -49,9 +51,10 @@ export async function POST(request: NextRequest) {
         err && typeof err === 'object' && 'message' in err && typeof err.message === 'string'
           ? err.message
           : '로그인 실패';
+      const status = resolveLoginFailureHttpStatus(response.status, err);
       return NextResponse.json(
         { success: false, message: mapLoginBackendFailureMessage(raw) },
-        { status: response.status },
+        { status },
       );
     }
 
@@ -60,7 +63,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        message: '인증 서버와 통신 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
+        message: AUTH_SERVICE_ERROR_MESSAGE_KO,
       },
       { status: 502 },
     );

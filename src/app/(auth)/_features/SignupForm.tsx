@@ -5,16 +5,17 @@ import type { User } from '@/lib/auth/schemas/user';
 
 
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient, ApiClientError } from '@/lib/apiClient';
+import { toastRhfValidationErrors } from '@/lib/auth/rhfToastValidationError';
 import { signupBodySchema } from '@/lib/auth/schemas/signup';
 import { authUserStore } from '@/stores/authUserStore';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useFormState } from 'react-hook-form';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 
 import { AuthFooter, AuthHeader } from '../_components/AuthHeaderFooter';
 import { AuthRHFTextField } from '../_components/AuthRHFTextField';
@@ -22,7 +23,6 @@ import { PasswordFieldWithToggle } from '../_components/PasswordFieldWithToggle'
 
 function SignupFormBody() {
   const router = useRouter();
-  const [submitError, setSubmitError] = useState('');
 
   const { control, handleSubmit } = useForm<SignupBody>({
     resolver: zodResolver(signupBodySchema),
@@ -32,7 +32,6 @@ function SignupFormBody() {
   const { isSubmitting } = useFormState({ control });
 
   const onSubmit = async (data: SignupBody) => {
-    setSubmitError('');
     try {
       const res = await apiClient<{
         success?: boolean;
@@ -53,22 +52,26 @@ function SignupFormBody() {
           authUserStore.getState().clearUser();
         }
         router.refresh();
-        router.push('/');
+        router.push('/dashboard');
         return;
       }
       authUserStore.getState().clearUser();
       router.push('/login');
     } catch (err) {
       if (err instanceof ApiClientError) {
-        setSubmitError(err.message || '회원가입 실패');
+        toast.error(err.message || '회원가입 실패', { id: 'signup-api-error' });
         return;
       }
-      setSubmitError(err instanceof Error ? err.message : '회원가입 실패');
+      toast.error(err instanceof Error ? err.message : '회원가입 실패', { id: 'signup-api-error' });
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex w-full flex-col" noValidate>
+    <form
+      onSubmit={handleSubmit(onSubmit, toastRhfValidationErrors)}
+      className="flex w-full flex-col"
+      noValidate
+    >
       <FieldGroup className="pb-8 *:gap-x-0 *:gap-y-2 **:data-[slot=field-description]:gap-x-1 **:data-[slot=field-description]:pt-2 **:data-[slot=field-error]:text-justify">
         <Field>
           <FieldLabel htmlFor="signup-name">이름</FieldLabel>
@@ -79,6 +82,7 @@ function SignupFormBody() {
             type="text"
             autoComplete="name"
             placeholder="이름을 입력해 주세요"
+            hideValidationMessage
           />
         </Field>
         <Field>
@@ -90,6 +94,7 @@ function SignupFormBody() {
             type="email"
             autoComplete="email"
             placeholder="이메일을 입력해 주세요"
+            hideValidationMessage
           />
         </Field>
         <Field>
@@ -101,6 +106,7 @@ function SignupFormBody() {
             autoComplete="new-password"
             className="w-full md:w-100"
             placeholder="비밀번호를 입력해 주세요"
+            hideValidationMessage
           />
         </Field>
         <Field>
@@ -111,10 +117,10 @@ function SignupFormBody() {
             id="signup-password-confirm"
             autoComplete="new-password"
             placeholder="비밀번호를 한 번 더 입력해 주세요"
+            hideValidationMessage
           />
         </Field>
       </FieldGroup>
-      {submitError ? <FieldError>{submitError}</FieldError> : null}
       <Button type="submit" disabled={isSubmitting} size="lg">
         {isSubmitting ? '처리 중...' : '가입하기'}
       </Button>

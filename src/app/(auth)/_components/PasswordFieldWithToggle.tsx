@@ -10,13 +10,15 @@ import { Input } from '@/components/ui/input';
 
 import { PasswordToggleButton } from './PasswordToggleButton';
 
-type PasswordFieldWithToggleProps<T extends FieldValues> = {
+export type PasswordFieldWithToggleProps<T extends FieldValues> = {
   control: Control<T>;
   name: FieldPath<T>;
   id: string;
   className?: string;
   placeholder?: string;
   autoComplete: ComponentProps<'input'>['autoComplete'];
+  /** true면 검증 메시지는 토스트 등으로만 보여 주고 인라인 표시 안 함 */
+  hideValidationMessage?: boolean;
 };
 
 /**
@@ -24,14 +26,15 @@ type PasswordFieldWithToggleProps<T extends FieldValues> = {
  * `PasswordToggleButton`(memo)이 입력값 변경 시 불필요하게 다시 그려지지 않도록 한다.
  * 검증 메시지는 `useController`의 `fieldState`에서만 구독한다.
  */
-export function PasswordFieldWithToggle<T extends FieldValues>({
+export const PasswordFieldWithToggle = <T extends FieldValues>({
   className,
   placeholder,
   control,
   name,
   id,
   autoComplete,
-}: PasswordFieldWithToggleProps<T>) {
+  hideValidationMessage,
+}: PasswordFieldWithToggleProps<T>) => {
   const [showPassword, setShowPassword] = useState(false);
   const togglePassword = useCallback(() => setShowPassword((v) => !v), []);
   const { field, fieldState } = useController({ control, name });
@@ -44,10 +47,11 @@ export function PasswordFieldWithToggle<T extends FieldValues>({
       placeholder={placeholder}
       type={showPassword ? 'text' : 'password'}
       autoComplete={autoComplete}
-      errorMessage={fieldState.error?.message}
+      errorMessage={hideValidationMessage ? undefined : fieldState.error?.message}
+      invalid={hideValidationMessage ? !!fieldState.error : undefined}
       endAdornment={
         <PasswordToggleButton visible={showPassword} onToggle={togglePassword} controlsId={id} />
       }
     />
   );
-}
+};
