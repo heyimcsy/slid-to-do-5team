@@ -1,11 +1,11 @@
-import type { Task } from '../types';
+import type { TodoWithFavorites } from '@/api/todos';
 
 import Image from 'next/image';
 
 import TodoItem from './TodoItem';
 
 interface TodoListProps {
-  todolists: Task[];
+  todolists: TodoWithFavorites[];
 }
 
 export default function TodoList({ todolists }: TodoListProps) {

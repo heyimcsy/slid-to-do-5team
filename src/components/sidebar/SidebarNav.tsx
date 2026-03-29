@@ -50,7 +50,7 @@ const bottomItems: {
   },
   {
     label: '새 할일',
-    href: '/newtodo',
+    href: `/goals/todos/new`,
     icon: 'task',
     textClassName: 'text-orange-500',
     bgClassName: 'white',
