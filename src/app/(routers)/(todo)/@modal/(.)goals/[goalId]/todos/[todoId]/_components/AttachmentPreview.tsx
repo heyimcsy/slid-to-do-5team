@@ -1,13 +1,13 @@
-import Image from 'next/image';
+import { useOgImage } from '@/app/(routers)/(todo)/@modal/(.)goals/[goalId]/todos/[todoId]/hooks/useOgImage';
 
 import { Icon } from '@/components/icon/Icon';
 
 interface AttachmentPreviewProps {
   url?: string;
-  image?: string;
 }
 
-export function AttachmentPreview({ url, image }: AttachmentPreviewProps) {
+export function AttachmentPreview({ url }: AttachmentPreviewProps) {
+  const { data: ogImage } = useOgImage(url);
   return (
     <div className="flex flex-col gap-2">
       {url && (
@@ -21,9 +21,9 @@ export function AttachmentPreview({ url, image }: AttachmentPreviewProps) {
           {url}
         </a>
       )}
-      {image && (
+      {ogImage && (
         <div className="relative h-44.5 w-full overflow-hidden rounded-[16px] border-gray-200 md:h-51.5">
-          <Image src={image} alt="embeded image" fill className="object-cover" />
+          <img src={ogImage} alt="링크 미리보기 이미지" className="h-full w-full object-cover" />
         </div>
       )}
     </div>

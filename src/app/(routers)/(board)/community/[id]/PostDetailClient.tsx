@@ -11,7 +11,12 @@ import StarterKit from '@tiptap/starter-kit';
 import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { KebabMenu } from '@/components/common/KebabMenu';
 
-import { useDeletePost, useGetPostById, useGetUser } from '../_api/communityQueries';
+import {
+  useDeletePost,
+  useGetComments,
+  useGetPostById,
+  useGetUser,
+} from '../_api/communityQueries';
 import { PostErrorFallback } from '../_components/PostErrorFallback';
 import { WriterAvatar } from '../_components/WriterAvatar';
 import { formatDate } from '../_utils/formatDate';
@@ -23,12 +28,20 @@ interface PostDetailClientProps {
 }
 
 export function PostDetailClient({ postId }: PostDetailClientProps) {
-  const { data: post, isLoading, isError, refetch } = useGetPostById(postId);
+  const { data: post, isLoading: isPostLoading, isError, refetch } = useGetPostById(postId);
+  const {
+    data: comments,
+    isLoading: isCommentsLoading,
+    isError: isCommentsError,
+    refetch: refetchComments,
+  } = useGetComments(postId);
   const { data: user } = useGetUser();
-  const { mutate: deletePost } = useDeletePost();
+  const { mutate: deletePost, isPending: isPostDeleting } = useDeletePost();
   const isWriter = user?.id === post?.userId;
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isCommentBusy, setIsCommentBusy] = useState(false);
+  const isBusy = isCommentBusy || isPostDeleting;
   const [contentReady, setContentReady] = useState(false);
   const router = useRouter();
 
@@ -55,12 +68,20 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
     }
   }, [editor, post]);
 
-  if (isError) return <PostErrorFallback onRetry={refetch} />;
-  if (isLoading) return <PostDetailSkeleton />;
+  if ((isError && !post) || (isCommentsError && !comments))
+    return (
+      <PostErrorFallback
+        onRetry={() => {
+          void refetch();
+          void refetchComments();
+        }}
+      />
+    );
+  if (isPostLoading || isCommentsLoading) return <PostDetailSkeleton />;
   if (!post) return <PostErrorFallback onRetry={refetch} />;
   if (!contentReady) return <PostDetailSkeleton />;
 
-  const { title, viewCount, createdAt, writer, commentCount } = post;
+  const { title, viewCount, createdAt, writer } = post;
 
   const kebabItems = [
     { label: '수정하기', onClick: () => router.push(`/community/${postId}/edit`) },
@@ -77,6 +98,7 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
         onConfirm={() => {
           deletePost(postId, {
             onSuccess: () => router.push('/community'),
+            onError: () => alert('게시물 삭제에 실패했습니다. 다시 시도해주세요.'),
           });
         }}
       />
@@ -86,7 +108,7 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
             <div className="w-full">
               <div className="flex items-start justify-between gap-2">
                 <h1 className="font-base-semibold md:font-xl-semibold text-gray-800">{title}</h1>
-                {isWriter && <KebabMenu items={kebabItems} />}
+                {isWriter && <KebabMenu items={kebabItems} disabled={isBusy} />}
               </div>
 
               <div className="mt-6 flex items-center gap-1">
@@ -108,7 +130,13 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
               </div>
             </div>
 
-            <CommentSection postId={postId} commentCount={commentCount} />
+            <CommentSection
+              postId={postId}
+              comments={comments}
+              userId={user?.id}
+              isBusy={isBusy}
+              onPendingChange={setIsCommentBusy}
+            />
           </div>
         </div>
       </div>

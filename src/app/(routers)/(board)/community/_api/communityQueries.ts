@@ -1,4 +1,12 @@
-import type { Post, PostsResponse, SortOption, UpdatePostInput, User } from '../types';
+import type {
+  Comment,
+  CommentsResponse,
+  Post,
+  PostsResponse,
+  SortOption,
+  UpdatePostInput,
+  User,
+} from '../types';
 
 import { apiClient } from '@/lib/apiClient';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -15,7 +23,7 @@ export const useGetUser = () => {
   });
 };
 
-// 게시물 전체 조회
+// 게시물 목록 조회
 export const useGetPosts = (sort: SortOption = '최신순') => {
   const type = toApiType(sort);
   return useQuery({
@@ -43,6 +51,7 @@ export const useUpdatePost = (postId: number) => {
     mutationFn: (updatePost: UpdatePostInput) =>
       apiClient<Post>(`/posts/${postId}`, {
         method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatePost),
       }),
     onSuccess: () => {
@@ -51,7 +60,7 @@ export const useUpdatePost = (postId: number) => {
     },
   });
 
-  return { ...mutation, postId };
+  return { ...mutation };
 };
 
 // 게시물 삭제
@@ -66,6 +75,50 @@ export const useDeletePost = () => {
     onSuccess: (_data, deletedPostId) => {
       queryClient.removeQueries({ queryKey: communityQueryKeys.post(deletedPostId) });
       queryClient.invalidateQueries({ queryKey: [...communityQueryKeys.all, 'posts'] });
+    },
+  });
+};
+
+// 댓글 등록
+export const useCreateComment = (postId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (content: string) =>
+      apiClient<Comment>(`/posts/${postId}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.post(postId) });
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.comments(postId) });
+    },
+  });
+};
+
+// 댓글 목록 조회
+export const useGetComments = (postId: number) => {
+  return useQuery({
+    queryKey: communityQueryKeys.comments(postId),
+    queryFn: () => apiClient<CommentsResponse>(`/posts/${postId}/comments`),
+    staleTime: 1000 * 60 * 5,
+    enabled: Number.isInteger(postId) && postId > 0,
+  });
+};
+
+// 댓글 삭제
+export const useDeleteComment = (postId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (commentId: number) =>
+      apiClient<void>(`/posts/${postId}/comments/${commentId}`, {
+        method: 'DELETE',
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.post(postId) });
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.comments(postId) });
     },
   });
 };

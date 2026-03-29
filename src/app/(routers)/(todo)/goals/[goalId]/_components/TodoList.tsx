@@ -1,22 +1,43 @@
+'use client';
+
 import type { TodoListProps } from '@/app/(routers)/(todo)/goals/types';
 
 import Link from 'next/link';
+import { usePatchTodos } from '@/api/todos';
 import ItemActionBar from '@/app/(routers)/(todo)/goals/[goalId]/_components/ItemActionBar';
+import { useDebouncedCallback } from '@/hooks/useDebounceCallback';
 import { cn } from '@/lib';
 
 import { Icon } from '@/components/icon/Icon';
+import { Button } from '@/components/ui/button';
 
-export default function TodoList({ id, content, done, link, noteIds, favorites }: TodoListProps) {
-  const goalId = 1;
+export default function TodoList({
+  goalId,
+  id,
+  done,
+  title,
+  noteIds,
+  linkUrl,
+  favorites,
+}: TodoListProps) {
+  const { mutate: checkTodo } = usePatchTodos();
+
+  const checkButton = useDebouncedCallback(() => {
+    checkTodo({ id: id, done: !done });
+  }, 1000);
+
   return (
     <div
       className={cn(
         'group hover:bg-orange-alpha-20 hover:rounded-[12px]',
-        'flex h-9 min-h-9 w-full items-center justify-between space-x-[6px] px-1 md:h-11 md:px-2',
+        'flex h-9 min-h-9 w-full items-center justify-between space-x-[6px] px-1 md:h-11 md:min-h-11 md:px-2',
       )}
     >
       <div className="flex w-full min-w-0 items-center space-x-1 md:space-x-2">
-        <Icon name="checkBox" size={18} className="shrink-0" checked={done} />
+        <Button variant="icon" size="none" onClick={checkButton}>
+          <Icon name="checkBox" size={18} className="shrink-0" checked={done} />
+        </Button>
+
         <Link
           href={`/goals/${goalId}/todos/${id}`}
           className="flex min-w-0 flex-1 items-center space-x-1 md:space-x-2"
@@ -28,11 +49,17 @@ export default function TodoList({ id, content, done, link, noteIds, favorites }
               'hover:font-sm-semibold hover:md:font-base-semibold hover:lg:font-lg-semibold hover:truncate hover:text-orange-500',
             )}
           >
-            {content}
+            {title}
           </p>
         </Link>
       </div>
-      <ItemActionBar noteIds={noteIds} link={link} favorites={favorites} />
+      <ItemActionBar
+        id={id}
+        goalId={goalId}
+        noteIds={noteIds}
+        linkUrl={linkUrl}
+        favorites={favorites}
+      />
     </div>
   );
 }

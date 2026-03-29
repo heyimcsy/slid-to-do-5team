@@ -1,3 +1,4 @@
+import type { PaginatedResponse } from '@/api/response';
 import type { QueryClient } from '@tanstack/react-query';
 
 import { apiClient } from '@/lib/apiClient.browser';
@@ -7,27 +8,20 @@ interface TODO {
   id: number;
   title: string;
   done: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 // base 타입 하나만 정의
-interface Goal {
+export interface Goal {
   id: number;
   teamId: string;
   userId: number;
   title: string;
   completedCount: number;
   todoCount: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   todos: TODO[];
-}
-
-// GET 목록 응답 - 제네릭 공통 래퍼로
-export interface PaginatedResponse<T> {
-  goals: T[];
-  nextCursor: number | null;
-  totalCount: number;
 }
 
 // POST 응답 - Goal에서 필요한 것만 Pick
@@ -118,7 +112,7 @@ export const usePostGoals = (options: { onSuccess?: (response: GoalResponse) => 
   });
 };
 
-export const useDeleteGoals = () => {
+export const useDeleteGoals = (options: { onSuccess?: () => void }) => {
   const queryClient: QueryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: DeleteGoalPayload) => {
@@ -127,9 +121,12 @@ export const useDeleteGoals = () => {
       });
       return data;
     },
-
-    onSuccess: () => {
+    ...options,
+    onSuccess: (_, payload) => {
+      const id = payload.id;
       queryClient.invalidateQueries({ queryKey: [GOALS] });
+      queryClient.invalidateQueries({ queryKey: [GOAL, id] });
+      options?.onSuccess?.();
     },
   });
 };
@@ -144,8 +141,28 @@ export const usePatchGoals = () => {
       });
       return data;
     },
-    onSuccess: () => {
+
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({ queryKey: [GOAL, payload.id] });
+      const previousGoal = queryClient.getQueryData([GOAL, payload.id]);
+      queryClient.setQueryData(
+        [GOAL, payload.id],
+        (old: Omit<Goal, 'completedCount' | 'todoCount'>) => {
+          if (!old) return old;
+          return { ...old, title: payload.title };
+        },
+      );
+
+      return { previousGoal };
+    },
+
+    onError: (_, payload, context) => {
+      queryClient.setQueryData([GOAL, payload.id], context?.previousGoal);
+    },
+
+    onSettled: (_, __, payload) => {
       queryClient.invalidateQueries({ queryKey: [GOALS] });
+      queryClient.invalidateQueries({ queryKey: [GOAL, payload.id] });
     },
   });
 };
