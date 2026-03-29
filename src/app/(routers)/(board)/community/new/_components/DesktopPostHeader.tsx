@@ -10,7 +10,7 @@ export function DesktopPostHeader({
   onSubmit,
 }: DesktopPostHeaderProps) {
   return (
-    <div className="mb-4 hidden items-center justify-between md:mb-6 md:flex">
+    <div className="hidden items-center justify-between md:flex">
       <h1 className="font-xl-semibold lg:font-2xl-semibold text-black">게시물 작성하기</h1>
       <div className="flex items-center gap-2">
         <button
