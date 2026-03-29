@@ -67,7 +67,7 @@ export default function NoteEditor({
       />
 
       <hr className="mt-4 w-full border-gray-200 lg:mt-7" />
-      <div className="overflow- y-scroll mt-4 h-3/4 min-h-0 lg:mt-7">
+      <div className="mt-4 h-3/4 min-h-0 overflow-y-scroll lg:mt-7">
         <div className="w-full break-words whitespace-pre-wrap">
           {linkUrl && (
             <div className="mt-4 cursor-pointer" onClick={handleLinkClick}>

@@ -24,6 +24,7 @@ export function LinkEmbed({ url, data, onDelete }: LinkEmbedProps) {
         variant="icon"
         size="none"
         className="absolute top-[14px] right-4 h-fit w-fit min-w-0"
+        aria-label="링크 삭제"
         onClick={onDelete}
       >
         <Icon name="delete" size={24} />
