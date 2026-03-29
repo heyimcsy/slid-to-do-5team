@@ -28,6 +28,7 @@ export default function LinkEmbedOgImage({
               variant="icon"
               size="none"
               onClick={handleLinkClick}
+              aria-label="링크 미리보기 패널 닫기"
               className="absolute -top-7 right-5 flex h-7 w-11 cursor-pointer items-center justify-center rounded-b-[12px] border border-b-0 border-gray-200 bg-slate-50 md:-top-9 md:h-9 md:w-15"
             >
               <Icon name="arrow" direction="down" size={16} />
@@ -43,6 +44,7 @@ export default function LinkEmbedOgImage({
               variant="icon"
               size="none"
               onClick={handleLinkClick}
+              aria-label="링크 미리보기 패널 닫기"
               className="absolute top-5 -left-9 flex h-15 w-9 cursor-pointer items-center justify-center rounded-r-[12px] border border-r-0 border-gray-200 bg-slate-50"
             >
               <Icon name="arrow" direction="right" size={16} />
