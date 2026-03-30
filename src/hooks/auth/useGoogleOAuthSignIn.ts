@@ -2,6 +2,8 @@
 
 import type { User } from '@/lib/auth/schemas/user';
 
+import { useCallback, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ApiClientError } from '@/lib/apiClient';
 import {
   COOKIE_OAUTH_GOOGLE_RETURN_PATH,
@@ -11,8 +13,6 @@ import {
   resolveGoogleOAuthRedirectUri,
 } from '@/lib/auth/oauth-urls';
 import { getSafeCallbackPath } from '@/lib/navigation/safeCallbackPath';
-import { useSearchParams } from 'next/navigation';
-import { useCallback, useMemo } from 'react';
 
 export type GoogleOAuthSignInResult =
   | { ok: true; redirect: true }
@@ -23,7 +23,9 @@ const OAUTH_COOKIE_MAX_AGE_SEC = 600;
 
 function setShortLivedCookie(name: string, value: string) {
   const safe = encodeURIComponent(value);
-  document.cookie = `${name}=${safe}; Path=/; Max-Age=${OAUTH_COOKIE_MAX_AGE_SEC}; SameSite=Lax`;
+  const secure =
+    typeof window !== 'undefined' && window.location.protocol === 'https:' ? '; Secure' : '';
+  document.cookie = `${name}=${safe}; Path=/; Max-Age=${OAUTH_COOKIE_MAX_AGE_SEC}; SameSite=Lax${secure}`;
 }
 
 function getAppOrigin(): string {
