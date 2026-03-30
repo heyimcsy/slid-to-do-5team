@@ -2,7 +2,7 @@
 
 import type { Post, SortOption } from './types';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
@@ -10,20 +10,14 @@ import { Icon } from '@/components/icon/Icon';
 
 import { useGetPosts } from './_api/communityQueries';
 import { FeaturedPostCard } from './_components/FeaturedPostCard';
-import { Pagination } from './_components/Pagination';
 import { PostEmptyState } from './_components/PostEmptyState';
 import { PostErrorFallback } from './_components/PostErrorFallback';
 import { PostListItem } from './_components/PostListItem';
-import { PostListSkeleton } from './_components/PostListSkeleton';
+import { PostListItemSkeleton, PostListSkeleton } from './_components/PostListSkeleton';
 import { PostSearchBar } from './_components/PostSearchBar';
 import { extractPlainText } from './_utils/extractPlainText';
 
-const POSTS_PER_PAGE = 5;
-
 export default function CommunityClient() {
-  const [currentPage, setCurrentPage] = useState(1);
-  // const [search, setSearch] = useState('');
-
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -31,12 +25,31 @@ export default function CommunityClient() {
   const sort = (searchParams.get('sort') ?? '최신순') as SortOption;
   const search = searchParams.get('search') ?? '';
 
-  const { data, isLoading, isError, refetch } = useGetPosts(sort);
+  const { data, isLoading, isError, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useGetPosts(sort, !!search);
 
   const posts: Post[] = useMemo(
-    () => (data?.posts ?? []).map((post) => ({ ...post, content: extractPlainText(post.content) })),
+    () =>
+      (data?.pages ?? [])
+        .flatMap((page) => page.posts)
+        .map((post) => ({ ...post, content: extractPlainText(post.content) })),
     [data],
   );
+
+  const observerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    if (observerRef.current) observer.observe(observerRef.current);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const featuredPosts = useMemo(
     () => [...posts].sort((a, b) => b.viewCount - a.viewCount).slice(0, 3),
@@ -45,6 +58,7 @@ export default function CommunityClient() {
 
   const filteredPosts = useMemo(() => {
     const lowerSearch = search.toLowerCase();
+
     return posts.filter(
       (post) =>
         post.title.toLowerCase().includes(lowerSearch) ||
@@ -52,19 +66,12 @@ export default function CommunityClient() {
     );
   }, [posts, search]);
 
-  const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
-  const paginatedPosts = filteredPosts.slice(
-    (currentPage - 1) * POSTS_PER_PAGE,
-    currentPage * POSTS_PER_PAGE,
-  );
-
   const handleSortChange = (value: SortOption) => {
     const params = new URLSearchParams(searchParams.toString());
 
     params.set('sort', value);
 
     router.replace(`${pathname}?${params.toString()}`);
-    setCurrentPage(1);
   };
 
   const handleSearchChange = (value: string) => {
@@ -73,7 +80,6 @@ export default function CommunityClient() {
     params.set('search', value);
 
     router.replace(`${pathname}?${params.toString()}`);
-    setCurrentPage(1);
   };
 
   if (isLoading) return <PostListSkeleton />;
@@ -101,6 +107,7 @@ export default function CommunityClient() {
             <div className="flex flex-col items-start gap-2 self-stretch">
               <PostSearchBar
                 sort={sort}
+                initialSearch={search}
                 onSortChange={handleSortChange}
                 onSearchChange={handleSearchChange}
               />
@@ -110,19 +117,15 @@ export default function CommunityClient() {
                 ) : filteredPosts.length === 0 ? (
                   <PostEmptyState message="검색 결과가 없어요." />
                 ) : (
-                  paginatedPosts.map((post) => <PostListItem key={post.id} post={post} />)
+                  filteredPosts.map((post) => <PostListItem key={post.id} post={post} />)
                 )}
               </div>
             </div>
 
-            {totalPages > 0 && (
-              <div className="flex justify-center">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
-              </div>
+            <div ref={observerRef} className="h-4" />
+            {!search && isFetchingNextPage && <PostListItemSkeleton />}
+            {!search && !hasNextPage && posts.length > 0 && (
+              <p className="py-6 text-center text-sm text-gray-400">모든 게시물을 불러왔습니다.</p>
             )}
           </div>
         </div>

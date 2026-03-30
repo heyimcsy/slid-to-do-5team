@@ -9,7 +9,13 @@ import type {
 } from '../types';
 
 import { apiClient } from '@/lib/apiClient';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 import { communityQueryKeys } from './communityQueryKeys';
 
@@ -24,12 +30,20 @@ export const useGetUser = () => {
 };
 
 // 게시물 목록 조회
-export const useGetPosts = (sort: SortOption = '최신순') => {
+export const useGetPosts = (sort: SortOption = '최신순', isSearchMode: boolean = false) => {
   const type = toApiType(sort);
-  return useQuery({
-    queryKey: communityQueryKeys.posts(type),
-    queryFn: () => apiClient<PostsResponse>(`/posts?type=${type}`),
+  const limit = isSearchMode ? 100 : 5;
+
+  return useInfiniteQuery({
+    queryKey: [communityQueryKeys.posts(type), { isSearchMode }],
+    queryFn: ({ pageParam }) =>
+      apiClient<PostsResponse>(
+        `/posts?type=${type}&limit=${limit}${pageParam ? `&cursor=${pageParam}` : ''}`,
+      ),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     staleTime: 1000 * 60 * 5,
+    placeholderData: keepPreviousData,
   });
 };
 

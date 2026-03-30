@@ -2,23 +2,33 @@
 
 import type { SortOption } from '../types';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { SearchInput } from '@/components/common/SearchInput';
 import { SortFilter } from '@/components/common/SortFilter';
 
 interface PostSearchBarProps {
   sort: SortOption;
+  initialSearch?: string;
   onSortChange: (value: SortOption) => void;
   onSearchChange: (value: string) => void;
 }
 
-export function PostSearchBar({ sort, onSortChange, onSearchChange }: PostSearchBarProps) {
-  const [inputValue, setInputValue] = useState('');
+export function PostSearchBar({
+  sort,
+  initialSearch,
+  onSortChange,
+  onSearchChange,
+}: PostSearchBarProps) {
+  const [inputValue, setInputValue] = useState(initialSearch ?? '');
 
   const handleSubmit = () => {
     onSearchChange(inputValue);
   };
+
+  useEffect(() => {
+    setInputValue(initialSearch ?? '');
+  }, [initialSearch]);
 
   return (
     <div className="flex w-full items-center justify-between">
