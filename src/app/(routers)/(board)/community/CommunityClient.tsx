@@ -84,7 +84,9 @@ export default function CommunityClient() {
       <div className="h-full overflow-y-auto bg-gray-100 px-4 py-6 pb-24 md:px-8 md:py-12 md:pb-20 lg:pb-16">
         <div className="mx-auto w-full max-w-[1200px]">
           <h1 className="font-xl-semibold md:font-2xl-semibold mb-6 px-2 text-black md:mb-8">
-            소통 게시판
+            <Link href="/community" className="cursor-pointer">
+              소통 게시판
+            </Link>
           </h1>
 
           {posts.length > 0 && (
