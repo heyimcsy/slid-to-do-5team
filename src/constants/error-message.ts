@@ -15,3 +15,16 @@ export const TOKEN_EXCHANGE_FAILED_MESSAGE_KO =
   'OAuth 승인 토큰 교환에 실패했습니다. 다시 시도해 주세요.' as const;
 export const BACKEND_LOGIN_FAILED_MESSAGE_KO =
   '백엔드 로그인에 실패했습니다. 다시 시도해 주세요.' as const;
+export const GOOGLE_CLIENT_ID_UNSET_MESSAGE_KO =
+  'NEXT_PUBLIC_GOOGLE_CLIENT_ID가 설정되지 않았습니다.' as const;
+export const GOOGLE_CLIENT_SECRET_UNSET_MESSAGE_KO =
+  'GOOGLE_CLIENT_SECRET가 설정되지 않았습니다.' as const;
+export const KAKAO_CLIENT_ID_UNSET_MESSAGE_KO =
+  'NEXT_PUBLIC_KAKAO_CLIENT_ID가 설정되지 않았습니다.' as const;
+export const KAKAO_CLIENT_SECRET_UNSET_MESSAGE_KO =
+  'KAKAO_CLIENT_SECRET가 설정되지 않았습니다.' as const;
+export const GOOGLE_TOKEN_EXCHANGE_FAILED_MESSAGE_KO = 'Google 토큰 교환에 실패했습니다.' as const;
+export const KAKAO_TOKEN_EXCHANGE_FAILED_MESSAGE_KO = '카카오 토큰 교환에 실패했습니다.' as const;
+export const TOKEN_RESPONSE_INVALID_TYPE_MESSAGE_KO = '토큰 응답 형식이 JSON이 아닙니다.' as const;
+export const TOKEN_RESPONSE_MISSING_ACCESS_TOKEN_MESSAGE_KO =
+  '토큰 응답에 access_token이 없습니다.' as const;
