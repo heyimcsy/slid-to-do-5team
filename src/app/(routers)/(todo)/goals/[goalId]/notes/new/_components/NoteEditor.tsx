@@ -49,8 +49,9 @@ export default function NoteEditor({
           <Input
             value={title}
             onChange={onHandleChange}
+            maxLength={30}
             placeholder="노트의 제목을 작성해주세요."
-            className="font-xl-semibold md:font-2xl-semibold border-0 leading-tight text-gray-800"
+            className="font-xl-semibold md:font-2xl-semibold w-[400px] border-0 leading-tight text-gray-800"
           />
         </div>
         <p className="font-xs-medium shrink-0 text-gray-500">
