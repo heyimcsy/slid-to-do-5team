@@ -125,7 +125,10 @@ export function EditForm({ todo }: EditFormProps) {
       done: status === 'DONE',
       dueDate: date.toISOString(),
       linkUrl: link || null,
-      tags: tags.map((t) => ({ name: t.name })),
+      tags: tags.map((t) => ({
+        id: todo.tags.find((orig) => orig.name === t.name)?.id ?? 0,
+        name: t.name,
+      })),
     });
   });
 
