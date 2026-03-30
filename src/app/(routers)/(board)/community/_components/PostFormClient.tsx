@@ -3,6 +3,7 @@
 import type { Editor } from '@tiptap/react';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEditorConfig } from '@/hooks/editor';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -211,10 +212,12 @@ export function PostFormClient({
             <div className="m-4 flex shrink-0 gap-2">
               {images.map((item, i) => (
                 <div key={item.url} className="relative size-[150px] shrink-0 md:size-[232px]">
-                  <img
+                  <Image
                     src={item.url}
                     alt={`첨부 이미지 ${i + 1}`}
-                    className="size-full rounded-xl object-cover"
+                    fill
+                    unoptimized
+                    className="rounded-xl object-cover"
                   />
                   <button
                     type="button"
