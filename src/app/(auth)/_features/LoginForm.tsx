@@ -56,6 +56,7 @@ function LoginFormBody() {
         body: data,
         clientPublicBase: '/api/auth',
         retry: false,
+        skipSessionExpiredRedirect: true,
       });
       if (res.user) {
         authUserStore.getState().setUser(res.user);

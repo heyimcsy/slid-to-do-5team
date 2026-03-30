@@ -42,6 +42,7 @@ function SignupFormBody() {
         body: data,
         clientPublicBase: '/api/auth',
         retry: false,
+        skipSessionExpiredRedirect: true,
       });
       if (res.sessionIssued) {
         if (res.user) {

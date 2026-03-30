@@ -34,9 +34,20 @@ export type ApiClientConfig = Omit<RequestInit, 'body'> & {
   retry?: boolean;
   next?: NextFetchConfig;
   clientPublicBase?: ClientPublicApiBase;
+  /**
+   * 401 후 refresh 실패 시 `onUnauthorized`(브라우저: 보통 `logoutAndRedirect`)를 호출하지 않는다.
+   * 잘못된 비밀번호 등 **자격 증명 실패**로 401이 나는 요청에서 세션 만료로 오인해 리다이렉트되는 것을 막기 위함.
+   */
+  skipSessionExpiredRedirect?: boolean;
   onBeforeRequest?: RequestInterceptor;
   onResponse?: ResponseInterceptor<unknown>;
   onError?: ErrorInterceptor;
+};
+
+/** `createApiClient`의 `onUnauthorized`에 전달 — 호출부에서 경로·opt-out 판단에 사용 */
+export type OnUnauthorizedContext = {
+  endpoint: string;
+  config: ApiClientConfig;
 };
 
 interface ApiError {
@@ -134,7 +145,7 @@ export interface CreateApiClientDeps {
     request: <R>(endpoint: string, config?: ApiClientConfig) => Promise<R>,
   ) => Promise<T | undefined>;
   refreshTokens: () => Promise<boolean>;
-  onUnauthorized?: () => void;
+  onUnauthorized?: (ctx: OnUnauthorizedContext) => void;
   shouldRunGlobalInterceptors: () => boolean;
   /** false면 use* 인터셉터 등록 API가 즉시 throw */
   allowGlobalInterceptorRegistration: boolean;
@@ -248,7 +259,9 @@ export function createApiClient(deps: CreateApiClientDeps): ApiClientInstance {
 
       const err = new ApiClientError(401, 'UNAUTHORIZED', AUTH_TOKENS_EXPIRED_MESSAGE_KO);
       runErrorInterceptors(err, onError);
-      deps.onUnauthorized?.();
+      if (!config.skipSessionExpiredRedirect) {
+        deps.onUnauthorized?.({ endpoint, config });
+      }
       throw err;
     }
 
