@@ -52,7 +52,7 @@ export function EditForm({ todo }: EditFormProps) {
   const isMobile = useIsMobile();
   const { mutate: patchTodo, isSuccess } = usePatchTodos(); // isSuccess 추가
 
-  const initialTags: Tag[] = todo.tags.map((tag, index) => ({
+  const initialTags: Tag[] = (todo.tags ?? []).map((tag, index) => ({
     name: tag.name,
     color: COLORS[index % COLORS.length],
   }));
@@ -62,8 +62,8 @@ export function EditForm({ todo }: EditFormProps) {
   const [tempDate, setTempDate] = useState<Date | undefined>(new Date(todo.dueDate));
   const [open, setOpen] = useState(false);
   const [image, setImage] = useState<File | null>(null);
-  const [selectedGoal, setSelectedGoal] = useState<string | null>(todo.goal?.title ?? null);
-  const [selectedGoalId, setSelectedGoalId] = useState<number | null>(todo.goal?.id ?? null);
+  const [selectedGoal, setSelectedGoal] = useState<string | null>(todo.goal?.title || null);
+  const [selectedGoalId, setSelectedGoalId] = useState<number | null>(todo.goal?.id || null);
   const [link, setLink] = useState(todo.linkUrl ?? '');
   const [tags, setTags] = useState<Tag[]>(initialTags);
   const [tagInput, setTagInput] = useState('');
@@ -84,7 +84,7 @@ export function EditForm({ todo }: EditFormProps) {
   // API 성공 시 모달 닫기
   useEffect(() => {
     if (isSuccess) router.back();
-  }, [isSuccess]);
+  }, [isSuccess, router]);
 
   const getNextColor = (): TagColor => {
     const color = COLORS[colorIndexRef.current % COLORS.length];
