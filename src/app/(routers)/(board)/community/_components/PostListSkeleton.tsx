@@ -6,7 +6,7 @@ function FeaturedPostCardSkeleton() {
   );
 }
 
-function PostListItemSkeleton() {
+export function PostListItemSkeleton() {
   return (
     <div className="flex w-full items-center gap-6 px-4 py-6 md:gap-8 [&:not(:last-child)]:border-b [&:not(:last-child)]:border-gray-300">
       <div className="flex flex-1 flex-col gap-2 md:gap-[26px]">
