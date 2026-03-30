@@ -25,8 +25,16 @@ export default function CommunityClient() {
   const sort = (searchParams.get('sort') ?? '최신순') as SortOption;
   const search = searchParams.get('search') ?? '';
 
-  const { data, isLoading, isError, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useGetPosts(sort, !!search);
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetching,
+  } = useGetPosts(sort, !!search);
 
   const posts: Post[] = useMemo(
     () =>
@@ -41,7 +49,7 @@ export default function CommunityClient() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage && !search) {
           fetchNextPage();
         }
       },
@@ -82,7 +90,7 @@ export default function CommunityClient() {
     router.replace(`${pathname}?${params.toString()}`);
   };
 
-  if (isLoading) return <PostListSkeleton />;
+  if (isLoading || isFetching) return <PostListSkeleton />;
   if (isError && !data) return <PostErrorFallback onRetry={refetch} />;
 
   return (
@@ -114,7 +122,7 @@ export default function CommunityClient() {
               <div className="flex flex-col items-start self-stretch">
                 {posts.length === 0 ? (
                   <PostEmptyState />
-                ) : filteredPosts.length === 0 ? (
+                ) : filteredPosts.length === 0 && !isFetching ? (
                   <PostEmptyState message="검색 결과가 없어요." />
                 ) : (
                   filteredPosts.map((post) => <PostListItem key={post.id} post={post} />)

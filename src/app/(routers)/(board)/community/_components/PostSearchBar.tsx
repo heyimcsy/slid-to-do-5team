@@ -2,8 +2,6 @@
 
 import type { SortOption } from '../types';
 
-import { useEffect, useState } from 'react';
-
 import { SearchInput } from '@/components/common/SearchInput';
 import { SortFilter } from '@/components/common/SortFilter';
 
@@ -16,32 +14,21 @@ interface PostSearchBarProps {
 
 export function PostSearchBar({
   sort,
-  initialSearch,
+  initialSearch = '',
   onSortChange,
   onSearchChange,
 }: PostSearchBarProps) {
-  const [inputValue, setInputValue] = useState(initialSearch ?? '');
-
-  const handleSubmit = () => {
-    onSearchChange(inputValue);
-  };
-
-  useEffect(() => {
-    setInputValue(initialSearch ?? '');
-  }, [initialSearch]);
-
   return (
     <div className="flex w-full items-center justify-between">
       <div className="w-[248px] md:w-[432px]">
         <SearchInput
           placeholder="궁금한 내용을 검색해주세요"
           className="ml-0.5 overflow-hidden bg-white"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
+          defaultValue={initialSearch}
+          key={initialSearch}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') handleSubmit();
+            if (e.key === 'Enter') onSearchChange(e.currentTarget.value);
           }}
-          // onSearchClick={handleSubmit}
         />
       </div>
       <SortFilter value={sort} onChange={onSortChange} />

@@ -35,7 +35,7 @@ export const useGetPosts = (sort: SortOption = '최신순', isSearchMode: boolea
   const limit = isSearchMode ? 100 : 5;
 
   return useInfiniteQuery({
-    queryKey: [communityQueryKeys.posts(type), { isSearchMode }],
+    queryKey: [...communityQueryKeys.posts(type), { isSearchMode }],
     queryFn: ({ pageParam }) =>
       apiClient<PostsResponse>(
         `/posts?type=${type}&limit=${limit}${pageParam ? `&cursor=${pageParam}` : ''}`,
