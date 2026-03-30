@@ -6,7 +6,9 @@ import { isPublicPath } from '@/lib/navigation/publicPaths';
 import { AUTH_CONFIG } from '@/constants/auth-config';
 import {
   AUTH_MISSING_REFRESH_TOKEN_MESSAGE_KO,
-  AUTH_SERVICE_ERROR_MESSAGE_KO,
+  REFRESH_SESSION_INVALID_TOKEN_BODY_MESSAGE_KO,
+  REFRESH_SESSION_NETWORK_MESSAGE_KO,
+  REFRESH_SESSION_REASON,
 } from '@/constants/error-message';
 
 /**
@@ -58,24 +60,21 @@ export async function POST(request: Request) {
     );
   }
 
-  if (result.reason === 'network') {
+  if (result.reason === REFRESH_SESSION_REASON.NETWORK) {
     return NextResponse.json(
-      { success: false, message: AUTH_SERVICE_ERROR_MESSAGE_KO },
+      { success: false, message: REFRESH_SESSION_NETWORK_MESSAGE_KO },
       { status: 502 },
     );
   }
 
-  if (result.reason === 'invalid_token_body') {
+  if (result.reason === REFRESH_SESSION_REASON.INVALID_TOKEN_BODY) {
     return NextResponse.json(
-      {
-        success: false,
-        message: `토큰 응답 형식 오류 (${AUTH_CONFIG.ACCESS_TOKEN_KEY}/${AUTH_CONFIG.REFRESH_TOKEN_KEY})`,
-      },
+      { success: false, message: REFRESH_SESSION_INVALID_TOKEN_BODY_MESSAGE_KO },
       { status: 502 },
     );
   }
 
-  if (result.reason === 'backend_rejected') {
+  if (result.reason === REFRESH_SESSION_REASON.BACKEND_REJECTED) {
     return NextResponse.json(
       { success: false, message: result.message },
       { status: result.status },
