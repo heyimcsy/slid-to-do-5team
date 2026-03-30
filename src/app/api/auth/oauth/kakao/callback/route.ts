@@ -1,5 +1,7 @@
+import type { CompleteKakaoBackendLoginResult } from '@/lib/auth/kakao/completeKakaoBackendLogin';
 import type { NextRequest } from 'next/server';
 
+import { NextResponse } from 'next/server';
 import { oauthUserFlashCookieOptions } from '@/lib/auth/cookies';
 import { completeKakaoBackendLogin } from '@/lib/auth/kakao/completeKakaoBackendLogin';
 import { exchangeKakaoAuthorizationCode } from '@/lib/auth/kakao/kakaoTokenExchange';
@@ -11,7 +13,14 @@ import {
   resolveKakaoOAuthRedirectUriForServer,
 } from '@/lib/auth/oauth-urls';
 import { getSafeCallbackPath } from '@/lib/navigation/safeCallbackPath';
-import { NextResponse } from 'next/server';
+
+import {
+  BACKEND_LOGIN_FAILED_MESSAGE_KO,
+  MISMATCHED_REDIRECT_URI_MESSAGE_KO,
+  MISSING_OAUTH_RESPONSE_MESSAGE_KO,
+  SESSION_EXPIRED_OR_INVALID_MESSAGE_KO,
+  TOKEN_EXCHANGE_FAILED_MESSAGE_KO,
+} from '@/constants/error-message';
 
 /**
  * Kakao 로그인 redirect_uri — `GET ?code=&state=` 후 토큰 교환·백엔드 로그인·쿠키 설정·리다이렉트.
@@ -32,31 +41,36 @@ export async function GET(request: NextRequest) {
   }
 
   if (!code?.trim() || !state?.trim()) {
-    return loginError('카카오 인가 응답(code/state)이 없습니다.');
+    return loginError(MISSING_OAUTH_RESPONSE_MESSAGE_KO);
   }
 
   const storedState = request.cookies.get(COOKIE_OAUTH_KAKAO_STATE)?.value;
   if (!storedState || storedState !== state) {
-    return loginError('로그인 세션이 만료되었거나 유효하지 않습니다. 다시 시도해 주세요.');
+    return loginError(SESSION_EXPIRED_OR_INVALID_MESSAGE_KO);
   }
 
   let redirectUri: string;
   try {
     redirectUri = resolveKakaoOAuthRedirectUriForServer();
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'redirect_uri 설정 오류';
+    // TODO: Sentry 등에 event 파라미터를 받아 원인 로깅 (URL에는 고정 문구만)
+    const msg = e instanceof Error ? e.message : MISMATCHED_REDIRECT_URI_MESSAGE_KO;
     return NextResponse.json({ success: false, message: msg }, { status: 500 });
   }
 
   let kakaoAccessToken: string;
   try {
     kakaoAccessToken = (await exchangeKakaoAuthorizationCode(code, redirectUri)).access_token;
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : '카카오 토큰 교환 실패';
-    return loginError(msg);
+  } catch {
+    return loginError(TOKEN_EXCHANGE_FAILED_MESSAGE_KO);
   }
 
-  const backend = await completeKakaoBackendLogin(kakaoAccessToken);
+  let backend: CompleteKakaoBackendLoginResult;
+  try {
+    backend = await completeKakaoBackendLogin(kakaoAccessToken);
+  } catch {
+    return loginError(BACKEND_LOGIN_FAILED_MESSAGE_KO);
+  }
   if (!backend.ok) {
     return loginError(backend.message);
   }

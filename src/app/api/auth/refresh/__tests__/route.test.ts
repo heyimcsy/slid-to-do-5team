@@ -2,10 +2,15 @@
  * @jest-environment node
  */
 import { POST } from '@/app/api/auth/refresh/route';
+import { resetRefreshSessionDedupStateForTests } from '@/lib/auth/refreshSession.server';
 
 import { API_BASE_URL, API_URL, TEAM_ID } from '@/constants/api';
 import { AUTH_CONFIG } from '@/constants/auth-config';
-import { AUTH_MISSING_REFRESH_TOKEN_MESSAGE_KO } from '@/constants/error-message';
+import {
+  AUTH_MISSING_REFRESH_TOKEN_MESSAGE_KO,
+  REFRESH_SESSION_BACKEND_REJECTED_FALLBACK_MESSAGE_KO,
+  REFRESH_SESSION_INVALID_TOKEN_BODY_MESSAGE_KO,
+} from '@/constants/error-message';
 
 function b64url(obj: object): string {
   return Buffer.from(JSON.stringify(obj)).toString('base64url');
@@ -29,6 +34,8 @@ describe('POST /api/auth/refresh', () => {
   const originalFetch = globalThis.fetch;
 
   beforeEach(() => {
+    jest.clearAllMocks();
+    resetRefreshSessionDedupStateForTests();
     globalThis.fetch = jest.fn();
     process.env.API_URL = API_URL || '';
     process.env.TEAM_ID = TEAM_ID || '';
@@ -158,7 +165,7 @@ describe('POST /api/auth/refresh', () => {
     const res = await POST(postRequest());
     expect(res.status).toBe(401);
     const json = await res.json();
-    expect(json.message).toBe('토큰 갱신 실패');
+    expect(json.message).toBe(REFRESH_SESSION_BACKEND_REJECTED_FALLBACK_MESSAGE_KO);
   });
 
   it('fetch 네트워크 실패 → 502', async () => {
@@ -176,7 +183,7 @@ describe('POST /api/auth/refresh', () => {
     expect(json.message).toContain('인증 서버');
   });
 
-  it('백엔드 200이나 본문이 유효한 JSON이 아님 → 502', async () => {
+  it('백엔드 200이나 본문이 유효한 JSON이 아님 → 502 (invalid_token_body)', async () => {
     (globalThis.fetch as jest.Mock).mockResolvedValue(
       new Response('<html>error</html>', { status: 200, headers: { 'Content-Type': 'text/html' } }),
     );
@@ -190,6 +197,6 @@ describe('POST /api/auth/refresh', () => {
     expect(res.status).toBe(502);
     const json = await res.json();
     expect(json.success).toBe(false);
-    expect(json.message).toContain('인증 서버');
+    expect(json.message).toBe(REFRESH_SESSION_INVALID_TOKEN_BODY_MESSAGE_KO);
   });
 });

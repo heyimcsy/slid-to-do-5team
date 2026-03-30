@@ -3,8 +3,6 @@
 import type { LoginBody } from '@/lib/auth/schemas/login';
 import type { User } from '@/lib/auth/schemas/user';
 
-
-
 import { Suspense, useEffect } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { apiClient, ApiClientError } from '@/lib/apiClient';
@@ -58,6 +56,7 @@ function LoginFormBody() {
         body: data,
         clientPublicBase: '/api/auth',
         retry: false,
+        skipSessionExpiredRedirect: true,
       });
       if (res.user) {
         authUserStore.getState().setUser(res.user);

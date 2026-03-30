@@ -7,6 +7,7 @@
  * - 팩토리 단위 동작은 `createApiClient` + 최소 deps로 검증.
  */
 import { apiClient, ApiClientError, createApiClient, prepareApiClientBody } from '@/lib/apiClient';
+import { shouldTriggerSessionExpiredLogoutRedirect } from '@/lib/apiClient.browser';
 
 import { AUTH_TOKENS_EXPIRED_MESSAGE_KO } from '@/constants/error-message';
 
@@ -55,6 +56,88 @@ describe('ApiClientError', () => {
     const err = new ApiClientError(500, undefined, 'Server Error');
     expect(err.code).toBeUndefined();
     expect(err.status).toBe(500);
+  });
+});
+
+describe('shouldTriggerSessionExpiredLogoutRedirect', () => {
+  it('/api/auth + /login|/signup 이면 전역 로그아웃 트리거 안 함', () => {
+    expect(
+      shouldTriggerSessionExpiredLogoutRedirect({
+        endpoint: '/login',
+        config: { clientPublicBase: '/api/auth' },
+      }),
+    ).toBe(false);
+    expect(
+      shouldTriggerSessionExpiredLogoutRedirect({
+        endpoint: '/signup',
+        config: { clientPublicBase: '/api/auth' },
+      }),
+    ).toBe(false);
+  });
+
+  it('그 외 BFF 경로는 트리거', () => {
+    expect(
+      shouldTriggerSessionExpiredLogoutRedirect({
+        endpoint: '/foo',
+        config: { clientPublicBase: '/api/auth' },
+      }),
+    ).toBe(true);
+    expect(
+      shouldTriggerSessionExpiredLogoutRedirect({
+        endpoint: '/login',
+        config: { clientPublicBase: '/api/proxy' },
+      }),
+    ).toBe(true);
+  });
+});
+
+describe('createApiClient — 401·refresh 실패', () => {
+  const fetch401 = () =>
+    Promise.resolve({
+      ok: false,
+      status: 401,
+      json: async () => ({}),
+    } as Response);
+
+  it('skipSessionExpiredRedirect면 onUnauthorized 미호출', async () => {
+    const onUnauthorized = jest.fn();
+    const client = createApiClient({
+      resolveUrl: (endpoint) => `https://example.com${endpoint}`,
+      credentials: 'omit',
+      refreshTokens: async () => false,
+      onUnauthorized,
+      shouldRunGlobalInterceptors: () => false,
+      allowGlobalInterceptorRegistration: false,
+    });
+    global.fetch = jest.fn(fetch401);
+
+    await expect(
+      client.request('/x', { retry: true, skipSessionExpiredRedirect: true }),
+    ).rejects.toThrow(ApiClientError);
+
+    expect(onUnauthorized).not.toHaveBeenCalled();
+  });
+
+  it('onUnauthorized에 endpoint·config 전달', async () => {
+    const onUnauthorized = jest.fn();
+    const client = createApiClient({
+      resolveUrl: (endpoint) => `https://example.com${endpoint}`,
+      credentials: 'omit',
+      refreshTokens: async () => false,
+      onUnauthorized,
+      shouldRunGlobalInterceptors: () => false,
+      allowGlobalInterceptorRegistration: false,
+    });
+    global.fetch = jest.fn(fetch401);
+
+    await expect(
+      client.request('/tasks', { retry: true, clientPublicBase: '/api/proxy' }),
+    ).rejects.toThrow(ApiClientError);
+
+    expect(onUnauthorized).toHaveBeenCalledWith({
+      endpoint: '/tasks',
+      config: expect.objectContaining({ retry: true, clientPublicBase: '/api/proxy' }),
+    });
   });
 });
 

@@ -19,10 +19,13 @@ import { Toaster as Sonner } from 'sonner';
  * `richColors`가 true면 라이브러리 기본 팔레트가 우선할 수 있어 기본은 false (`...props`로 켤 수 있음).
  */
 const toastTypeTextClassNames = {
-  success: 'text-emerald-800 [&_[data-description]]:text-emerald-700/90',
-  info: 'text-sky-800 [&_[data-description]]:text-sky-700/90',
-  warning: 'text-amber-950 [&_[data-description]]:text-amber-900/90',
-  error: 'text-red-800 [&_[data-description]]:text-red-700/90',
+  success:
+    'text-emerald-800 dark:text-emerald-300 [&_[data-description]]:text-emerald-700/90 dark:[&_[data-description]]:text-emerald-400/90',
+  info: 'text-sky-800 dark:text-sky-300 [&_[data-description]]:text-sky-700/90 dark:[&_[data-description]]:text-sky-400/90',
+  warning:
+    'text-amber-950 dark:text-amber-200 [&_[data-description]]:text-amber-900/90 dark:[&_[data-description]]:text-amber-300/90',
+  error:
+    'text-red-800 dark:text-red-300 [&_[data-description]]:text-red-700/90 dark:[&_[data-description]]:text-red-400/90',
   loading: 'text-muted-foreground [&_[data-description]]:text-muted-foreground/90',
 } as const satisfies Record<'success' | 'info' | 'warning' | 'error' | 'loading', string>;
 

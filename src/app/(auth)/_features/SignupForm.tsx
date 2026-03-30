@@ -3,8 +3,6 @@
 import type { SignupBody } from '@/lib/auth/schemas/signup';
 import type { User } from '@/lib/auth/schemas/user';
 
-
-
 import { useRouter } from 'next/navigation';
 import { apiClient, ApiClientError } from '@/lib/apiClient';
 import { toastRhfValidationErrors } from '@/lib/auth/rhfToastValidationError';
@@ -44,6 +42,7 @@ function SignupFormBody() {
         body: data,
         clientPublicBase: '/api/auth',
         retry: false,
+        skipSessionExpiredRedirect: true,
       });
       if (res.sessionIssued) {
         if (res.user) {

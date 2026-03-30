@@ -17,7 +17,7 @@ export type PasswordFieldWithToggleProps<T extends FieldValues> = {
   className?: string;
   placeholder?: string;
   autoComplete: ComponentProps<'input'>['autoComplete'];
-  /** true면 검증 메시지는 토스트 등으로만 보여 주고 인라인 표시 안 함 */
+  /** true면 인라인 텍스트는 숨기되, `sr-only`·`aria-describedby`로 오류 설명은 유지 */
   hideValidationMessage?: boolean;
 };
 
@@ -47,7 +47,8 @@ export const PasswordFieldWithToggle = <T extends FieldValues>({
       placeholder={placeholder}
       type={showPassword ? 'text' : 'password'}
       autoComplete={autoComplete}
-      errorMessage={hideValidationMessage ? undefined : fieldState.error?.message}
+      errorMessage={fieldState.error?.message}
+      errorMessageVisibility={hideValidationMessage ? 'sr-only' : 'visible'}
       invalid={hideValidationMessage ? !!fieldState.error : undefined}
       endAdornment={
         <PasswordToggleButton visible={showPassword} onToggle={togglePassword} controlsId={id} />
