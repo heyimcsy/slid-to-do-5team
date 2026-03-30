@@ -1,6 +1,9 @@
 'use client';
 
-import type { Note } from '@/app/(routers)/(todo)/@modal/(.)goals/[goalId]/notes/[noteId]/types';
+import type { Goal } from '@/api/goals';
+import type { TipTapDoc } from '@/api/notes';
+import type { Tags } from '@/api/todos';
+import type { OgInfoResponse } from '@/components/common/LinkEmbed';
 
 import Image from 'next/image';
 import noteImage from '@/../public/images/img-note.svg';
@@ -11,10 +14,31 @@ import StarterKit from '@tiptap/starter-kit';
 
 import { SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
-export default function NoteDetailContent({ note }: { note: Note }) {
+interface NoteDetailContentProps {
+  content: TipTapDoc;
+  noteTitle: string;
+  linkUrl: string | null;
+  done: boolean;
+  createdAt: string;
+  goal: Pick<Goal, 'id' | 'title'>;
+  tags: Tags[];
+  todoTitle: string;
+  linkData: OgInfoResponse | undefined;
+}
+export default function NoteDetailContent({
+  content,
+  noteTitle,
+  linkUrl,
+  done,
+  createdAt,
+  goal,
+  tags,
+  todoTitle,
+  linkData,
+}: NoteDetailContentProps) {
   const editor = useEditor({
     extensions: [StarterKit, Link.configure({ openOnClick: true })],
-    content: JSON.parse(note.content),
+    content: content,
     editable: false,
     immediatelyRender: false,
   });
@@ -33,37 +57,41 @@ export default function NoteDetailContent({ note }: { note: Note }) {
             className="w-8 md:w-10"
           />
           <SheetTitle className="font-xl-semibold md:font-2xl-semibold leading-tight text-gray-800">
-            {note.title}
+            {noteTitle}
           </SheetTitle>
         </div>
 
         {/* 메타 정보 */}
         <MetaTags
-          goalTitle={note.goalTitle}
-          todoTitle={note.todoTitle}
-          createdAt={note.createdAt}
-          done={note.done}
-          tags={note.tags}
+          goalTitle={goal.title}
+          todoTitle={todoTitle}
+          createdAt={createdAt}
+          done={done}
+          tags={tags}
         />
       </SheetHeader>
 
       {/* 구분선 */}
       <div className="my-4 h-px w-full shrink-0 bg-gray-100 md:my-6" />
 
-      {/* ── 스크롤 콘텐츠 ── */}
       <div className="flex-1 overflow-y-auto">
         {/* 링크 카드 */}
-        {note.linkUrl && (
+        {linkUrl && (
           <a
-            href={note.linkUrl}
+            href={linkUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mb-6 flex items-center gap-3 rounded-[12px] bg-gray-50 px-4 py-3 transition-colors hover:bg-gray-100"
+            className="mb-6 flex min-w-0 flex-col items-start gap-3 rounded-[12px] bg-gray-50 px-4 py-3 transition-colors hover:bg-gray-100"
           >
-            <div className="min-w-0">
-              <p className="font-sm-semibold truncate text-gray-800">{note.linkTitle}</p>
-              <p className="font-xs-regular truncate text-gray-400">{note.linkUrl}</p>
+            <div className="flex min-w-0 items-center justify-start space-x-2 pr-4">
+              {linkData?.favicon && (
+                <img src={linkData.favicon} alt="favicon" className="size-6 shrink-0" />
+              )}
+              {linkData?.description && (
+                <p className="font-sm-medium truncate">{linkData.description}</p>
+              )}
             </div>
+            <p className="font-xs-regular truncate text-gray-400">{linkUrl}</p>
           </a>
         )}
 

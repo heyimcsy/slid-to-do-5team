@@ -70,7 +70,6 @@ export default function NewNotePage() {
 
   const onHandleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const titleValue = event.target.value;
-    if (titleLength >= 30) return;
     setTitle(titleValue);
     setTitleLength(titleValue.length);
   };
