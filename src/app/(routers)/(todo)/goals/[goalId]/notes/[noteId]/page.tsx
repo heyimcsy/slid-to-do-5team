@@ -1,3 +1,6 @@
-export default function Page() {
-  return <div>노트 페이지 상세</div>;
+import NoteDetailContainer from '@/app/(routers)/(todo)/@modal/(.)goals/[goalId]/notes/[noteId]/_components/NoteDetailContainer';
+
+export default async function NoteDetailPage({ params }: { params: Promise<{ noteId: string }> }) {
+  const { noteId } = await params;
+  return <NoteDetailContainer noteId={Number(noteId)} />;
 }

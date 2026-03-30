@@ -52,9 +52,9 @@ export interface TodoResponse {
   tags: Tags[];
 }
 
-const TODOS = 'todos';
-const TODO = 'todo';
-const TODOS_URL = '/todos';
+export const TODOS = 'todos';
+export const TODO = 'todo';
+export const TODOS_URL = '/todos';
 
 interface GetTodosParams {
   goalId?: number;

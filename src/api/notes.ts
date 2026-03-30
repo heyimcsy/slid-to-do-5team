@@ -107,7 +107,7 @@ export interface TipTapDoc {
 
 export interface Notes {
   id: number;
-  content: string;
+  content: TipTapDoc;
   createdAt: string;
   linkUrl: string;
   teamId: string;
@@ -117,9 +117,9 @@ export interface Notes {
   updatedAt: string;
   userId: number;
 }
-const NOTE = 'NOTE';
-const NOTES = 'NOTES';
-const NOTES_URL = '/notes';
+export const NOTE = 'NOTE';
+export const NOTES = 'NOTES';
+export const NOTES_URL = '/notes';
 
 interface GetNotesParams {
   todoId?: number;

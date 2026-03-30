@@ -31,7 +31,7 @@ export default function NoteCard({
   const { mutate: deleteNote } = useDeleteNote();
   return (
     <Link
-      href={`/goals/${goalId}/notes/${id}`}
+      href={`/goals/${goalId}/notes/${id}?todoId=${todo.id}`}
       className={cn(
         'group flex cursor-pointer flex-col space-y-3 md:space-y-4',
         'h-24 w-full rounded-[16px] bg-white p-4 md:h-[138px] md:px-[38px] md:pt-7 md:pb-8',
