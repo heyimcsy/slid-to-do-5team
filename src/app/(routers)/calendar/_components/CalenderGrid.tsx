@@ -59,6 +59,7 @@ export default function CalendarGrid({
             )}
           >
             <button
+              type="button"
               className="flex h-full w-full flex-col overflow-hidden p-1.5"
               onClick={() => onSelectDate(dateStr)}
             >

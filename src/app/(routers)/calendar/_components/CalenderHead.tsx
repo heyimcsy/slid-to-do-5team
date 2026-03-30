@@ -41,10 +41,10 @@ export default function CalendarHeader({
     <div className="flex h-33 flex-col items-center justify-center space-y-4 px-4 lg:h-22 lg:flex-row lg:items-center lg:justify-between lg:space-y-0 lg:px-8">
       <div className="flex h-fit w-fit items-center justify-center space-x-2">
         <div className="flex gap-2">
-          <Button variant="icon" size="none" onClick={prevYear}>
+          <Button variant="icon" size="none" onClick={prevYear} aria-label="이전 연도로 이동">
             <Icon name="doubleArrow" direction="left" />
           </Button>
-          <Button variant="icon" size="none" onClick={prevMonth}>
+          <Button variant="icon" size="none" onClick={prevMonth} aria-label="이전 달로 이동">
             <Icon name="arrow" direction="left" />
           </Button>
         </div>
@@ -52,13 +52,19 @@ export default function CalendarHeader({
           {y}년 {m + 1}월
         </span>
         <div className="flex items-center gap-2">
-          <Button variant="icon" size="none" onClick={nextMonth}>
+          <Button variant="icon" size="none" onClick={nextMonth} aria-label="다음 달로 이동">
             <Icon name="arrow" direction="right" />
           </Button>
-          <Button variant="icon" size="none" onClick={nextYear}>
+          <Button variant="icon" size="none" onClick={nextYear} aria-label="다음 연도로 이동">
             <Icon name="doubleArrow" direction="right" />
           </Button>
-          <Button variant="icon" size="none" onClick={findToday} className="text-gray-500">
+          <Button
+            variant="icon"
+            size="none"
+            onClick={findToday}
+            className="text-gray-500"
+            aria-label="오늘 날짜로 이동"
+          >
             today
           </Button>
         </div>

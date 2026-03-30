@@ -13,6 +13,18 @@ export function toDateStr(y: number, m: number, d: number) {
 }
 
 export function useScheduleCalendar(todos: CalendarTodo[] = []) {
+  const toLocalDateKey = (isoStr: string) => {
+    const d = new Date(isoStr);
+    if (Number.isNaN(d.getTime())) return null;
+    return toDateStr(d.getFullYear(), d.getMonth(), d.getDate());
+  };
+
+  const todosByDate = todos.reduce<Record<string, CalendarTodo[]>>((acc, todo) => {
+    const key = toLocalDateKey(todo.dueDate);
+    if (!key) return acc;
+    (acc[key] ??= []).push(todo);
+    return acc;
+  }, {});
   const today = new Date();
   const todayStr = toDateStr(today.getFullYear(), today.getMonth(), today.getDate());
 
@@ -47,14 +59,14 @@ export function useScheduleCalendar(todos: CalendarTodo[] = []) {
 
     const dow = i % 7;
     const isToday = dateStr === todayStr;
-    const dayTodos = todos.filter((t) => t.dueDate?.startsWith(dateStr));
+    const dayTodos = todosByDate[dateStr] ?? [];
 
     return { day, dateStr, isOther, isToday, dow, dayTodos };
   });
 
   const selectedSchedule = {
     date: selectedDate,
-    todos: todos.filter((t) => t.dueDate?.startsWith(selectedDate)),
+    todos: todosByDate[selectedDate] ?? [],
   };
 
   return {
@@ -70,6 +82,9 @@ export function useScheduleCalendar(todos: CalendarTodo[] = []) {
     nextMonth: () => setCurrent(new Date(y, m + 1, 1)),
     prevYear: () => setCurrent(new Date(y - 1, m, 1)),
     nextYear: () => setCurrent(new Date(y + 1, m, 1)),
-    findToday: () => setCurrent(today),
+    findToday: () => {
+      setCurrent(today);
+      setSelectedDate(todayStr);
+    },
   };
 }

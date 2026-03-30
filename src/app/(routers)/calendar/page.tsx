@@ -55,6 +55,18 @@ const mockTodos = [
   },
   { id: 31, title: 'PR 리뷰 반영하기', done: true, dueDate: '2026-03-12T00:00:00.000Z' },
   { id: 32, title: '머리카락 팔기', done: false, dueDate: '2026-03-12T00:00:00.000Z' },
+  {
+    id: 33,
+    title: '한국은 3월 30일, UTC는 3월 29일',
+    done: false,
+    dueDate: '2026-03-29T16:00:00.000Z', // UTC 29일 16시 = 한국 30일 01시
+  },
+  {
+    id: 34,
+    title: '한국은 3월 1일, UTC는 2월 28일',
+    done: false,
+    dueDate: '2026-02-28T15:00:00.000Z', // UTC 2월 28일 15시 = 한국 3월 1일 00시
+  },
 ];
 export default function CalendarPage() {
   return (
