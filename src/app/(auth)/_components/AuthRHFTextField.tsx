@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 type AuthRHFTextFieldProps<T extends FieldValues> = {
   control: Control<T>;
   name: FieldPath<T>;
-  /** true면 검증 메시지는 토스트 등으로만 보여 주고 인라인 표시 안 함 */
+  /** true면 인라인 텍스트는 숨기되, `sr-only`·`aria-describedby`로 오류 설명은 유지 */
   hideValidationMessage?: boolean;
 } & Omit<InputProps, 'errorMessage' | 'name' | 'onBlur' | 'onChange' | 'ref' | 'value'>;
 
@@ -29,7 +29,8 @@ export const AuthRHFTextField = <T extends FieldValues>({
     <Input
       {...field}
       {...inputProps}
-      errorMessage={hideValidationMessage ? undefined : fieldState.error?.message}
+      errorMessage={fieldState.error?.message}
+      errorMessageVisibility={hideValidationMessage ? 'sr-only' : 'visible'}
       invalid={hideValidationMessage ? !!fieldState.error : undefined}
     />
   );
