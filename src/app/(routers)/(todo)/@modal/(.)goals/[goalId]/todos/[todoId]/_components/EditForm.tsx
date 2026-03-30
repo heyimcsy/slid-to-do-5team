@@ -8,7 +8,6 @@ import { useRouter } from 'next/navigation';
 import { useGetGoals } from '@/api/goals';
 import { usePatchTodos } from '@/api/todos';
 import { formatDate } from '@/app/(routers)/(board)/community/_utils/formatDate';
-import GoalId from '@/app/(routers)/(todo)/goals/[goalId]/page';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useForm } from 'react-hook-form';
 
