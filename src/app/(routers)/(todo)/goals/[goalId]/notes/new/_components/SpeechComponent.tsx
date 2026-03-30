@@ -69,6 +69,7 @@ export default function SpeechComponent({
     if (!showDraftBubble || isLoadingDraft) return;
     timerRef.current = setTimeout(() => {
       setShowDraftBubble(false);
+      clearDraft();
     }, 5000);
 
     return () => {
