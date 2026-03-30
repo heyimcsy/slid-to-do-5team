@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useEditorWithContent } from '@/hooks/editor';
 import { EditorContent } from '@tiptap/react';
+import { toast } from 'sonner';
 
 import { DeleteIcon } from '@/components/icon/icons/Delete';
 import { Toolbar } from '@/components/Toolbar';
@@ -57,7 +58,7 @@ export function PostCreateClient() {
   };
 
   const handleImageLimitExceeded = () => {
-    alert(`이미지는 최대 ${IMAGE_LIMIT}개까지 첨부할 수 있습니다.`);
+    toast.error(`이미지는 최대 ${IMAGE_LIMIT}개까지 첨부할 수 있습니다.`);
   };
 
   return (
