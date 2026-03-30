@@ -29,6 +29,7 @@ describe('POST /api/auth/refresh', () => {
   const originalFetch = globalThis.fetch;
 
   beforeEach(() => {
+    jest.clearAllMocks();
     globalThis.fetch = jest.fn();
     process.env.API_URL = API_URL || '';
     process.env.TEAM_ID = TEAM_ID || '';
