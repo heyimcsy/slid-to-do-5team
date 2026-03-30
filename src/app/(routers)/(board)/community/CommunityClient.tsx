@@ -4,6 +4,7 @@ import type { Post, SortOption } from './types';
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { Icon } from '@/components/icon/Icon';
 
@@ -21,8 +22,13 @@ const POSTS_PER_PAGE = 5;
 
 export default function CommunityClient() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [sort, setSort] = useState<SortOption>('최신순');
   const [search, setSearch] = useState('');
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const sort = (searchParams.get('sort') ?? '최신순') as SortOption;
 
   const { data, isLoading, isError, refetch } = useGetPosts(sort);
 
@@ -52,7 +58,11 @@ export default function CommunityClient() {
   );
 
   const handleSortChange = (value: SortOption) => {
-    setSort(value);
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.set('sort', value);
+
+    router.replace(`${pathname}?${params.toString()}`);
     setCurrentPage(1);
   };
 
