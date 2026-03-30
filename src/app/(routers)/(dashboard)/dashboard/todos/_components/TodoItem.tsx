@@ -3,6 +3,7 @@
 import type { Task } from '../types';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useDeleteTodos, usePatchTodos } from '@/api/todos';
 import { cn } from '@/lib';
 
@@ -22,6 +23,7 @@ export default function TodoItem({ task }: TodoItemProps) {
   const [hovered, setHovered] = useState(false);
   const { mutate: patchTodo } = usePatchTodos();
   const { mutate: deleteTodo } = useDeleteTodos();
+  const router = useRouter();
 
   const handleToggle = () => {
     patchTodo({
@@ -32,6 +34,10 @@ export default function TodoItem({ task }: TodoItemProps) {
 
   const handleDelete = () => {
     deleteTodo({ id: task.id });
+  };
+
+  const handleEdit = () => {
+    router.push(`/goals/${task.goalId}/todos/${task.id}/edit`); // ← 추가
   };
 
   return (
@@ -74,9 +80,7 @@ export default function TodoItem({ task }: TodoItemProps) {
                       <Icon name="dotscircle" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      <DropdownMenuItem onClick={() => console.log('수정', task.id)}>
-                        수정하기
-                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleEdit}>수정하기</DropdownMenuItem>
                       <DropdownMenuItem onClick={handleDelete}>삭제하기</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
