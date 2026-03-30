@@ -2,16 +2,18 @@
 
 import type { Todo } from '@/api/todos';
 
-import CalendarGrid from '@/app/(routers)/calendar/_components/CalenderGrid';
-import CalendarHeader from '@/app/(routers)/calendar/_components/CalenderHead';
-import CalendarScheduleList from '@/app/(routers)/calendar/_components/CalenderScheduleList';
+import {
+  CalenderGrid,
+  CalenderHead,
+  CalenderScheduleList,
+} from '@/app/(routers)/calendar/_components/index';
 import { useScheduleCalendar } from '@/app/(routers)/calendar/hooks/useScheduleCalender';
 
-interface CalendarProps {
+interface CalenderProps {
   todos?: Pick<Todo, 'id' | 'title' | 'dueDate' | 'done'>[];
 }
 
-export default function ScheduleCalendar({ todos = [] }: CalendarProps) {
+export default function ScheduleCalender({ todos = [] }: CalenderProps) {
   const {
     y,
     m,
@@ -29,7 +31,7 @@ export default function ScheduleCalendar({ todos = [] }: CalendarProps) {
 
   return (
     <div className="h-fit w-full rounded-[24px] bg-white lg:h-228">
-      <CalendarHeader
+      <CalenderHead
         y={y}
         m={m}
         prevYear={prevYear}
@@ -38,13 +40,13 @@ export default function ScheduleCalendar({ todos = [] }: CalendarProps) {
         nextYear={nextYear}
         findToday={findToday}
       />
-      <CalendarGrid
+      <CalenderGrid
         cells={cells}
         totalCells={totalCells}
         selectedDate={selectedDate}
         onSelectDate={setSelectedDate}
       />
-      <CalendarScheduleList date={selectedSchedule.date} todos={selectedSchedule.todos} />
+      <CalenderScheduleList date={selectedSchedule.date} todos={selectedSchedule.todos} />
     </div>
   );
 }

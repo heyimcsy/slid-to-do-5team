@@ -68,7 +68,7 @@ const mockTodos = [
     dueDate: '2026-02-28T15:00:00.000Z', // UTC 2월 28일 15시 = 한국 3월 1일 00시
   },
 ];
-export default function CalendarPage() {
+export default function CalenderPage() {
   return (
     <div className="relative flex h-full w-86 flex-col items-center pt-8 pb-14 md:w-159 md:space-y-6 lg:w-320 lg:space-y-4">
       <CalenderPageHead />

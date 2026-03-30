@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-interface CalendarHeaderProps {
+interface CalenderHeadProps {
   y: number;
   m: number;
   prevYear: () => void;
@@ -28,7 +28,7 @@ const selectValue = [
   { label: '디자인 시스템 정복하기', value: 2 },
 ];
 
-export default function CalendarHeader({
+export default function CalenderHead({
   y,
   m,
   prevYear,
@@ -36,7 +36,7 @@ export default function CalendarHeader({
   nextMonth,
   nextYear,
   findToday,
-}: CalendarHeaderProps) {
+}: CalenderHeadProps) {
   return (
     <div className="flex h-33 flex-col items-center justify-center space-y-4 px-4 lg:h-22 lg:flex-row lg:items-center lg:justify-between lg:space-y-0 lg:px-8">
       <div className="flex h-fit w-fit items-center justify-center space-x-2">
