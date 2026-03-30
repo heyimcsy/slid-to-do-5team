@@ -9,27 +9,30 @@ import { LinkModal } from '@/components/common/LinkModal';
 interface ToolbarProps {
   editor: Editor | null;
   variant: 'note' | 'post';
-  onImageUpload?: (file: File) => Promise<string>;
+  onImageSelected?: (file: File) => void;
   onImageLimitExceeded?: () => void;
   imageLimit?: number;
   onLinkConfirm?: (url: string) => void;
+  externalImageCount?: number;
 }
 
 export function Toolbar({
   editor,
   variant,
-  onImageUpload,
+  onImageSelected,
   onImageLimitExceeded,
   imageLimit = 2,
   onLinkConfirm,
+  externalImageCount = 0,
 }: ToolbarProps) {
   const { toolbarItems, fileInputRef, handleFileChange, showLinkModal, setShowLinkModal } =
     useToolbar({
       editor,
       variant,
-      onImageUpload,
+      onImageSelected,
       onImageLimitExceeded,
       imageLimit,
+      externalImageCount,
     });
 
   if (!editor) return null;
