@@ -39,7 +39,7 @@ export function ImageUploadInput({ value, onChange }: ImageUploadInputProps) {
   };
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       <Input
         id={inputId}
         type="file"
@@ -51,7 +51,7 @@ export function ImageUploadInput({ value, onChange }: ImageUploadInputProps) {
       {!value && (
         <label
           htmlFor={inputId}
-          className="flex h-[101px] w-[424px] cursor-pointer items-center justify-center gap-[10px] rounded-[16px] border border-dashed border-gray-300 bg-gray-50 p-3"
+          className="flex h-[101px] w-full cursor-pointer items-center justify-center gap-[10px] rounded-[16px] border border-dashed border-gray-300 bg-gray-50 p-3"
         >
           <div className="flex w-[91px] flex-shrink-0 flex-col items-center justify-center gap-[2px]">
             <img src="/icons/ic_upload.svg" alt="" width={24} height={24} />
