@@ -1,12 +1,15 @@
-import type { GoogleErrorCallbackType } from '@/types/oauth';
+import type { GoogleOAuthUserFacingErrorKind } from '@/types/oauth';
 
 /**
- * {@link GoogleErrorCallbackType} 및 oauth.d.ts JSDoc @value 문구와 1:1 대응하는 사용자 노출 문구.
- * @see `src/types/oauth.d.ts` — `GoogleErrorCallbackType`
+ * {@link GoogleOAuthUserFacingErrorKind}별 사용자 노출 문구.
+ * GIS `error_callback`, OAuth `error`, 백엔드 메시지 분류에 공통 사용.
+ *
+ * @see `src/types/oauth.d.ts` — `GoogleOAuthUserFacingErrorKind` vs `GoogleErrorCallbackType`
  */
-export const GOOGLE_OAUTH_ERROR_MESSAGE_KO: Record<GoogleErrorCallbackType, string> = {
+export const GOOGLE_OAUTH_ERROR_MESSAGE_KO: Record<GoogleOAuthUserFacingErrorKind, string> = {
+  popup_failed_to_open: '팝업을 열 수 없습니다. 팝업 차단을 해제한 뒤 다시 시도해 주세요.',
   popup_closed: '팝업이 닫혔습니다.',
-  popup_blocked: '팝업이 차단되었습니다.',
+  unknown: '로그인 중 알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
   access_denied: '액세스가 거절되었습니다.',
   invalid_grant: '권한 부여가 거절되었습니다.',
   unauthorized_client: '클라이언트가 권한이 없습니다.',
@@ -18,8 +21,8 @@ export const GOOGLE_OAUTH_ERROR_MESSAGE_KO: Record<GoogleErrorCallbackType, stri
   default: '로그인 중 알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
 };
 
-/** OAuth 2.0 authorize / token 엔드포인트가 넘기는 `error` 코드(소문자) → 타입 */
-const OAUTH2_ERROR_CODE_TO_TYPE: Partial<Record<string, GoogleErrorCallbackType>> = {
+/** OAuth 2.0 authorize / token 엔드포인트 `error` 코드(소문자) → 사용자 분류 키 */
+const OAUTH2_ERROR_CODE_TO_TYPE: Partial<Record<string, GoogleOAuthUserFacingErrorKind>> = {
   access_denied: 'access_denied',
   invalid_request: 'invalid_request',
   unauthorized_client: 'unauthorized_client',
@@ -29,8 +32,8 @@ const OAUTH2_ERROR_CODE_TO_TYPE: Partial<Record<string, GoogleErrorCallbackType>
   invalid_grant: 'invalid_grant',
 };
 
-/** 백엔드·BFF가 내려주는 영문 메시지(정확 일치) → 타입 */
-const BACKEND_MESSAGE_TO_TYPE: Record<string, GoogleErrorCallbackType> = {
+/** 백엔드·BFF가 내려주는 영문 메시지(정확 일치) → 분류 키 */
+const BACKEND_MESSAGE_TO_TYPE: Record<string, GoogleOAuthUserFacingErrorKind> = {
   'Email already registered with a different account': 'email_already_exists',
 };
 
@@ -39,13 +42,18 @@ function normalizeWhitespace(s: string): string {
 }
 
 /**
- * 원문(영문 에러 코드, OAuth `error`, 백엔드 message 등)을 {@link GoogleErrorCallbackType}으로 분류한다.
+ * 원문(영문 에러 코드, OAuth `error`, 백엔드 message, GIS 관련 휴리스틱 등)을
+ * {@link GoogleOAuthUserFacingErrorKind}으로 분류한다.
  */
-export function resolveGoogleOAuthErrorCallbackType(raw: string): GoogleErrorCallbackType {
+export function resolveGoogleOAuthUserFacingErrorKind(raw: string): GoogleOAuthUserFacingErrorKind {
   const t = normalizeWhitespace(raw);
   if (!t) return 'default';
 
   const lower = t.toLowerCase();
+
+  if (lower === 'popup_failed_to_open') return 'popup_failed_to_open';
+  if (lower === 'popup_closed') return 'popup_closed';
+  if (lower === 'unknown') return 'unknown';
 
   if (BACKEND_MESSAGE_TO_TYPE[t]) {
     return BACKEND_MESSAGE_TO_TYPE[t];
@@ -68,7 +76,9 @@ export function resolveGoogleOAuthErrorCallbackType(raw: string): GoogleErrorCal
   }
 
   if (lower.includes('popup') && lower.includes('closed')) return 'popup_closed';
-  if (lower.includes('popup') && lower.includes('block')) return 'popup_blocked';
+  if (lower.includes('popup') && (lower.includes('block') || lower.includes('fail'))) {
+    return 'popup_failed_to_open';
+  }
 
   return 'default';
 }
@@ -85,6 +95,6 @@ export function getOAuthUserFacingMessageKo(raw: string): string {
     return t;
   }
 
-  const kind = resolveGoogleOAuthErrorCallbackType(t);
+  const kind = resolveGoogleOAuthUserFacingErrorKind(t);
   return GOOGLE_OAUTH_ERROR_MESSAGE_KO[kind];
 }
