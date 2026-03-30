@@ -38,6 +38,7 @@ const COLORS = ['gray', 'green', 'yellow', 'red', 'purple'] as const;
 type TagColor = (typeof COLORS)[number];
 
 interface Tag {
+  id?: number;
   name: string;
   color: TagColor;
 }
