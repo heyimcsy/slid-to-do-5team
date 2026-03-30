@@ -56,6 +56,6 @@ export const REFRESH_SESSION_BACKEND_REJECTED_FALLBACK_MESSAGE_KO =
 /** `reason: network` — fetch 예외·타임아웃 등 (문구는 {@link AUTH_SERVICE_ERROR_MESSAGE_KO}와 동일) */
 export const REFRESH_SESSION_NETWORK_MESSAGE_KO = AUTH_SERVICE_ERROR_MESSAGE_KO;
 
-/** `reason: invalid_token_body` — 200 본문에 access/refresh 쌍이 없을 때 */
+/** `reason: invalid_token_body` — 200 본문 JSON 파싱 실패 또는 access/refresh 쌍이 없을 때 */
 export const REFRESH_SESSION_INVALID_TOKEN_BODY_MESSAGE_KO =
   '토큰 갱신 응답에 유효한 토큰이 없습니다. 다시 로그인해 주세요.' as const;

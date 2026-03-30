@@ -29,7 +29,7 @@ export type { RefreshSessionFailureReason } from '@/constants/error-message';
  *   - `no_refresh_token`: 요청 쿠키에 refresh 없음.
  *   - `backend_rejected`: 백엔드가 2xx가 아님 (`status`, `message`).
  *   - `network`: fetch 예외(타임아웃·DNS 등).
- *   - `invalid_token_body`: 200이나 파싱된 본문에 access/refresh 토큰 쌍이 없음.
+ *   - `invalid_token_body`: 200이나 `response.json()` 실패 또는 파싱된 본문에 access/refresh 토큰 쌍이 없음.
  *
  * @see {@link REFRESH_SESSION_REASON} — discriminant 상수
  */
@@ -118,9 +118,9 @@ async function fetchRefreshFromBackend(refreshToken: string): Promise<RefreshBac
   const base = API_BASE_URL?.replace(/\/$/, '') ?? '';
   const timeoutMs = AUTH_CONFIG.REFRESH_FETCH_TIMEOUT_MS;
 
-  let data: Record<string, unknown>;
+  let response: Response;
   try {
-    const response = await fetchWithTimeout(
+    response = await fetchWithTimeout(
       `${base}/auth/refresh`,
       {
         method: 'POST',
@@ -131,24 +131,29 @@ async function fetchRefreshFromBackend(refreshToken: string): Promise<RefreshBac
       },
       timeoutMs,
     );
-
-    if (!response.ok) {
-      const errBody = await response.json().catch(() => ({}));
-      const message =
-        (errBody as { message?: string }).message ??
-        (errBody as { error?: string }).error ??
-        REFRESH_SESSION_BACKEND_REJECTED_FALLBACK_MESSAGE_KO;
-      return {
-        ok: false,
-        reason: REFRESH_SESSION_REASON.BACKEND_REJECTED,
-        status: response.status,
-        message,
-      };
-    }
-
-    data = (await response.json()) as Record<string, unknown>;
   } catch {
     return { ok: false, reason: REFRESH_SESSION_REASON.NETWORK };
+  }
+
+  if (!response.ok) {
+    const errBody = await response.json().catch(() => ({}));
+    const message =
+      (errBody as { message?: string }).message ??
+      (errBody as { error?: string }).error ??
+      REFRESH_SESSION_BACKEND_REJECTED_FALLBACK_MESSAGE_KO;
+    return {
+      ok: false,
+      reason: REFRESH_SESSION_REASON.BACKEND_REJECTED,
+      status: response.status,
+      message,
+    };
+  }
+
+  let data: Record<string, unknown>;
+  try {
+    data = (await response.json()) as Record<string, unknown>;
+  } catch {
+    return { ok: false, reason: REFRESH_SESSION_REASON.INVALID_TOKEN_BODY };
   }
 
   const {
