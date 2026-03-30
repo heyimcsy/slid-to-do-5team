@@ -22,13 +22,14 @@ const POSTS_PER_PAGE = 5;
 
 export default function CommunityClient() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [search, setSearch] = useState('');
+  // const [search, setSearch] = useState('');
 
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
   const sort = (searchParams.get('sort') ?? '최신순') as SortOption;
+  const search = searchParams.get('search') ?? '';
 
   const { data, isLoading, isError, refetch } = useGetPosts(sort);
 
@@ -67,7 +68,11 @@ export default function CommunityClient() {
   };
 
   const handleSearchChange = (value: string) => {
-    setSearch(value);
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.set('search', value);
+
+    router.replace(`${pathname}?${params.toString()}`);
     setCurrentPage(1);
   };
 
