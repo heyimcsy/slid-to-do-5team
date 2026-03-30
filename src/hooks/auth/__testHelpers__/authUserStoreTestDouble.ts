@@ -1,5 +1,9 @@
 import type { User } from '@/lib/auth/schemas/user';
 
+
+
+
+
 /** `jest.mock('@/stores/authUserStore')`에서만 사용 — 테스트마다 beforeEach로 덮어쓴다 */
 export const authUserStoreTestConfig: {
   user: User | null;
@@ -15,26 +19,30 @@ export const authUserStoreTestConfig: {
 };
 
 export function createAuthUserStoreMock() {
+  const setUser = jest.fn();
+  const clearUser = jest.fn();
+
+  type MockAuthUserState = {
+    user: User | null;
+    setUser: typeof setUser;
+    clearUser: typeof clearUser;
+  };
   return {
     authUserStore: {
-      getState: () => ({
+      getState: (): MockAuthUserState => ({
         user: authUserStoreTestConfig.user,
-        setUser: jest.fn(),
-        clearUser: jest.fn(),
+        setUser,
+        clearUser,
       }),
       subscribe: jest.fn(() => jest.fn()),
       persist: {
         hasHydrated: () => authUserStoreTestConfig.hasHydrated,
-        onFinishHydration: (fn: (state: { user: User | null }) => void) => {
+        onFinishHydration: (fn: (state: MockAuthUserState) => void) => {
           if (authUserStoreTestConfig.hasHydrated) {
             return jest.fn();
           }
           queueMicrotask(() => {
-            fn({
-              user: authUserStoreTestConfig.user,
-              setUser: jest.fn(),
-              clearUser: jest.fn(),
-            } as never);
+            fn({ user: authUserStoreTestConfig.user, setUser, clearUser });
           });
           return jest.fn();
         },
