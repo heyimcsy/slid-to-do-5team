@@ -1,6 +1,15 @@
 import type { SVGProps } from 'react';
 
-export const PlusIcon = (props: SVGProps<SVGSVGElement>) => {
+type PlusIconProps = SVGProps<SVGSVGElement> & {
+  variant?: 'default' | 'orange';
+};
+
+const variantStyles = {
+  default: 'white',
+  orange: 'var(--color-orange-600)',
+};
+
+export const PlusIcon = ({ variant = 'default', ...props }: PlusIconProps) => {
   return (
     <svg
       width="100%"
@@ -10,8 +19,18 @@ export const PlusIcon = (props: SVGProps<SVGSVGElement>) => {
       xmlns="http://www.w3.org/2000/svg"
       {...props}
     >
-      <path d="M5 12H18.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M11.75 18.75V5.25" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+      <path
+        d="M5 12H18.5"
+        stroke={variantStyles[variant]}
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <path
+        d="M11.75 18.75V5.25"
+        stroke={variantStyles[variant]}
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
     </svg>
   );
 };

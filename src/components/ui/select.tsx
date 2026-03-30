@@ -3,13 +3,10 @@
 import * as React from 'react';
 import { cn } from '@/lib/shadcn';
 import { Select as SelectPrimitive } from '@base-ui/react/select';
-import {
-  ArrowDown01Icon,
-  ArrowUp01Icon,
-  Tick02Icon,
-  UnfoldMoreIcon,
-} from '@hugeicons/core-free-icons';
+import { ArrowDown01Icon, ArrowUp01Icon, Tick02Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
+
+import { Icon } from '@/components/icon/Icon';
 
 const Select = SelectPrimitive.Root;
 
@@ -85,15 +82,7 @@ function SelectTrigger({
     >
       {children}
       {size === 'default' && (
-        <SelectPrimitive.Icon
-          render={
-            <HugeiconsIcon
-              icon={UnfoldMoreIcon}
-              strokeWidth={2}
-              className="text-muted-foreground pointer-events-none size-4"
-            />
-          }
-        />
+        <SelectPrimitive.Icon render={<Icon name="arrow" direction="down" size={24} />} />
       )}
     </SelectPrimitive.Trigger>
   );
