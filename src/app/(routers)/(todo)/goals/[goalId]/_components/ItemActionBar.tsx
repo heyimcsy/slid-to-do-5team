@@ -76,7 +76,7 @@ export default function ItemActionBar({
         onClick={(e) => {
           e.stopPropagation();
           if (noteIds.length > 0) {
-            router.push(`/goals/${goalId}/notes/${noteIds[0]}`);
+            router.push(`/goals/${goalId}/notes/${noteIds[0]}?todoId=${id}`);
           }
         }}
         aria-label="노트 열기"
