@@ -70,6 +70,7 @@ export function EditForm({ todo }: EditFormProps) {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const colorIndexRef = useRef(initialTags.length);
+  console.log(selectedGoalId);
 
   const {
     register,
