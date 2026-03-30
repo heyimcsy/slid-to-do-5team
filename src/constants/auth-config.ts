@@ -38,6 +38,13 @@ export const AUTH_CONFIG = {
   REFRESH_FETCH_TIMEOUT_MS: 15_000,
 
   /**
+   * refresh 회전 직후, 첫 응답의 `Set-Cookie` 반영 전에 동일 old refresh로 들어온
+   * 늦은 요청이 두 번째 `POST /auth/refresh`를 치지 않도록 성공 결과를 메모리에 잠깐 유지(ms).
+   * @see `refreshSession.server` — `refreshSuccessCacheByOldRefreshToken`
+   */
+  REFRESH_SUCCESS_CACHE_TTL_MS: 10_000,
+
+  /**
    * 브라우저가 `POST /api/auth/refresh`에 붙이는 현재 `pathname`.
    * 서버에서 `isPublicPath`와 함께 써서 비로그인 시 401(→`/login`) vs 200을 나눈다.
    */

@@ -64,6 +64,8 @@ type RefreshBackendResult =
   | { ok: false; reason: typeof REFRESH_SESSION_REASON.NETWORK }
   | { ok: false; reason: typeof REFRESH_SESSION_REASON.INVALID_TOKEN_BODY };
 
+type RefreshBackendSuccess = Extract<RefreshBackendResult, { ok: true }>;
+
 /**
  * refresh 토큰 문자열 → 진행 중인 백엔드 갱신 Promise.
  *
@@ -71,9 +73,39 @@ type RefreshBackendResult =
  *   서로 다른 엔트리 → 프로세스 전역 단일 Promise로 섞이지 않음.
  * - **값**: `fetchRefreshFromBackend` 한 번의 결과를 공유. 동일 키로 동시에 들어온
  *   요청만 백엔드 HTTP를 합침(중복 refresh 완화).
- * - settle 후 `finally`에서 키 삭제 → 장기 보관·누수 방지.
+ * - settle 후 `finally`에서 키 삭제 → in-flight만 정리(성공 분기는 아래 TTL 캐시로 흡수).
  */
 const refreshInFlightByRefreshToken = new Map<string, Promise<RefreshBackendResult>>();
+
+/**
+ * **성공한** 백엔드 갱신 결과를 old refresh 키로 잠깐 보관.
+ *
+ * 회전(refresh 재발급) 후 첫 응답의 쿠키가 아직 반영되지 않은 요청이 동일 old refresh로
+ * 다시 들어오면, in-flight는 이미 끝나 맵에서 빠져 있어 새 `fetch`가 열리고 백엔드는
+ * 이미 소비된 토큰으로 `backend_rejected`를 줄 수 있다. 짧은 TTL 동안은 동일 키로
+ * 방금 성공한 결과를 재사용해 그 경쟁을 흡수한다.
+ */
+const refreshSuccessCacheByOldRefreshToken = new Map<
+  string,
+  { result: RefreshBackendSuccess; expiresAt: number }
+>();
+
+function takeRefreshSuccessCache(refreshToken: string): RefreshBackendSuccess | undefined {
+  const row = refreshSuccessCacheByOldRefreshToken.get(refreshToken);
+  if (!row) return undefined;
+  if (Date.now() >= row.expiresAt) {
+    refreshSuccessCacheByOldRefreshToken.delete(refreshToken);
+    return undefined;
+  }
+  return row.result;
+}
+
+function putRefreshSuccessCache(refreshToken: string, result: RefreshBackendSuccess): void {
+  refreshSuccessCacheByOldRefreshToken.set(refreshToken, {
+    result,
+    expiresAt: Date.now() + AUTH_CONFIG.REFRESH_SUCCESS_CACHE_TTL_MS,
+  });
+}
 
 /**
  * 백엔드에 refresh 토큰을 보내 access/refresh 쌍과 선택적 user를 받는다.
@@ -133,21 +165,36 @@ async function fetchRefreshFromBackend(refreshToken: string): Promise<RefreshBac
 }
 
 /**
- * 동일 `refreshToken`에 대해 이미 진행 중인 갱신이 있으면 그 Promise를 재사용하고,
- * 없으면 새로 `fetchRefreshFromBackend`를 시작해 맵에 등록한다.
+ * 동일 old `refreshToken`에 대해 (1) 직전 성공 캐시가 있으면 즉시 resolve,
+ * (2) 진행 중인 갱신이 있으면 그 Promise를 재사용, (3) 아니면 새 `fetchRefreshFromBackend`.
  *
  * 단일 스레드에서 `get` → 없음 → 생성 → `set` 순으로 처리되므로,
  * 동일 키에 대해 동시에 두 번의 백엔드 fetch가 열리지 않는다(첫 호출이 맵에 올린 뒤
  * 이후 호출은 같은 `Promise`를 await).
  *
+ * 성공 시 in-flight는 `finally`에서 제거하되, 동일 키로 {@link putRefreshSuccessCache}에
+ * 잠깐 넣어 회전 직후 늦게 도착한 요청이 불필요한 두 번째 refresh를 치지 않게 한다.
+ *
  * @param refreshToken - in-flight 분리 및 백엔드 요청 본문에 사용할 refresh.
  */
 function getOrCreateInFlightRefresh(refreshToken: string): Promise<RefreshBackendResult> {
+  const cached = takeRefreshSuccessCache(refreshToken);
+  if (cached) {
+    return Promise.resolve(cached);
+  }
+
   let p = refreshInFlightByRefreshToken.get(refreshToken);
   if (!p) {
-    p = fetchRefreshFromBackend(refreshToken).finally(() => {
-      refreshInFlightByRefreshToken.delete(refreshToken);
-    });
+    p = fetchRefreshFromBackend(refreshToken)
+      .then((result) => {
+        if (result.ok) {
+          putRefreshSuccessCache(refreshToken, result);
+        }
+        return result;
+      })
+      .finally(() => {
+        refreshInFlightByRefreshToken.delete(refreshToken);
+      });
     refreshInFlightByRefreshToken.set(refreshToken, p);
   }
   return p;
@@ -156,10 +203,13 @@ function getOrCreateInFlightRefresh(refreshToken: string): Promise<RefreshBacken
 /**
  * 세션 refresh: 백엔드 토큰 갱신 + (성공 시) 현재 요청의 HttpOnly 쿠키 반영.
  *
- * **In-flight (동시성)**
+ * **In-flight + 성공 캐시 (동시성·회전)**
  * - refresh 문자열당 하나의 진행 중 갱신만 유지한다. 같은 쿠키의 refresh로 동시에
  *   여러 핸들러가 들어오면 백엔드 `POST /auth/refresh`는 한 번만 호출되고,
  *   나머지는 그 결과를 공유한다.
+ * - 회전 직후 첫 응답이 끝난 뒤에도 동일 old refresh로 들어오는 요청은
+ *   `REFRESH_SUCCESS_CACHE_TTL_MS` 동안 메모리에 둔 성공 스냅샷을 재사용해
+ *   두 번째 백엔드 refresh(거절)를 피한다.
  * - 서로 다른 사용자(다른 refresh 값)는 서로 다른 Promise를 쓰므로 세션이 섞이지 않는다.
  *
  * **쿠키 / 요청 컨텍스트**
@@ -198,4 +248,15 @@ export async function refreshSessionWithMutex(): Promise<RefreshSessionResult> {
 export async function refreshSessionSuccessBoolean(): Promise<boolean> {
   const r = await refreshSessionWithMutex();
   return r.ok;
+}
+
+/**
+ * 테스트 전용: in-flight·성공 TTL 캐시를 비운다.
+ *
+ * Jest가 동일 프로세스에서 스위트를 돌릴 때, 이전 테스트가 남긴 old refresh 키로
+ * 다음 케이스가 실제 `fetch` 없이 캐시만 타면 기대와 어긋난다.
+ */
+export function resetRefreshSessionDedupStateForTests(): void {
+  refreshInFlightByRefreshToken.clear();
+  refreshSuccessCacheByOldRefreshToken.clear();
 }

@@ -52,6 +52,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true });
   }
 
+  // 동시 다발 `/api/auth/refresh` + refresh 회전 시, 늦게 도착한 요청이 여전히 old refresh 쿠키를
+  // 들고 오면 `refreshSession.server`의 짧은 성공 캐시로 흡수(불필요한 2차 백엔드 refresh 방지).
   const result = await refreshSessionWithMutex();
 
   if (result.ok) {

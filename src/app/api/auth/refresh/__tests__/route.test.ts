@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 import { POST } from '@/app/api/auth/refresh/route';
+import { resetRefreshSessionDedupStateForTests } from '@/lib/auth/refreshSession.server';
 
 import { API_BASE_URL, API_URL, TEAM_ID } from '@/constants/api';
 import { AUTH_CONFIG } from '@/constants/auth-config';
@@ -33,6 +34,7 @@ describe('POST /api/auth/refresh', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    resetRefreshSessionDedupStateForTests();
     globalThis.fetch = jest.fn();
     process.env.API_URL = API_URL || '';
     process.env.TEAM_ID = TEAM_ID || '';

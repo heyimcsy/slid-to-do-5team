@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
     return loginError(BACKEND_LOGIN_FAILED_MESSAGE_KO);
   }
   if (!backend.ok) {
-    return loginError(backend.message ?? BACKEND_LOGIN_FAILED_MESSAGE_KO);
+    return loginError(backend.message);
   }
 
   const rawReturn = request.cookies.get(COOKIE_OAUTH_GOOGLE_RETURN_PATH)?.value;
