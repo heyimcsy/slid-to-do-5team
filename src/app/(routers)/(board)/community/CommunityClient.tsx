@@ -144,7 +144,7 @@ export default function CommunityClient() {
         aria-label="게시물 작성하기"
         className="fixed right-4 bottom-8 flex size-[52px] items-center justify-center rounded-full bg-orange-500 shadow-lg md:right-8 md:size-auto md:gap-1 md:px-[18px] md:py-3.5"
       >
-        <Icon name="plus" size={24} variant="white" />
+        <Icon name="plus" size={24} />
         <span className="hidden text-lg font-semibold text-white md:block">게시물 작성하기</span>
       </Link>
     </div>

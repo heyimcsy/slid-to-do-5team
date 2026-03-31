@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import NextImage from 'next/image';
 import { useRouter } from 'next/navigation';
 import { authUserStore } from '@/stores/authUserStore';
 import Image from '@tiptap/extension-image';
@@ -14,6 +15,7 @@ import { KebabMenu } from '@/components/common/KebabMenu';
 import { useDeletePost, useGetComments, useGetPostById } from '../_api/communityQueries';
 import { PostErrorFallback } from '../_components/PostErrorFallback';
 import { WriterAvatar } from '../_components/WriterAvatar';
+import { extractImagesFromContent } from '../_utils/extractImagesFromContent';
 import { formatDate } from '../_utils/formatDate';
 import { CommentSection } from './_components/CommentSection';
 import { PostDetailSkeleton } from './_components/PostDetailSkeleton';
@@ -43,22 +45,22 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
   const router = useRouter();
 
   const editor = useEditor({
-    extensions: [
-      StarterKit,
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      Image,
-    ],
+    extensions: [StarterKit, TextAlign.configure({ types: ['heading', 'paragraph'] }), Image],
     content: '',
     editable: false,
     immediatelyRender: false,
   });
 
+  const { contentWithoutImages, imageUrls } = post
+    ? extractImagesFromContent(post.content)
+    : { contentWithoutImages: '', imageUrls: [] };
+
   useEffect(() => {
     if (editor && post) {
       try {
-        editor.commands.setContent(JSON.parse(post.content));
+        editor.commands.setContent(JSON.parse(contentWithoutImages));
       } catch {
-        editor.commands.setContent(post.content ?? '');
+        editor.commands.setContent(contentWithoutImages ?? '');
       }
       setContentReady(true);
     }
@@ -118,6 +120,22 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
                 editor={editor}
                 className="mt-6 [&_img]:mt-4 [&_img]:h-auto [&_img]:w-full [&_img]:max-w-[232px] [&_img]:rounded-[20px]"
               />
+
+              {imageUrls.length > 0 && (
+                <div className="mt-4 flex gap-2">
+                  {imageUrls.map((url, i) => (
+                    <div key={i} className="relative size-[150px] shrink-0 md:size-[232px]">
+                      <NextImage
+                        src={url}
+                        alt={`첨부 이미지 ${i + 1}`}
+                        fill
+                        unoptimized
+                        className="rounded-xl object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div className="font-xs-regular mt-4 flex gap-1 text-gray-400">
                 <span>{formatDate(createdAt)}</span>
