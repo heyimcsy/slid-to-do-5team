@@ -20,7 +20,6 @@ export type PasswordFieldWithToggleProps<T extends FieldValues> = {
   autoComplete: ComponentProps<'input'>['autoComplete'];
   /** true면 인라인 텍스트는 숨기되, `sr-only`·`aria-describedby`로 오류 설명은 유지 */
   hideValidationMessage?: boolean;
-  idleValidationMs?: number;
   onValidateToast?: () => void;
 };
 
@@ -37,16 +36,14 @@ export const PasswordFieldWithToggle = <T extends FieldValues>({
   id,
   autoComplete,
   hideValidationMessage,
-  idleValidationMs = 1000,
   onValidateToast,
 }: PasswordFieldWithToggleProps<T>) => {
   const [showPassword, setShowPassword] = useState(false);
   const togglePassword = useCallback(() => setShowPassword((v) => !v), []);
   const { field, fieldState } = useController({ control, name });
-  const { onFocus, onChange, onBlur } = useAuthFieldValidationHandlers<T>({
+  const { onChange, onBlur } = useAuthFieldValidationHandlers<T>({
     field,
     fieldState,
-    idleValidationMs,
     onValidateToast,
   });
 
@@ -60,7 +57,6 @@ export const PasswordFieldWithToggle = <T extends FieldValues>({
       autoComplete={autoComplete}
       onChange={onChange}
       onBlur={onBlur}
-      onFocus={() => onFocus?.()}
       errorMessage={fieldState.error?.message}
       errorMessageVisibility={hideValidationMessage ? 'sr-only' : 'visible'}
       invalid={hideValidationMessage ? !!fieldState.error : undefined}

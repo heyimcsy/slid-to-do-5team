@@ -13,9 +13,7 @@ type AuthRHFTextFieldProps<T extends FieldValues> = {
   name: FieldPath<T>;
   /** true면 인라인 텍스트는 숨기되, `sr-only`·`aria-describedby`로 오류 설명은 유지 */
   hideValidationMessage?: boolean;
-  /** 포커스 후 이 ms 동안 입력 없으면 전체 폼 검증 토스트 */
-  idleValidationMs?: number;
-  /** blur(dirty 시)·idle과 동일한 검증 토스트 — 보통 `() => void handleSubmit(() => {}, toastInvalid)()` */
+  /** blur(dirty 시) 검증 토스트 — 보통 `() => void handleSubmit(() => {}, toastInvalid)()` */
   onValidateToast?: () => void;
 } & Omit<
   InputProps,
@@ -33,15 +31,13 @@ export const AuthRHFTextField = <T extends FieldValues>({
   control,
   name,
   hideValidationMessage,
-  idleValidationMs = 1000,
   onValidateToast,
   ...inputProps
 }: AuthRHFTextFieldProps<T>) => {
   const { field, fieldState } = useController({ control, name });
-  const { onFocus, onChange, onBlur } = useAuthFieldValidationHandlers<T>({
+  const { onChange, onBlur } = useAuthFieldValidationHandlers<T>({
     field,
     fieldState,
-    idleValidationMs,
     onValidateToast,
   });
   const {
@@ -64,7 +60,6 @@ export const AuthRHFTextField = <T extends FieldValues>({
         onBlurProp?.(e);
       }}
       onFocus={(e) => {
-        onFocus?.();
         onFocusProp?.(e);
       }}
       errorMessage={fieldState.error?.message}
