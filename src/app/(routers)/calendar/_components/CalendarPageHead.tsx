@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Icon } from '@/components/icon/Icon';
 import { IconButton } from '@/components/ui/button';
 
-export default function CalenderPageHead() {
+export default function CalendarPageHead() {
   const userInfo: string | null = localStorage.getItem('user-info');
   let userName: string = '';
   try {
