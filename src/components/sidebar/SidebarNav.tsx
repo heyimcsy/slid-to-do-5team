@@ -5,7 +5,8 @@ import type { IconName } from '../icon/Icon';
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useGetGoals, usePostGoals } from '@/api/goals';
 import { useLogout } from '@/hooks/auth/useLogout';
 import { authUserStore } from '@/stores/authUserStore';
 import { AnimatePresence, motion } from 'motion/react';
@@ -56,13 +57,23 @@ const bottomItems: {
     bgClassName: 'white',
   },
 ];
-const tempGoals = [
-  { id: 1, label: '자바스크립트로 웹 서비스 만들기' },
-  { id: 2, label: '디자인 시스템 강의 듣기' },
-  { id: 3, label: '코드잇 강의 듣기' },
-];
 
 export default function SidebarNav() {
+  const router = useRouter();
+  const { data: goalsData } = useGetGoals();
+  const [goalInput, setGoalInput] = React.useState('');
+  const { mutate: postGoal } = usePostGoals({
+    onSuccess: () => {
+      setGoalInput('');
+      setIsInputVisible(false);
+    },
+  });
+  const handleGoalSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.nativeEvent.isComposing) return;
+    if (e.key === 'Enter' && goalInput.trim()) {
+      postGoal({ title: goalInput.trim() });
+    }
+  };
   const pathname = usePathname();
   /** `useState`/`useRef`를 `useLogout`·zustand보다 먼저 — HMR 시 이전 스냅샷과 슬롯이 맞고 Rules of Hooks 위반 방지 */
   const [isGoalsOpen, setIsGoalsOpen] = React.useState(false);
@@ -119,13 +130,13 @@ export default function SidebarNav() {
                         className="overflow-hidden"
                       >
                         <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-                          {tempGoals.map((goal) => (
+                          {goalsData?.goals.map((goal) => (
                             <Link
                               key={goal.id}
                               href={`/goals/${goal.id}`}
                               className="font-sm-semibold truncate px-6 py-2 text-gray-600 hover:text-gray-900"
                             >
-                              {goal.label}
+                              {goal.title}
                             </Link>
                           ))}
                           <div
@@ -134,7 +145,10 @@ export default function SidebarNav() {
                             <input
                               ref={inputRef}
                               type="text"
+                              value={goalInput}
+                              onChange={(e) => setGoalInput(e.target.value)}
                               placeholder="입력 후 Enter"
+                              onKeyDown={handleGoalSubmit}
                               className={`w-full cursor-text border-none bg-transparent ring-0 outline-none placeholder:text-orange-400 focus:border-none focus:ring-0 focus:outline-none ${!isInputVisible && 'hidden'}`}
                             />
                           </div>
@@ -165,7 +179,7 @@ export default function SidebarNav() {
             <button
               type="button"
               onClick={() => void logout()}
-              className="flex w-full items-center gap-2 px-2 py-3 text-left"
+              className="flex w-full cursor-pointer items-center gap-2 px-2 py-3 text-left"
             >
               <Icon name="logout" className="group-data-[collapsible=icon]:hidden" />
               <span className="font-lg-semibold text-gray-500 group-data-[collapsible=icon]:hidden">
@@ -194,7 +208,12 @@ export default function SidebarNav() {
           ))}
         </SidebarMenu>
         <div className="mt-4 flex items-center gap-2">
-          <div className="flex flex-1 items-center gap-2 rounded-full border border-gray-200 px-3 py-2 group-data-[collapsible=icon]:hidden">
+          <div
+            onClick={() => {
+              router.push('/profile');
+            }}
+            className="flex flex-1 cursor-pointer items-center gap-2 rounded-full border border-gray-200 px-3 py-2 group-data-[collapsible=icon]:hidden"
+          >
             <Image
               src={user?.image?.trim() || '/globe.svg'}
               alt={`${user?.name ?? '손'}님 프로필 이미지`}
@@ -217,7 +236,13 @@ export default function SidebarNav() {
           </div>
           <div className="relative hidden group-data-[collapsible=icon]:hidden md:block">
             {/* 아이콘 수정 */}
-            <button aria-label="알림" className="rounded-full border border-gray-200 p-5">
+            <button
+              aria-label="알림"
+              className="cursor-pointer rounded-full border border-gray-200 p-5"
+              onClick={() => {
+                router.push('/notifications');
+              }}
+            >
               <Icon name="bell" />
             </button>
           </div>
