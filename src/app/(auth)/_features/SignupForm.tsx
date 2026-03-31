@@ -2,15 +2,15 @@
 
 import type { SignupBody } from '@/lib/auth/schemas/signup';
 import type { User } from '@/lib/auth/schemas/user';
+import type { FieldErrors } from 'react-hook-form';
 
-
-
-import { useRouter } from 'next/navigation';
 import { apiClient, ApiClientError } from '@/lib/apiClient';
 import { toastRhfValidationErrors } from '@/lib/auth/rhfToastValidationError';
 import { signupBodySchema } from '@/lib/auth/schemas/signup';
 import { authUserStore } from '@/stores/authUserStore';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
+import { useCallback } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -21,10 +21,6 @@ import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { AuthFooter, AuthHeader } from '../_components/AuthHeaderFooter';
 import { AuthRHFTextField } from '../_components/AuthRHFTextField';
 
-
-
-
-
 function SignupFormBody() {
   const router = useRouter();
 
@@ -34,6 +30,14 @@ function SignupFormBody() {
     mode: 'onSubmit',
   });
   const { isSubmitting } = useFormState({ control });
+
+  const toastInvalid = useCallback((errors: FieldErrors<SignupBody>) => {
+    toastRhfValidationErrors(errors, { toastId: 'signup-rhf-validation' });
+  }, []);
+
+  const runValidationToast = useCallback(() => {
+    void handleSubmit(() => {}, toastInvalid)();
+  }, [handleSubmit, toastInvalid]);
 
   const onSubmit = async (data: SignupBody) => {
     try {
@@ -73,7 +77,7 @@ function SignupFormBody() {
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit, toastRhfValidationErrors)}
+      onSubmit={handleSubmit(onSubmit, toastInvalid)}
       className="flex w-full flex-col"
       noValidate
     >
@@ -88,6 +92,7 @@ function SignupFormBody() {
             autoComplete="name"
             placeholder="이름을 입력해 주세요"
             hideValidationMessage
+            onValidateToast={runValidationToast}
           />
         </Field>
         <Field>
@@ -100,6 +105,7 @@ function SignupFormBody() {
             autoComplete="email"
             placeholder="이메일을 입력해 주세요"
             hideValidationMessage
+            onValidateToast={runValidationToast}
           />
         </Field>
         <Field>
@@ -112,6 +118,7 @@ function SignupFormBody() {
             className="w-full md:w-100"
             placeholder="비밀번호를 입력해 주세요"
             hideValidationMessage
+            onValidateToast={runValidationToast}
           />
         </Field>
         <Field>
@@ -123,6 +130,7 @@ function SignupFormBody() {
             autoComplete="new-password"
             placeholder="비밀번호를 한 번 더 입력해 주세요"
             hideValidationMessage
+            onValidateToast={runValidationToast}
           />
         </Field>
       </FieldGroup>
