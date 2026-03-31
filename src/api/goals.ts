@@ -50,7 +50,7 @@ export const useGetGoals = ({
   limit?: number;
   cursor?: number;
   enabled?: boolean;
-}) => {
+} = {}) => {
   return useQuery({
     queryKey: [GOALS, { limit, cursor }],
     queryFn: async () => {
