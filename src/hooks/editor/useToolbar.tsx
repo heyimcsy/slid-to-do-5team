@@ -7,6 +7,8 @@ import { Icon } from '@/components/icon/Icon';
 
 type IconName = Parameters<typeof Icon>[0]['name'];
 
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+
 // variant별 툴바 버튼 표시 여부
 const TOOLBAR_CONFIG = {
   note: { showLink: true, showImage: false },
@@ -37,6 +39,7 @@ interface UseToolbarProps {
   onImageLimitExceeded?: () => void;
   imageLimit?: number;
   externalImageCount?: number;
+  onImageSizeExceeded?: () => void;
 }
 
 // 툴바 버튼 목록 및 이미지 업로드 동작을 관리하는 훅
@@ -47,6 +50,7 @@ export function useToolbar({
   onImageLimitExceeded,
   imageLimit = 2,
   externalImageCount = 0,
+  onImageSizeExceeded,
 }: UseToolbarProps) {
   // Tiptap은 자체 상태 관리라 React가 변경을 감지 못함 → forceUpdate로 버튼 활성 상태 동기화
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
@@ -97,6 +101,12 @@ export function useToolbar({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      onImageSizeExceeded?.();
+      e.target.value = '';
+      return;
+    }
 
     if (externalImageCount >= imageLimit) {
       onImageLimitExceeded?.();

@@ -14,6 +14,7 @@ import { z } from 'zod';
 
 import { DeleteIcon } from '@/components/icon/icons/Delete';
 import { Toolbar } from '@/components/Toolbar';
+import { Spinner } from '@/components/ui/spinner';
 
 import { DesktopPostHeader } from './DesktopPostHeader';
 import { MobilePostHeader } from './MobilePostHeader';
@@ -37,7 +38,11 @@ interface PostFormClientProps {
   mode: 'create' | 'edit';
   initialValues?: { title: string; content: string };
   initialImageUrls?: string[];
-  onSubmit?: (data: { title: string; contentJson: string }, images: File[]) => Promise<void>;
+  onSubmit?: (
+    data: { title: string; contentJson: string },
+    newFiles: File[],
+    existingUrls: string[],
+  ) => Promise<void>;
 }
 
 export function PostFormClient({
@@ -115,12 +120,22 @@ export function PostFormClient({
       const newFiles = images
         .filter((item): item is Extract<ImageItem, { type: 'new' }> => item.type === 'new')
         .map((item) => item.file);
-      await onSubmit?.({ title, contentJson }, newFiles);
+      const existingUrls = images
+        .filter(
+          (item): item is Extract<ImageItem, { type: 'existing' }> => item.type === 'existing',
+        )
+        .map((item) => item.url);
+
+      await onSubmit?.({ title, contentJson }, newFiles, existingUrls);
     } catch (error) {
       console.error(error);
       toast.error(error instanceof Error ? error.message : '게시물 저장에 실패했습니다.');
     }
   });
+
+  const handleImageSizeExceeded = useCallback(() => {
+    toast.error('이미지 크기는 10MB를 초과할 수 없습니다.');
+  }, []);
 
   const handleImageLimitExceeded = useCallback(() => {
     toast.error(`이미지는 최대 ${IMAGE_LIMIT}개까지 첨부할 수 있습니다.`);
@@ -155,6 +170,7 @@ export function PostFormClient({
         onImageSelected={handleImageSelected}
         onImageLimitExceeded={handleImageLimitExceeded}
         externalImageCount={images.length}
+        onImageSizeExceeded={handleImageSizeExceeded}
       />
     ),
     [editor, images.length, handleImageSelected, handleImageLimitExceeded],
@@ -187,6 +203,9 @@ export function PostFormClient({
           <div className="shrink-0 px-5 pt-6">
             <div className="hidden md:block">{toolbar}</div>
             <div className="flex items-center justify-between gap-2 md:mt-6">
+              {isSubmitting && (
+                <Spinner text={mode === 'create' ? '게시물 등록 중...' : '게시물 수정 중...'} />
+              )}
               <input
                 {...register('title')}
                 type="text"
@@ -232,9 +251,12 @@ export function PostFormClient({
             </div>
           )}
 
-          <p className="font-xs-regular shrink-0 px-5 py-4 text-right text-gray-400 md:px-10 md:py-6 lg:px-14">
-            공백포함 {contentText.length}자 | 공백제외 {charCountWithoutSpaces}자
-          </p>
+          <div className="font-xs-regular flex shrink-0 justify-between px-5 py-4 text-gray-400 md:px-10 md:py-6 lg:px-14">
+            <p>이미지는 10MB 이하의 파일만 첨부할 수 있습니다. (최대 {IMAGE_LIMIT}까지)</p>
+            <p>
+              공백포함 {contentText.length}자 | 공백제외 {charCountWithoutSpaces}자
+            </p>
+          </div>
         </div>
       </div>
     </form>

@@ -24,7 +24,7 @@ export function TodoSection({
         <h3 className="font-base-semibold text-gray-800">{title}</h3>
         {showActions && (
           <div className="flex space-x-2">
-            <Link className="h-fit w-fit" href="/calendar">
+            <Link className="h-fit w-fit" href={`/calendar?goalId=${goalId}`}>
               <IconButton variant="ghost" className="h-10">
                 <Icon name="schedule" size={20} />
                 <span>캘린더 보기</span>

@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-interface CalenderHeadProps {
+interface CalendarHeadProps {
   y: number;
   m: number;
   prevYear: () => void;
@@ -20,15 +20,12 @@ interface CalenderHeadProps {
   nextMonth: () => void;
   nextYear: () => void;
   findToday: () => void;
+  selectValue: { label: string; value: number }[];
+  selectedGoalId: number;
+  onGoalChange: (goalId: number) => void;
 }
 
-const selectValue = [
-  { label: '전체 목표', value: 0 },
-  { label: '자바스크립트로 웹서비스 만들기', value: 1 },
-  { label: '디자인 시스템 정복하기', value: 2 },
-];
-
-export default function CalenderHead({
+export default function CalendarHead({
   y,
   m,
   prevYear,
@@ -36,7 +33,10 @@ export default function CalenderHead({
   nextMonth,
   nextYear,
   findToday,
-}: CalenderHeadProps) {
+  selectValue,
+  selectedGoalId,
+  onGoalChange,
+}: CalendarHeadProps) {
   return (
     <div className="flex h-33 flex-col items-center justify-center space-y-4 px-4 lg:h-22 lg:flex-row lg:items-center lg:justify-between lg:space-y-0 lg:px-8">
       <div className="flex h-fit w-fit items-center justify-center space-x-2">
@@ -69,9 +69,13 @@ export default function CalenderHead({
           </Button>
         </div>
       </div>
-      <Select items={selectValue}>
+      <Select
+        items={selectValue}
+        value={selectedGoalId}
+        onValueChange={(val) => onGoalChange(Number(val))}
+      >
         <SelectTrigger className="h-12 w-full lg:w-85">
-          <div className="font-sm-semibold flex items-center gap-2">
+          <div className="font-sm-semibold flex min-w-0 items-center gap-2">
             <Image src={largeGoal} alt="" width={20} height={20} />
             <SelectValue />
           </div>

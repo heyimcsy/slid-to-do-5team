@@ -14,6 +14,7 @@ interface ToolbarProps {
   imageLimit?: number;
   onLinkConfirm?: (url: string) => void;
   externalImageCount?: number;
+  onImageSizeExceeded?: () => void;
 }
 
 export function Toolbar({
@@ -24,6 +25,7 @@ export function Toolbar({
   imageLimit = 2,
   onLinkConfirm,
   externalImageCount = 0,
+  onImageSizeExceeded,
 }: ToolbarProps) {
   const { toolbarItems, fileInputRef, handleFileChange, showLinkModal, setShowLinkModal } =
     useToolbar({
@@ -33,6 +35,7 @@ export function Toolbar({
       onImageLimitExceeded,
       imageLimit,
       externalImageCount,
+      onImageSizeExceeded,
     });
 
   if (!editor) return null;
