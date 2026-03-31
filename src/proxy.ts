@@ -178,7 +178,12 @@ export async function forwardToBackend(request: Request, path: string): Promise<
    */
   headers.set('Accept-Encoding', 'identity');
 
-  /** Node.js: ReadableStream 바디 전달 시 안전한 요청 처리를 위해 요청과 응답 스트림 분리 `duplex: half` 필요 (multipart 등) */
+  /** Node.js: ReadableStream 바디 전달 시 안전한 요청 처리를 위해 요청과 응답 스트림 분리 `duplex: half` 필요 (multipart 등)
+   * Node.js fetch(undici) 구현은 duplex: 'half'를 설정하면, fetch는 브라우저의 일반적인 동작처럼 "요청 본문을 다 보낸 후 응답을 기다리는" 방식으로 작동함
+   * duplex를 지정하지 않으면 body가 Stream 타입일 때 TypeError가 발생하므로 명시적으로 duplex의 기본값인 'half'를 반드시 설정해야 함
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/RequestInit
+   * @see https://undici.nodejs.org/#/?id=undicifetchinput-init-promise
+   */
   const upstreamInit: RequestInit & { duplex?: 'half' } = {
     method: request.method,
     headers,
