@@ -21,6 +21,8 @@ export const ALLOWED_ORIGINS = (() => {
     origins.push(`https://${vercelUrl}`);
     origins.push(`https://${vercelUrl.replace(/^preview-/, '')}`);
   }
+  // BFF origin 검증 — 아래는 dev/prod 구분 없이 항상 허용할 도메인임
+  origins.push(`https://potato-admin.shop`, `https://slid-to-do-5team.vercel.app`);
   if (process.env.NODE_ENV === 'development') {
     origins.push(`http://localhost:3000`, `http://127.0.0.1:3000`, `https://*.ngrok-free.app`);
   }
