@@ -1,6 +1,7 @@
 interface DesktopPostHeaderProps {
   isSubmitDisabled: boolean;
   onCancel: () => void;
+  onSubmitClick: () => void;
   headerTitle: string;
   submitLabel: string;
 }
@@ -8,6 +9,7 @@ interface DesktopPostHeaderProps {
 export function DesktopPostHeader({
   isSubmitDisabled,
   onCancel,
+  onSubmitClick,
   headerTitle,
   submitLabel,
 }: DesktopPostHeaderProps) {
@@ -23,7 +25,8 @@ export function DesktopPostHeader({
           취소
         </button>
         <button
-          type="submit"
+          type="button"
+          onClick={onSubmitClick}
           disabled={isSubmitDisabled}
           className="font-sm-semibold w-[106px] rounded-full bg-orange-500 px-[18px] py-2.5 text-white disabled:cursor-not-allowed disabled:bg-gray-300"
         >

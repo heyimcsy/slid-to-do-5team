@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { DeleteIcon } from '@/components/icon/icons/Delete';
 import { Toolbar } from '@/components/Toolbar';
 import { Spinner } from '@/components/ui/spinner';
@@ -47,6 +48,8 @@ export function PostFormClient({
   onSubmit,
 }: PostFormClientProps) {
   const router = useRouter();
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
 
   const { editor, hasEditorContent, contentText, charCountWithoutSpaces } = usePostEditor({
     initialContent: initialValues?.content,
@@ -118,9 +121,27 @@ export function PostFormClient({
       onSubmit={handleFormSubmit}
       className="flex h-[calc(100dvh-68px)] w-full flex-col overflow-hidden bg-gray-100 md:h-dvh"
     >
+      <DeleteDialog
+        open={cancelDialogOpen}
+        onOpenChange={setCancelDialogOpen}
+        title="작성을 취소하시겠습니까?"
+        description="작성 중인 내용이 저장되지 않습니다."
+        onConfirm={() => router.back()}
+      />
+      <DeleteDialog
+        open={submitDialogOpen}
+        onOpenChange={setSubmitDialogOpen}
+        title={mode === 'create' ? '게시물을 등록하시겠습니까?' : '게시물을 수정하시겠습니까?'}
+        description="등록 후에도 수정이 가능합니다."
+        onConfirm={() => {
+          setSubmitDialogOpen(false);
+          handleFormSubmit();
+        }}
+      />
       <MobilePostHeader
         isSubmitDisabled={isSubmitDisabled}
-        onCancel={() => router.back()}
+        onCancel={() => setCancelDialogOpen(true)}
+        onSubmitClick={() => setSubmitDialogOpen(true)}
         headerTitle={headerTitle}
         submitLabel={submitLabel}
         toolbar={toolbar}
@@ -129,7 +150,8 @@ export function PostFormClient({
         <div className="mx-auto w-full px-8 pt-8 md:max-w-[636px] lg:max-w-[768px]">
           <DesktopPostHeader
             isSubmitDisabled={isSubmitDisabled}
-            onCancel={() => router.back()}
+            onCancel={() => setCancelDialogOpen(true)}
+            onSubmitClick={() => setSubmitDialogOpen(true)}
             headerTitle={headerTitle}
             submitLabel={submitLabel}
           />
