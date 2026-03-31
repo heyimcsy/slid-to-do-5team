@@ -90,7 +90,7 @@ export default function CommunityClient() {
     router.replace(`${pathname}?${params.toString()}`);
   };
 
-  if (isLoading || isFetching) return <PostListSkeleton />;
+  if (isLoading) return <PostListSkeleton />;
   if (isError && !data) return <PostErrorFallback onRetry={refetch} />;
 
   return (

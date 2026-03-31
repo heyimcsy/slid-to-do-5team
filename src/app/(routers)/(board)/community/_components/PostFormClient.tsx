@@ -122,6 +122,10 @@ export function PostFormClient({
     }
   });
 
+  const handleImageSizeExceeded = useCallback(() => {
+    toast.error('이미지 크기는 10MB를 초과할 수 없습니다.');
+  }, []);
+
   const handleImageLimitExceeded = useCallback(() => {
     toast.error(`이미지는 최대 ${IMAGE_LIMIT}개까지 첨부할 수 있습니다.`);
   }, []);
@@ -155,6 +159,7 @@ export function PostFormClient({
         onImageSelected={handleImageSelected}
         onImageLimitExceeded={handleImageLimitExceeded}
         externalImageCount={images.length}
+        onImageSizeExceeded={handleImageSizeExceeded}
       />
     ),
     [editor, images.length, handleImageSelected, handleImageLimitExceeded],
@@ -232,9 +237,12 @@ export function PostFormClient({
             </div>
           )}
 
-          <p className="font-xs-regular shrink-0 px-5 py-4 text-right text-gray-400 md:px-10 md:py-6 lg:px-14">
-            공백포함 {contentText.length}자 | 공백제외 {charCountWithoutSpaces}자
-          </p>
+          <div className="font-xs-regular flex shrink-0 justify-between px-5 py-4 text-gray-400 md:px-10 md:py-6 lg:px-14">
+            <p>이미지는 10MB 이하의 파일만 첨부할 수 있습니다. (최대 {IMAGE_LIMIT}까지)</p>
+            <p>
+              공백포함 {contentText.length}자 | 공백제외 {charCountWithoutSpaces}자
+            </p>
+          </div>
         </div>
       </div>
     </form>
