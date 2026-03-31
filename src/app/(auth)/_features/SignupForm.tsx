@@ -3,6 +3,8 @@
 import type { SignupBody } from '@/lib/auth/schemas/signup';
 import type { User } from '@/lib/auth/schemas/user';
 
+
+
 import { useRouter } from 'next/navigation';
 import { apiClient, ApiClientError } from '@/lib/apiClient';
 import { toastRhfValidationErrors } from '@/lib/auth/rhfToastValidationError';
@@ -12,12 +14,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useFormState } from 'react-hook-form';
 import { toast } from 'sonner';
 
+import { PasswordFieldWithToggle } from '@/components/common/PasswordFieldWithToggle';
 import { Button } from '@/components/ui/button';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 
 import { AuthFooter, AuthHeader } from '../_components/AuthHeaderFooter';
 import { AuthRHFTextField } from '../_components/AuthRHFTextField';
-import { PasswordFieldWithToggle } from '../_components/PasswordFieldWithToggle';
+
+
+
+
 
 function SignupFormBody() {
   const router = useRouter();
