@@ -3,13 +3,10 @@
 import * as React from 'react';
 import { cn } from '@/lib/shadcn';
 import { Select as SelectPrimitive } from '@base-ui/react/select';
-import {
-  ArrowDown01Icon,
-  ArrowUp01Icon,
-  Tick02Icon,
-  UnfoldMoreIcon,
-} from '@hugeicons/core-free-icons';
+import { ArrowDown01Icon, ArrowUp01Icon, Tick02Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
+
+import { Icon } from '@/components/icon/Icon';
 
 const Select = SelectPrimitive.Root;
 
@@ -27,7 +24,7 @@ function SelectValue({ className, ...props }: Readonly<SelectPrimitive.Value.Pro
   return (
     <SelectPrimitive.Value
       data-slot="select-value"
-      className={cn('flex flex-1 text-left', className)}
+      className={cn('flex flex-1 truncate text-left', className)}
       {...props}
     />
   );
@@ -56,7 +53,7 @@ function SelectTrigger({
             )
           : cn(
               // 레이아웃
-              'flex h-fit w-full items-center justify-between gap-1.5 bg-gray-50 whitespace-nowrap data-[size=sm]:w-[102px] data-[size=sm]:border-0',
+              'flex h-fit w-full min-w-0 items-center justify-between gap-1.5 bg-gray-50 whitespace-nowrap data-[size=sm]:w-[102px] data-[size=sm]:border-0',
               // 사이즈
               'max-w-143 data-[size=default]:px-3 data-[size=default]:py-3 data-[size=sm]:px-[10px] data-[size=sm]:py-2 lg:max-w-164 data-[size=default]:lg:py-4',
               // 테두리 & 모양
@@ -85,15 +82,7 @@ function SelectTrigger({
     >
       {children}
       {size === 'default' && (
-        <SelectPrimitive.Icon
-          render={
-            <HugeiconsIcon
-              icon={UnfoldMoreIcon}
-              strokeWidth={2}
-              className="text-muted-foreground pointer-events-none size-4"
-            />
-          }
-        />
+        <SelectPrimitive.Icon render={<Icon name="arrow" direction="down" size={24} />} />
       )}
     </SelectPrimitive.Trigger>
   );
@@ -186,7 +175,7 @@ function SelectItem({
       data-slot="select-item"
       className={cn(
         // 레이아웃
-        'relative flex w-full items-center gap-2.5 rounded-[8px] lg:rounded-[10px]',
+        'relative flex w-full min-w-0 items-center gap-2.5 rounded-[8px] lg:rounded-[10px]',
         // 사이즈 & 여백
         'py-2 pr-8 pl-3',
         // 텍스트 & 커서
@@ -203,13 +192,13 @@ function SelectItem({
       )}
       {...props}
     >
-      <SelectPrimitive.ItemText className="text-sm-medium lg:text-base-medium flex flex-1 shrink-0 gap-2 whitespace-nowrap">
+      <SelectPrimitive.ItemText className="text-sm-medium lg:text-base-medium flex flex-1 shrink-0 gap-2 truncate whitespace-nowrap">
         {children}
       </SelectPrimitive.ItemText>
       {size === 'default' && (
         <SelectPrimitive.ItemIndicator
           render={
-            <span className="pointer-events-none absolute right-2 flex size-4 items-center justify-center" />
+            <span className="pointer-events-none absolute right-2 flex size-4 items-center justify-center truncate" />
           }
         >
           <HugeiconsIcon

@@ -42,40 +42,41 @@ const GOALS = 'goals';
 const GOALS_URL = '/goals';
 
 // Pick 원하는 값만 꺼내서 사용
-export const useGetGoals = () => {
+export const useGetGoals = ({
+  limit = 20,
+  cursor,
+  enabled,
+}: {
+  limit?: number;
+  cursor?: number;
+  enabled?: boolean;
+} = {}) => {
   return useQuery({
-    queryKey: [GOALS],
+    queryKey: [GOALS, { limit, cursor }],
     queryFn: async () => {
-      const data: PaginatedResponse<
-        Pick<
-          Goal,
-          | 'id'
-          | 'teamId'
-          | 'userId'
-          | 'title'
-          | 'todoCount'
-          | 'completedCount'
-          | 'createdAt'
-          | 'updatedAt'
-        >
-      > =
-        await apiClient<
-          PaginatedResponse<
-            Pick<
-              Goal,
-              | 'id'
-              | 'teamId'
-              | 'userId'
-              | 'title'
-              | 'todoCount'
-              | 'completedCount'
-              | 'createdAt'
-              | 'updatedAt'
-            >
+      const params = new URLSearchParams();
+      if (limit !== undefined) params.append('limit', String(limit));
+      if (cursor !== undefined) params.append('cursor', String(cursor));
+      const queryString = params.toString();
+      const url: string = queryString ? `${GOALS_URL}?${queryString}` : GOALS_URL;
+
+      return await apiClient<
+        PaginatedResponse<
+          Pick<
+            Goal,
+            | 'id'
+            | 'teamId'
+            | 'userId'
+            | 'title'
+            | 'todoCount'
+            | 'completedCount'
+            | 'createdAt'
+            | 'updatedAt'
           >
-        >(GOALS_URL);
-      return data;
+        >
+      >(url);
     },
+    enabled,
   });
 };
 
