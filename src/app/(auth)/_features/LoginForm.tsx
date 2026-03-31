@@ -4,8 +4,6 @@ import type { LoginBody } from '@/lib/auth/schemas/login';
 import type { User } from '@/lib/auth/schemas/user';
 import type { FieldErrors } from 'react-hook-form';
 
-import { Suspense, useCallback, useEffect } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { apiClient, ApiClientError } from '@/lib/apiClient';
 import { getOAuthUserFacingMessageKo } from '@/lib/auth/oauthUserFacingMessage';
 import { toastRhfValidationErrors } from '@/lib/auth/rhfToastValidationError';
@@ -13,15 +11,17 @@ import { loginBodySchema } from '@/lib/auth/schemas/login';
 import { getSafeCallbackPath } from '@/lib/navigation/safeCallbackPath';
 import { authUserStore } from '@/stores/authUserStore';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useCallback, useEffect } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import { toast } from 'sonner';
 
+import { PasswordFieldWithToggle } from '@/components/common/PasswordFieldWithToggle';
 import { Button } from '@/components/ui/button';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 
 import { AuthFooter, AuthHeader } from '../_components/AuthHeaderFooter';
 import { AuthRHFTextField } from '../_components/AuthRHFTextField';
-import { PasswordFieldWithToggle } from '../_components/PasswordFieldWithToggle';
 
 function LoginFormBody() {
   const router = useRouter();

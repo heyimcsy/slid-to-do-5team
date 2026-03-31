@@ -2,16 +2,16 @@ import type { Todo } from '@/api/todos';
 
 import { cn } from '@/lib';
 
-type CalenderTodo = Pick<Todo, 'id' | 'title' | 'dueDate' | 'done'>;
+type CalendarTodo = Pick<Todo, 'id' | 'title' | 'dueDate' | 'done'>;
 
-interface CalenderScheduleListProps {
+interface CalendarScheduleListProps {
   date: string;
-  todos: CalenderTodo[];
+  todos: CalendarTodo[];
 }
 
-export default function CalenderScheduleList({ date, todos }: CalenderScheduleListProps) {
+export default function CalendarScheduleList({ date, todos }: CalendarScheduleListProps) {
   return (
-    <div className="flex h-69 flex-col gap-4 px-4 py-5 lg:hidden">
+    <div className="flex h-fit flex-col gap-4 px-4 py-5 md:h-69 lg:hidden">
       <h2 className="font-sm-semibold shrink-0">{date}</h2>
       <div className="flex min-h-0 flex-1 flex-col space-y-[6px] overflow-y-scroll">
         {todos.map((todo) => (

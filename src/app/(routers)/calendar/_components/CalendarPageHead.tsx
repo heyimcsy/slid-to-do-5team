@@ -1,9 +1,11 @@
 'use client';
 
+import Link from 'next/link';
+
 import { Icon } from '@/components/icon/Icon';
 import { IconButton } from '@/components/ui/button';
 
-export default function CalenderPageHead() {
+export default function CalendarPageHead() {
   const userInfo: string | null = localStorage.getItem('user-info');
   let userName: string = '';
   try {
@@ -17,9 +19,11 @@ export default function CalenderPageHead() {
   return (
     <div className="hidden w-full items-center justify-between md:flex">
       <h1 className="font-xl-semibold lg:font-2xl-semibold">{userName}님의 캘린더</h1>
-      <IconButton variant="outline">
-        <Icon name="plus" variant="orange" />할 일 추가
-      </IconButton>
+      <Link href="/goals/todos/new" className="flex h-fit w-fit">
+        <IconButton variant="outline">
+          <Icon name="plus" variant="orange" />할 일 추가
+        </IconButton>
+      </Link>
     </div>
   );
 }
