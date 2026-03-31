@@ -12,7 +12,7 @@ interface Props {
   initialImageUrls?: string[];
 }
 
-export function PostSubmitClient({ mode, postId, initialValues, initialImageUrls }: Props) {
+export function PostSubmitClient({ mode, postId: _postId, initialValues, initialImageUrls }: Props) {
   const { mutateAsync: createPost } = useCreatePost();
 
   const handleSubmit = async (
