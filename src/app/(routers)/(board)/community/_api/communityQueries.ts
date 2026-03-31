@@ -5,7 +5,6 @@ import type {
   PostInput,
   PostsResponse,
   SortOption,
-  User,
 } from '../types';
 
 import { useRouter } from 'next/navigation';
@@ -21,14 +20,6 @@ import {
 import { communityQueryKeys } from './communityQueryKeys';
 
 const toApiType = (sort: SortOption): 'all' | 'best' => (sort === '인기순' ? 'best' : 'all');
-
-export const useGetUser = () => {
-  return useQuery({
-    queryKey: ['user', 'me'],
-    queryFn: () => apiClient<User>('/users/me'),
-    staleTime: 1000 * 60 * 10,
-  });
-};
 
 // 게시물 목록 조회
 export const useGetPosts = (sort: SortOption = '최신순', isSearchMode: boolean = false) => {

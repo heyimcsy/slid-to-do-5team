@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { authUserStore } from '@/stores/authUserStore';
 import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
@@ -11,12 +12,7 @@ import StarterKit from '@tiptap/starter-kit';
 import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { KebabMenu } from '@/components/common/KebabMenu';
 
-import {
-  useDeletePost,
-  useGetComments,
-  useGetPostById,
-  useGetUser,
-} from '../_api/communityQueries';
+import { useDeletePost, useGetComments, useGetPostById } from '../_api/communityQueries';
 import { PostErrorFallback } from '../_components/PostErrorFallback';
 import { WriterAvatar } from '../_components/WriterAvatar';
 import { formatDate } from '../_utils/formatDate';
@@ -35,9 +31,11 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
     isError: isCommentsError,
     refetch: refetchComments,
   } = useGetComments(postId);
-  const { data: user } = useGetUser();
+  const user = authUserStore((state) => state.user);
+  const userId = Number(user?.id);
+
   const { mutate: deletePost, isPending: isPostDeleting } = useDeletePost();
-  const isWriter = user?.id === post?.userId;
+  const isWriter = userId === post?.userId;
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isCommentBusy, setIsCommentBusy] = useState(false);
@@ -133,7 +131,7 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
             <CommentSection
               postId={postId}
               comments={comments}
-              userId={user?.id}
+              userId={userId}
               isBusy={isBusy}
               onPendingChange={setIsCommentBusy}
             />
