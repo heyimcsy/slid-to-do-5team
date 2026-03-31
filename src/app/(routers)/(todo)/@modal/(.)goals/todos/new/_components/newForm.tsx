@@ -153,6 +153,14 @@ export default function NewForm() {
     );
   };
 
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+
+  const handleCancel = () => setCancelConfirmOpen(true);
+  const handleConfirmCancel = () => {
+    setCancelConfirmOpen(false);
+    router.back();
+  };
+
   // ✅ 공통 폼 (Dialog 전용 컴포넌트 제거)
   const formContent = (
     <form>
@@ -184,7 +192,7 @@ export default function NewForm() {
                   className="p-2 focus:bg-orange-200"
                   onClick={() => {
                     setSelectedGoal(goal.title);
-                    setSelectedGoalId(goal.id); // ← 이게 없음
+                    setSelectedGoalId(goal.id);
                   }}
                 >
                   {goal.title}
@@ -302,6 +310,33 @@ export default function NewForm() {
 
   return (
     <>
+      {/* ✅ 취소 확인 모달 */}
+      <Dialog open={cancelConfirmOpen} onOpenChange={setCancelConfirmOpen}>
+        <DialogContent className="z-200 max-w-[343px] md:max-w-[456px]" showCloseButton={false}>
+          <DialogHeader className="mb-6">
+            <DialogTitle className="font-xl-semibold mt-8">작성을 취소하시겠어요?</DialogTitle>
+            <p className="font-xs-medium md:font-base-medium text-center text-orange-600">
+              변경사항은 저장되지 않습니다
+            </p>
+          </DialogHeader>
+
+          <DialogFooter className="mt-4 flex gap-2">
+            <Button
+              variant="ghost"
+              className="font-sm-semibold md:font-lg-semibold flex-1 cursor-pointer py-4"
+              onClick={() => setCancelConfirmOpen(false)}
+            >
+              취소
+            </Button>
+            <Button
+              className="md:font-lg-semibold flex-1 cursor-pointer py-4"
+              onClick={handleConfirmCancel}
+            >
+              확인
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       {isMobile ? (
         <Drawer
           open
@@ -324,7 +359,7 @@ export default function NewForm() {
                 size="lg"
                 variant="ghost"
                 className="flex-1 cursor-pointer"
-                onClick={() => router.back()}
+                onClick={handleCancel}
               >
                 취소
               </Button>
@@ -336,7 +371,7 @@ export default function NewForm() {
         </Drawer>
       ) : (
         <Dialog open>
-          <DialogContent>
+          <DialogContent showCloseButton={false}>
             <DialogHeader className="mb-8">
               <DialogTitle>할 일 생성</DialogTitle>
             </DialogHeader>
@@ -344,7 +379,7 @@ export default function NewForm() {
             {formContent}
 
             <DialogFooter className="mt-10 w-full">
-              <Button size="lg" variant="ghost" className="flex-1" onClick={() => router.back()}>
+              <Button size="lg" variant="ghost" className="flex-1" onClick={handleCancel}>
                 취소
               </Button>
               <Button
