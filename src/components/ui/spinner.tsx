@@ -7,7 +7,12 @@ interface SpinnerProps {
 
 function Spinner({ className, text }: SpinnerProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
+      role="status"
+      aria-live="polite"
+      aria-label={text || '로딩 중'}
+    >
       <div
         className={cn(
           'flex items-center gap-3 rounded-2xl bg-white px-6 py-4 shadow-lg',

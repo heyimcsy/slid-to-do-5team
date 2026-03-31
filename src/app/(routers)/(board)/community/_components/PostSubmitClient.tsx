@@ -25,7 +25,13 @@ export function PostSubmitClient({ mode, postId, initialValues, initialImageUrls
 
     const finalImageUrls = [...existingUrls, ...newUrls];
 
-    const json = JSON.parse(data.contentJson);
+    let json;
+    try {
+      json = JSON.parse(data.contentJson);
+    } catch {
+      throw new Error('게시물 내용이 올바르지 않습니다.');
+    }
+
     const imageNodes = finalImageUrls.map((url) => ({
       type: 'paragraph',
       content: [{ type: 'image', attrs: { src: url } }],
