@@ -32,6 +32,11 @@ export function useAuthFieldValidationHandlers<T extends FieldValues>({
 
   useEffect(() => () => clearIdle(), [clearIdle]);
 
+  /** idle 비활성·콜백 제거 후에도 예약된 타이머가 남지 않게 */
+  useEffect(() => {
+    if (!onValidateToast || !idleValidationMs) clearIdle();
+  }, [onValidateToast, idleValidationMs, clearIdle]);
+
   const onFocus = useCallback(() => {
     if (!onValidateToast || !idleValidationMs) return;
     clearIdle();
