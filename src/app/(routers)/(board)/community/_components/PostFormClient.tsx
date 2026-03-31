@@ -14,6 +14,7 @@ import { z } from 'zod';
 
 import { DeleteIcon } from '@/components/icon/icons/Delete';
 import { Toolbar } from '@/components/Toolbar';
+import { Spinner } from '@/components/ui/spinner';
 
 import { DesktopPostHeader } from './DesktopPostHeader';
 import { MobilePostHeader } from './MobilePostHeader';
@@ -202,6 +203,9 @@ export function PostFormClient({
           <div className="shrink-0 px-5 pt-6">
             <div className="hidden md:block">{toolbar}</div>
             <div className="flex items-center justify-between gap-2 md:mt-6">
+              {isSubmitting && (
+                <Spinner text={mode === 'create' ? '게시물 등록 중...' : '게시물 수정 중...'} />
+              )}
               <input
                 {...register('title')}
                 type="text"

@@ -71,6 +71,11 @@ export const useCreatePost = () => {
         body: JSON.stringify(post),
       }),
     onSuccess: (data) => {
+      queryClient.setQueryData(communityQueryKeys.post(data.id), data);
+      queryClient.setQueryData(communityQueryKeys.comments(data.id), {
+        comments: [],
+        totalCount: 0,
+      });
       queryClient.removeQueries({ queryKey: [...communityQueryKeys.all, 'posts'] });
       router.replace(`/community/${data.id}`);
     },
