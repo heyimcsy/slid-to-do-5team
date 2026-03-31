@@ -17,19 +17,19 @@ interface Cell {
   dayTodos: CalendarTodo[];
 }
 
-interface CalenderGridProps {
+interface CalendarGridProps {
   cells: Cell[];
   totalCells: number;
   selectedDate: string;
   onSelectDate: (date: string) => void;
 }
 
-export default function CalenderGrid({
+export default function CalendarGrid({
   cells,
   totalCells,
   selectedDate,
   onSelectDate,
-}: CalenderGridProps) {
+}: CalendarGridProps) {
   return (
     <div className="flex h-[530px] flex-col lg:h-206">
       <div className="grid h-8 shrink-0 grid-cols-7">

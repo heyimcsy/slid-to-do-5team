@@ -1,6 +1,7 @@
-export { default as CalenderPageHead } from './CalenderPageHead';
-export { default as CalenderHead } from './CalenderHead';
-export { default as CalenderScheduleList } from './CalenderScheduleList';
-export { default as CalenderGrid } from './CalenderGrid';
+export { default as CalendarPageHead } from './CalendarPageHead';
+export { default as CalendarHead } from './CalendarHead';
+export { default as CalendarScheduleList } from './CalendarScheduleList';
+export { default as CalendarGrid } from './CalendarGrid';
 export { default as BottomButton } from './BottomButton';
-export { default as ScheduleCalender } from './ScheduleCalender';
+export { default as ScheduleCalendar } from './ScheduleCalendar';
+export { default as ScheduleCalendarSkeleton } from './ScheduleCalendarSkeleton';
