@@ -36,7 +36,7 @@ export interface PostsResponse {
   totalCount: number;
 }
 
-export interface UpdatePostInput {
+export interface PostInput {
   title: string;
   content: string;
   image?: string | null;

@@ -2,12 +2,13 @@ import type {
   Comment,
   CommentsResponse,
   Post,
+  PostInput,
   PostsResponse,
   SortOption,
-  UpdatePostInput,
   User,
 } from '../types';
 
+import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
 import {
   keepPreviousData,
@@ -57,12 +58,36 @@ export const useGetPostById = (postId: number) => {
   });
 };
 
+// 게시물 작성
+export const useCreatePost = () => {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: (post: PostInput) =>
+      apiClient<Post>('/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(post),
+      }),
+    onSuccess: (data) => {
+      queryClient.setQueryData(communityQueryKeys.post(data.id), data);
+      queryClient.setQueryData(communityQueryKeys.comments(data.id), {
+        comments: [],
+        totalCount: 0,
+      });
+      queryClient.removeQueries({ queryKey: [...communityQueryKeys.all, 'posts'] });
+      router.replace(`/community/${data.id}`);
+    },
+  });
+};
+
 // 게시물 수정
 export const useUpdatePost = (postId: number) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (updatePost: UpdatePostInput) =>
+    mutationFn: (updatePost: PostInput) =>
       apiClient<Post>(`/posts/${postId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
