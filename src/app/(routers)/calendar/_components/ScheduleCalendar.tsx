@@ -18,7 +18,9 @@ export default function ScheduleCalendar() {
   const searchParams = useSearchParams();
   const goalId: number = Number(searchParams.get('goalId'));
 
-  const [selectedGoalId, setSelectedGoalId] = useState<number>(goalId);
+  const safeGoalId = isNaN(goalId) || goalId === null ? 0 : goalId;
+
+  const [selectedGoalId, setSelectedGoalId] = useState<number>(safeGoalId);
 
   const { data: goalsData, isLoading: goalsLoading } = useGetGoals({});
   const needMore: undefined | boolean = goalsData && goalsData.goals.length < goalsData.totalCount;
