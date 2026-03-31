@@ -6,7 +6,7 @@ import { authUserStore } from '@/stores/authUserStore';
 import { toast } from 'sonner';
 
 import { uploadImage } from '../_api/communityApi';
-import { useCreatePost, useGetPostById } from '../_api/communityQueries';
+import { useCreatePost, useGetPostById, useUpdatePost } from '../_api/communityQueries';
 import { compressImage } from '../_utils/compressImage';
 import { extractImagesFromContent } from '../_utils/extractImagesFromContent';
 import { PostFormClient } from './PostFormClient';
@@ -22,7 +22,9 @@ export function PostSubmitClient({ mode, postId }: Props) {
   const { data: post } = useGetPostById(postId ?? 0);
   const user = authUserStore((state) => state.user);
   const userId = Number(user?.id);
+
   const { mutateAsync: createPost } = useCreatePost();
+  const { mutateAsync: updatePost } = useUpdatePost(postId ?? 0);
 
   useEffect(() => {
     if (mode === 'edit' && post && user && post.userId !== userId) {
@@ -76,7 +78,7 @@ export function PostSubmitClient({ mode, postId }: Props) {
     if (mode === 'create') {
       await createPost(payload);
     } else {
-      // useUpdatePost
+      await updatePost(payload);
     }
   };
 

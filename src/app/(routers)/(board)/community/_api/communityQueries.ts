@@ -76,21 +76,21 @@ export const useCreatePost = () => {
 // 게시물 수정
 export const useUpdatePost = (postId: number) => {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
-  const mutation = useMutation({
+  return useMutation({
     mutationFn: (updatePost: PostInput) =>
       apiClient<Post>(`/posts/${postId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatePost),
       }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: communityQueryKeys.post(postId) });
-      queryClient.invalidateQueries({ queryKey: [...communityQueryKeys.all, 'posts'] });
+    onSuccess: (data) => {
+      queryClient.setQueryData(communityQueryKeys.post(data.id), data);
+      queryClient.removeQueries({ queryKey: [...communityQueryKeys.all, 'posts'] });
+      router.replace(`/community/${data.id}`);
     },
   });
-
-  return { ...mutation };
 };
 
 // 게시물 삭제
