@@ -20,6 +20,7 @@ export function usePostEditor({ initialContent }: UsePostEditorOptions = {}) {
 
   const [hasEditorContent, setHasEditorContent] = useState(false);
   const [contentText, setContentText] = useState('');
+  const [hasEditorChanged, setHasEditorChanged] = useState(false);
 
   useEffect(() => {
     if (!editor) return;
@@ -29,6 +30,7 @@ export function usePostEditor({ initialContent }: UsePostEditorOptions = {}) {
     const onUpdate = () => {
       setHasEditorContent(isEditorFilled(editor));
       setContentText(editor.getText());
+      setHasEditorChanged(true);
     };
     editor.on('update', onUpdate);
     return () => {
@@ -41,6 +43,7 @@ export function usePostEditor({ initialContent }: UsePostEditorOptions = {}) {
   return {
     editor,
     hasEditorContent,
+    hasEditorChanged,
     contentText,
     charCountWithoutSpaces,
   };

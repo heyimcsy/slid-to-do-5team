@@ -51,13 +51,14 @@ export function PostFormClient({
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
 
-  const { editor, hasEditorContent, contentText, charCountWithoutSpaces } = usePostEditor({
+  const { editor, hasEditorContent, hasEditorChanged, contentText, charCountWithoutSpaces } = usePostEditor({
     initialContent: initialValues?.content,
   });
 
   const {
     images,
     IMAGE_LIMIT,
+    hasImagesChanged,
     handleImageSelected,
     handleImageRemove,
     handleImageSizeExceeded,
@@ -68,7 +69,7 @@ export function PostFormClient({
     register,
     handleSubmit,
     watch,
-    formState: { isSubmitting },
+    formState: { isSubmitting, isDirty },
   } = useForm<PostFormValues>({
     resolver: zodResolver(postSchema),
     defaultValues: { title: initialValues?.title ?? '' },
@@ -77,7 +78,10 @@ export function PostFormClient({
 
   const titleValue = watch('title');
 
-  const isSubmitDisabled = !titleValue.trim() || !editor || !hasEditorContent || isSubmitting;
+  const hasChanged = isDirty || hasEditorChanged || hasImagesChanged;
+  const isSubmitDisabled =
+    !titleValue.trim() || !editor || !hasEditorContent || isSubmitting ||
+    (mode === 'edit' && !hasChanged);
   const headerTitle = mode === 'create' ? '게시물 작성하기' : '게시물 수정하기';
   const submitLabel = mode === 'create' ? '등록' : '수정';
 

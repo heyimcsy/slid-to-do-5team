@@ -11,6 +11,7 @@ export function usePostImages(initialImageUrls: string[] = []) {
   const [images, setImages] = useState<ImageItem[]>(
     initialImageUrls.map((url) => ({ type: 'existing', url })),
   );
+  const [hasImagesChanged, setHasImagesChanged] = useState(false);
   const imagesRef = useRef(images);
 
   useEffect(() => {
@@ -41,6 +42,7 @@ export function usePostImages(initialImageUrls: string[] = []) {
       }
       const url = URL.createObjectURL(file);
       setImages((prev) => [...prev, { type: 'new', url, file }]);
+      setHasImagesChanged(true);
     },
     [images.length, handleImageLimitExceeded],
   );
@@ -51,11 +53,13 @@ export function usePostImages(initialImageUrls: string[] = []) {
       if (item.type === 'new') URL.revokeObjectURL(item.url);
       return prev.filter((_, i) => i !== index);
     });
+    setHasImagesChanged(true);
   }, []);
 
   return {
     images,
     IMAGE_LIMIT,
+    hasImagesChanged,
     handleImageSelected,
     handleImageRemove,
     handleImageSizeExceeded,
