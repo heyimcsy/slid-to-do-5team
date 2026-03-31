@@ -2,11 +2,8 @@
 
 import type { LoginBody } from '@/lib/auth/schemas/login';
 import type { User } from '@/lib/auth/schemas/user';
+import type { FieldErrors } from 'react-hook-form';
 
-
-
-import { Suspense, useEffect } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { apiClient, ApiClientError } from '@/lib/apiClient';
 import { getOAuthUserFacingMessageKo } from '@/lib/auth/oauthUserFacingMessage';
 import { toastRhfValidationErrors } from '@/lib/auth/rhfToastValidationError';
@@ -14,6 +11,8 @@ import { loginBodySchema } from '@/lib/auth/schemas/login';
 import { getSafeCallbackPath } from '@/lib/navigation/safeCallbackPath';
 import { authUserStore } from '@/stores/authUserStore';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useCallback, useEffect } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -23,10 +22,6 @@ import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 
 import { AuthFooter, AuthHeader } from '../_components/AuthHeaderFooter';
 import { AuthRHFTextField } from '../_components/AuthRHFTextField';
-
-
-
-
 
 function LoginFormBody() {
   const router = useRouter();
@@ -49,6 +44,14 @@ function LoginFormBody() {
     mode: 'onSubmit',
   });
   const { isSubmitting } = useFormState({ control });
+
+  const toastInvalid = useCallback((errors: FieldErrors<LoginBody>) => {
+    toastRhfValidationErrors(errors, { toastId: 'login-rhf-validation' });
+  }, []);
+
+  const runValidationToast = useCallback(() => {
+    void handleSubmit(() => {}, toastInvalid)();
+  }, [handleSubmit, toastInvalid]);
 
   const onSubmit = async (data: LoginBody) => {
     try {
@@ -83,7 +86,7 @@ function LoginFormBody() {
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit, toastRhfValidationErrors)}
+      onSubmit={handleSubmit(onSubmit, toastInvalid)}
       className="flex w-full flex-col"
       noValidate
     >
@@ -100,6 +103,7 @@ function LoginFormBody() {
             autoComplete="email"
             placeholder="이메일을 입력해 주세요"
             hideValidationMessage
+            onValidateToast={runValidationToast}
           />
         </Field>
         <Field>
@@ -113,6 +117,7 @@ function LoginFormBody() {
             autoComplete="current-password"
             placeholder="비밀번호를 입력해 주세요"
             hideValidationMessage
+            onValidateToast={runValidationToast}
           />
         </Field>
       </FieldGroup>
