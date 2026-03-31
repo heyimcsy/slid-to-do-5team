@@ -1,5 +1,5 @@
-import { PostFormClient } from '../_components/PostFormClient';
+import { PostSubmitClient } from '../_components/PostSubmitClient';
 
 export default function NewPage() {
-  return <PostFormClient mode="create" />;
+  return <PostSubmitClient mode="create" />;
 }
