@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { authUserStore } from '@/stores/authUserStore';
 import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
-import Underline from '@tiptap/extension-underline';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 
@@ -46,7 +45,6 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Underline,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Image,
     ],

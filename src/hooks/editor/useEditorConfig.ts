@@ -3,7 +3,6 @@ import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import { Placeholder } from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
-import Underline from '@tiptap/extension-underline';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 
@@ -37,8 +36,9 @@ export function useEditorConfig({
       },
     },
     extensions: [
-      StarterKit,
-      Underline,
+      StarterKit.configure({
+        link: false,
+      }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       ...(variant === 'note' ? [] : [Image]),
       Link.configure({
