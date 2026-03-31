@@ -17,7 +17,7 @@ export function extractImagesFromContent(contentJson: string): {
     const json = JSON.parse(contentJson) as TiptapDoc;
     const imageUrls: string[] = [];
 
-    const filteredContent = json.content.filter((node) => {
+    const filteredContent = (json.content ?? []).filter((node) => {
       if (
         node.type === 'paragraph' &&
         node.content?.length === 1 &&
