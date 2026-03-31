@@ -8,6 +8,7 @@ import type {
   User,
 } from '../types';
 
+import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
 import {
   keepPreviousData,
@@ -54,6 +55,25 @@ export const useGetPostById = (postId: number) => {
     queryFn: () => apiClient<Post>(`/posts/${postId}`),
     staleTime: 1000 * 60 * 5,
     enabled: Number.isInteger(postId) && postId > 0,
+  });
+};
+
+// 게시물 작성
+export const useCreatePost = () => {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: (post: PostInput) =>
+      apiClient<Post>('/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(post),
+      }),
+    onSuccess: (data) => {
+      queryClient.removeQueries({ queryKey: [...communityQueryKeys.all, 'posts'] });
+      router.replace(`/community/${data.id}`);
+    },
   });
 };
 
