@@ -1,5 +1,6 @@
 'use client';
 
+import { uploadImages } from '../_api/communityApi';
 import { compressImage } from '../_utils/compressImage';
 import { PostFormClient } from './PostFormClient';
 
@@ -11,8 +12,15 @@ interface Props {
 }
 
 export function PostSubmitClient({ mode, postId, initialValues, initialImageUrls }: Props) {
-  const handleSubmit = async (data: { title: string; contentJson: string }, images: File[]) => {
-    const compressedImages = await Promise.all(images.map(compressImage));
+  const handleSubmit = async (
+    data: { title: string; contentJson: string },
+    newFiles: File[],
+    existingUrls: string[],
+  ) => {
+    const compressedFiles = await Promise.all(newFiles.map(compressImage));
+    const newUrls = await Promise.all(compressedFiles.map(uploadImages));
+
+    const finalImageUrls = [...existingUrls, ...newUrls];
 
     if (mode === 'create') {
       // useCreatePost

@@ -37,7 +37,11 @@ interface PostFormClientProps {
   mode: 'create' | 'edit';
   initialValues?: { title: string; content: string };
   initialImageUrls?: string[];
-  onSubmit?: (data: { title: string; contentJson: string }, images: File[]) => Promise<void>;
+  onSubmit?: (
+    data: { title: string; contentJson: string },
+    newFiles: File[],
+    existingUrls: string[],
+  ) => Promise<void>;
 }
 
 export function PostFormClient({
@@ -115,7 +119,13 @@ export function PostFormClient({
       const newFiles = images
         .filter((item): item is Extract<ImageItem, { type: 'new' }> => item.type === 'new')
         .map((item) => item.file);
-      await onSubmit?.({ title, contentJson }, newFiles);
+      const existingUrls = images
+        .filter(
+          (item): item is Extract<ImageItem, { type: 'existing' }> => item.type === 'existing',
+        )
+        .map((item) => item.url);
+
+      await onSubmit?.({ title, contentJson }, newFiles, existingUrls);
     } catch (error) {
       console.error(error);
       toast.error(error instanceof Error ? error.message : '게시물 저장에 실패했습니다.');

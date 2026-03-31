@@ -2,9 +2,9 @@ import type {
   Comment,
   CommentsResponse,
   Post,
+  PostInput,
   PostsResponse,
   SortOption,
-  UpdatePostInput,
   User,
 } from '../types';
 
@@ -62,7 +62,7 @@ export const useUpdatePost = (postId: number) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (updatePost: UpdatePostInput) =>
+    mutationFn: (updatePost: PostInput) =>
       apiClient<Post>(`/posts/${postId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
