@@ -138,7 +138,7 @@ export const useGetComments = (postId: number) => {
     staleTime: 1000 * 60 * 5,
     enabled: Number.isInteger(postId) && postId > 0,
     initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    getNextPageParam: (lastPage) => lastPage?.nextCursor ?? undefined,
   });
 };
 
