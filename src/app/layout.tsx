@@ -9,6 +9,10 @@ import { pretendard } from './fonts';
 
 import './globals.css';
 
+import { ThemeProvider } from 'next-themes';
+
+import { SettingsModal } from '@/components/SettingsModal';
+
 export const metadata: Metadata = {
   title: '슬리드 투두',
   description:
@@ -21,14 +25,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={cn('font-pretendard antialiased', pretendard.variable)}>
-      <body>
+    <html
+      lang="ko"
+      className={cn('font-pretendard antialiased', pretendard.variable)}
+      suppressHydrationWarning
+    >
+      <body suppressHydrationWarning>
         {/*
           Toaster는 React Query 등 AppProviders 내부 리렌더와 분리함
           toast()는 모듈 단위 큐로 동작하므로 형제 배치여도 동일하게 표시됨
         */}
-        <AppProviders>{children}</AppProviders>
-        <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AppProviders>
+            {children}
+            <SettingsModal />
+          </AppProviders>
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

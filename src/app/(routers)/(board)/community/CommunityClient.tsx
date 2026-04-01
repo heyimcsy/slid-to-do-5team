@@ -2,9 +2,10 @@
 
 import type { Post, SortOption } from './types';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
 import { Icon } from '@/components/icon/Icon';
 
@@ -13,7 +14,7 @@ import { FeaturedPostCard } from './_components/FeaturedPostCard';
 import { PostEmptyState } from './_components/PostEmptyState';
 import { PostErrorFallback } from './_components/PostErrorFallback';
 import { PostListItem } from './_components/PostListItem';
-import { PostListItemSkeleton, PostListSkeleton } from './_components/PostListSkeleton';
+import { PostListSkeleton } from './_components/PostListSkeleton';
 import { PostSearchBar } from './_components/PostSearchBar';
 import { extractPlainText } from './_utils/extractPlainText';
 
@@ -44,20 +45,12 @@ export default function CommunityClient() {
     [data],
   );
 
-  const observerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage && !search) {
-          fetchNextPage();
-        }
-      },
-      { threshold: 0.1 },
-    );
-    if (observerRef.current) observer.observe(observerRef.current);
-    return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  const { observerRef } = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    enabled: !search,
+  });
 
   const featuredPosts = useMemo(
     () => [...posts].sort((a, b) => b.viewCount - a.viewCount).slice(0, 3),
@@ -131,7 +124,6 @@ export default function CommunityClient() {
             </div>
 
             <div ref={observerRef} className="h-4" />
-            {!search && isFetchingNextPage && <PostListItemSkeleton />}
             {!search && !hasNextPage && posts.length > 0 && (
               <p className="py-6 text-center text-sm text-gray-400">모든 게시물을 불러왔습니다.</p>
             )}
@@ -144,7 +136,7 @@ export default function CommunityClient() {
         aria-label="게시물 작성하기"
         className="fixed right-4 bottom-8 flex size-[52px] items-center justify-center rounded-full bg-orange-500 shadow-lg md:right-8 md:size-auto md:gap-1 md:px-[18px] md:py-3.5"
       >
-        <Icon name="plus" size={24} variant="white" />
+        <Icon name="plus" size={24} />
         <span className="hidden text-lg font-semibold text-white md:block">게시물 작성하기</span>
       </Link>
     </div>

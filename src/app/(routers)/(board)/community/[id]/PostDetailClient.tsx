@@ -1,24 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import NextImage from 'next/image';
 import { useRouter } from 'next/navigation';
+import { authUserStore } from '@/stores/authUserStore';
 import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
-import Underline from '@tiptap/extension-underline';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 
 import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { KebabMenu } from '@/components/common/KebabMenu';
 
-import {
-  useDeletePost,
-  useGetComments,
-  useGetPostById,
-  useGetUser,
-} from '../_api/communityQueries';
+import { useDeletePost, useGetComments, useGetPostById } from '../_api/communityQueries';
 import { PostErrorFallback } from '../_components/PostErrorFallback';
 import { WriterAvatar } from '../_components/WriterAvatar';
+import { extractImagesFromContent } from '../_utils/extractImagesFromContent';
 import { formatDate } from '../_utils/formatDate';
 import { CommentSection } from './_components/CommentSection';
 import { PostDetailSkeleton } from './_components/PostDetailSkeleton';
@@ -28,16 +25,13 @@ interface PostDetailClientProps {
 }
 
 export function PostDetailClient({ postId }: PostDetailClientProps) {
+  useGetComments(postId);
   const { data: post, isLoading: isPostLoading, isError, refetch } = useGetPostById(postId);
-  const {
-    data: comments,
-    isLoading: isCommentsLoading,
-    isError: isCommentsError,
-    refetch: refetchComments,
-  } = useGetComments(postId);
-  const { data: user } = useGetUser();
+  const user = authUserStore((state) => state.user);
+  const userId = Number(user?.id);
+
   const { mutate: deletePost, isPending: isPostDeleting } = useDeletePost();
-  const isWriter = user?.id === post?.userId;
+  const isWriter = userId === post?.userId;
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isCommentBusy, setIsCommentBusy] = useState(false);
@@ -46,42 +40,35 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
   const router = useRouter();
 
   const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Underline,
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      Image,
-    ],
+    extensions: [StarterKit, TextAlign.configure({ types: ['heading', 'paragraph'] }), Image],
     content: '',
     editable: false,
     immediatelyRender: false,
   });
 
+  const { contentWithoutImages, imageUrls } = useMemo(
+    () =>
+      post ? extractImagesFromContent(post.content) : { contentWithoutImages: '', imageUrls: [] },
+    [post],
+  );
+
   useEffect(() => {
     if (editor && post) {
       try {
-        editor.commands.setContent(JSON.parse(post.content));
+        editor.commands.setContent(JSON.parse(contentWithoutImages));
       } catch {
-        editor.commands.setContent(post.content ?? '');
+        editor.commands.setContent(contentWithoutImages ?? '');
       }
       setContentReady(true);
     }
-  }, [editor, post]);
+  }, [editor, post, contentWithoutImages]);
 
-  if ((isError && !post) || (isCommentsError && !comments))
-    return (
-      <PostErrorFallback
-        onRetry={() => {
-          void refetch();
-          void refetchComments();
-        }}
-      />
-    );
-  if (isPostLoading || isCommentsLoading) return <PostDetailSkeleton />;
+  if (isError && !post) return <PostErrorFallback onRetry={refetch} />;
+  if (isPostLoading) return <PostDetailSkeleton />;
   if (!post) return <PostErrorFallback onRetry={refetch} />;
   if (!contentReady) return <PostDetailSkeleton />;
 
-  const { title, viewCount, createdAt, writer } = post;
+  const { title, viewCount, createdAt, writer, commentCount } = post;
 
   const kebabItems = [
     { label: '수정하기', onClick: () => router.push(`/community/${postId}/edit`) },
@@ -123,6 +110,22 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
                 className="mt-6 [&_img]:mt-4 [&_img]:h-auto [&_img]:w-full [&_img]:max-w-[232px] [&_img]:rounded-[20px]"
               />
 
+              {imageUrls.length > 0 && (
+                <div className="mt-4 flex gap-2">
+                  {imageUrls.map((url, i) => (
+                    <div key={i} className="relative size-[150px] shrink-0 md:size-[232px]">
+                      <NextImage
+                        src={url}
+                        alt={`첨부 이미지 ${i + 1}`}
+                        fill
+                        unoptimized
+                        className="rounded-xl object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <div className="font-xs-regular mt-4 flex gap-1 text-gray-400">
                 <span>{formatDate(createdAt)}</span>
                 <span>·</span>
@@ -132,9 +135,9 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
 
             <CommentSection
               postId={postId}
-              comments={comments}
-              userId={user?.id}
-              isBusy={isBusy}
+              totalCount={commentCount}
+              userId={userId}
+              isPostDeleting={isPostDeleting}
               onPendingChange={setIsCommentBusy}
             />
           </div>

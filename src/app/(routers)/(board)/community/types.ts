@@ -42,15 +42,6 @@ export interface PostInput {
   image?: string | null;
 }
 
-export interface User {
-  id: number;
-  email: string;
-  name: string;
-  image: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface CommentsResponse {
   comments: Comment[];
   nextCursor: string | null;

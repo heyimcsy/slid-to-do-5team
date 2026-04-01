@@ -1,19 +1,44 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { authUserStore } from '@/stores/authUserStore';
+import { toast } from 'sonner';
+
 import { uploadImage } from '../_api/communityApi';
-import { useCreatePost } from '../_api/communityQueries';
+import { useCreatePost, useGetPostById, useUpdatePost } from '../_api/communityQueries';
 import { compressImage } from '../_utils/compressImage';
+import { extractImagesFromContent } from '../_utils/extractImagesFromContent';
 import { PostFormClient } from './PostFormClient';
 
 interface Props {
   mode: 'create' | 'edit';
   postId?: number;
-  initialValues?: { title: string; content: string };
-  initialImageUrls?: string[];
 }
 
-export function PostSubmitClient({ mode, postId: _postId, initialValues, initialImageUrls }: Props) {
+export function PostSubmitClient({ mode, postId }: Props) {
+  const router = useRouter();
+
+  const { data: post } = useGetPostById(postId ?? 0);
+  const user = authUserStore((state) => state.user);
+  const userId = Number(user?.id);
+
   const { mutateAsync: createPost } = useCreatePost();
+  const { mutateAsync: updatePost } = useUpdatePost(postId ?? 0);
+
+  useEffect(() => {
+    if (mode === 'edit' && post && user && post.userId !== userId) {
+      toast.error('본인이 작성한 게시물만 수정할 수 있습니다.', { id: 'unauthorized' });
+      router.replace('/community');
+    }
+  }, [mode, post, userId, router]);
+
+  if (mode === 'edit' && !post) return null;
+  if (mode === 'edit' && post && user && post.userId !== userId) return null;
+
+  const { contentWithoutImages, imageUrls } = post
+    ? extractImagesFromContent(post.content)
+    : { contentWithoutImages: undefined, imageUrls: [] };
 
   const handleSubmit = async (
     data: { title: string; contentJson: string },
@@ -53,15 +78,15 @@ export function PostSubmitClient({ mode, postId: _postId, initialValues, initial
     if (mode === 'create') {
       await createPost(payload);
     } else {
-      // useUpdatePost
+      await updatePost(payload);
     }
   };
 
   return (
     <PostFormClient
       mode={mode}
-      initialImageUrls={initialImageUrls}
-      initialValues={initialValues}
+      initialValues={post ? { title: post.title, content: contentWithoutImages! } : undefined}
+      initialImageUrls={imageUrls}
       onSubmit={handleSubmit}
     />
   );
