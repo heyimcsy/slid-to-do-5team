@@ -46,6 +46,8 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
+  --color-white:var(--white);
+  --color-black:var(--black);
   --color-gray-50: var(--gray-50);
   --color-gray-100: var(--gray-100);
   --color-gray-200: var(--gray-200);
@@ -110,6 +112,8 @@ body {
   --sidebar-accent-foreground: oklch(0.58 0.182 38.9);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --white: oklch(1 0 0);
+  --black: oklch(0.145 0 0);
   --gray-50: oklch(0.982 0 0);
   --gray-100: oklch(0.953 0 0);
   --gray-200: oklch(0.878 0 0);
@@ -168,6 +172,8 @@ body {
   --sidebar-accent-foreground: oklch(0.982 0.023 89.9);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --white: oklch(0.145 0 0);
+  --black: oklch(1 0 0);
   /* Gray — 완전 반전 */
   --gray-50: oklch(0.098 0 0);
   --gray-100: oklch(0.181 0 0);
