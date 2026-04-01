@@ -67,6 +67,22 @@ describe('proxy', () => {
       expect(res.status).toBe(200);
     });
 
+    it('루트 "/" + access 또는 refresh 있음 → redirect /dashboard', () => {
+      const reqAccess = createRequest('/', { access: 'valid-token' });
+      expect(proxy(reqAccess).headers.get('location')).toMatch(/\/dashboard$/);
+      expect(proxy(reqAccess).status).toBe(307);
+
+      const reqRefresh = createRequest('/', { refresh: 'refresh-only' });
+      expect(proxy(reqRefresh).headers.get('location')).toMatch(/\/dashboard$/);
+      expect(proxy(reqRefresh).status).toBe(307);
+    });
+
+    it('루트 "/" + 토큰 없음 → next()', () => {
+      const req = createRequest('/');
+      const res = proxy(req);
+      expect(res.status).toBe(200);
+    });
+
     it('비공개 path + 토큰 없음 → redirect /login + callbackUrl', () => {
       const prev = process.env.NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED;
       process.env.NEXT_PUBLIC_AUTH_ROUTE_GUARD_ENABLED = 'true';
