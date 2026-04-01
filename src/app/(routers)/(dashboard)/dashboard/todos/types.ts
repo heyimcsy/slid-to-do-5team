@@ -18,4 +18,5 @@ export interface Task {
   goal: Pick<Goal, 'id' | 'title'>;
   noteIds: number[];
   tags: Tag[];
+  favorites: boolean;
 }

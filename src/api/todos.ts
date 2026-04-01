@@ -81,7 +81,7 @@ export type TodosWithFavoriteResponse = PaginatedResponse<TodoWithFavorites, 'to
 // usePostTodo 타입
 type CreateTodoPayload = Pick<Todo, 'title' | 'goalId' | 'dueDate'> &
   Partial<Pick<Todo, 'linkUrl' | 'fileUrl'>> & {
-    tags?: { name: string }[];
+    tags?: string[];
   };
 
 export const useGetTodos = ({ goalId, done, limit, cursor }: GetTodosParams) => {
@@ -133,7 +133,9 @@ export const useGetTodo = ({ id }: { id: number }) => {
 };
 
 type PatchTodoPayload = Pick<Todo, 'id'> &
-  Partial<Pick<Todo, 'title' | 'done' | 'linkUrl' | 'tags' | 'dueDate' | 'fileUrl'>>;
+  Partial<Pick<Todo, 'title' | 'done' | 'linkUrl' | 'dueDate' | 'fileUrl'>> & {
+    tags?: string[];
+  };
 
 export const usePatchTodos = () => {
   const queryClient = useQueryClient();
@@ -213,12 +215,50 @@ export const usePostTodo = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: CreateTodoPayload) => {
-      return await apiClient<Todo>(TODOS_URL, {
-        method: 'POST',
-        body: payload,
+      return await apiClient<Todo>(TODOS_URL, { method: 'POST', body: payload });
+    },
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({ queryKey: [TODOS] });
+      const previousTodos = queryClient.getQueriesData({ queryKey: [TODOS] });
+
+      // API 응답 전에 캐시에 즉시 추가
+      queryClient.setQueriesData(
+        { queryKey: [TODOS] },
+        (old: PaginatedResponse<TodoWithFavorites, 'todos'>) => {
+          if (!old) return old;
+          const optimisticTodo: TodoWithFavorites = {
+            id: Date.now(), // 임시 id
+            teamId: '',
+            userId: 0,
+            goalId: payload.goalId,
+            title: payload.title,
+            done: false,
+            fileUrl: null,
+            linkUrl: payload.linkUrl ?? null,
+            dueDate: payload.dueDate,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            goal: { id: payload.goalId, title: '' },
+            noteIds: [],
+            tags: [],
+            favorites: false,
+          };
+          return {
+            ...old,
+            todos: [optimisticTodo, ...old.todos],
+            totalCount: old.totalCount + 1,
+          };
+        },
+      );
+
+      return { previousTodos };
+    },
+    onError: (_, __, context) => {
+      context?.previousTodos.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
       });
     },
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [TODOS] });
     },
   });
