@@ -1,29 +1,36 @@
 'use client';
 
-import type { CommentsResponse } from '../../types';
+import type { Comment } from '../../types';
 
 import { useEffect, useState } from 'react';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
 import { useCreateComment, useDeleteComment } from '../../_api/communityQueries';
 import { CommentItem } from './CommentItem';
 
 interface CommentSectionProps {
   postId: number;
-  comments: CommentsResponse | undefined;
+  comments: Comment[];
+  totalCount: number;
   userId: number | undefined;
   isBusy?: boolean;
   onPendingChange?: (isPending: boolean) => void;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  fetchNextPage: () => void;
 }
 
 export function CommentSection({
   postId,
   comments,
+  totalCount,
   userId,
   isBusy = false,
   onPendingChange,
+  hasNextPage,
+  isFetchingNextPage,
+  fetchNextPage,
 }: CommentSectionProps) {
-  const commentList = comments?.comments ?? [];
-  const totalCount = comments?.totalCount ?? 0;
   const [inputValue, setInputValue] = useState('');
   const { mutate: createComment, isPending: isCreating } = useCreateComment(postId);
   const { mutate: deleteComment, isPending: isDeleting } = useDeleteComment(postId);
@@ -31,6 +38,12 @@ export function CommentSection({
   useEffect(() => {
     onPendingChange?.(isCreating || isDeleting);
   }, [isCreating, isDeleting, onPendingChange]);
+
+  const { observerRef } = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  });
 
   const handleSubmit = () => {
     if (!inputValue.trim() || isCreating) return;
@@ -75,7 +88,7 @@ export function CommentSection({
       </div>
 
       <ul className="flex flex-col gap-8 md:gap-10">
-        {commentList.map((comment) => (
+        {comments.map((comment) => (
           <CommentItem
             key={comment.id}
             comment={comment}
@@ -85,6 +98,7 @@ export function CommentSection({
           />
         ))}
       </ul>
+      <div ref={observerRef} className="h-4" />
     </div>
   );
 }

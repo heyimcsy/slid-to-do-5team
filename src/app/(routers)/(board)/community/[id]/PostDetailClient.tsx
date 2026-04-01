@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import type { Comment } from '../types';
+
+import { useEffect, useMemo, useState } from 'react';
 import NextImage from 'next/image';
 import { useRouter } from 'next/navigation';
 import { authUserStore } from '@/stores/authUserStore';
@@ -27,20 +29,29 @@ interface PostDetailClientProps {
 export function PostDetailClient({ postId }: PostDetailClientProps) {
   const { data: post, isLoading: isPostLoading, isError, refetch } = useGetPostById(postId);
   const {
-    data: comments,
+    data: commentsData,
     isLoading: isCommentsLoading,
     isError: isCommentsError,
+    isFetching: isCommentsFetching,
     refetch: refetchComments,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
   } = useGetComments(postId);
   const user = authUserStore((state) => state.user);
   const userId = Number(user?.id);
+
+  const comments: Comment[] = useMemo(() => {
+    const all = (commentsData?.pages ?? []).flatMap((page) => page.comments);
+    return Array.from(new Map(all.map((c) => [c.id, c])).values());
+  }, [commentsData]);
 
   const { mutate: deletePost, isPending: isPostDeleting } = useDeletePost();
   const isWriter = userId === post?.userId;
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isCommentBusy, setIsCommentBusy] = useState(false);
-  const isBusy = isCommentBusy || isPostDeleting;
+  const isBusy = isCommentBusy || isPostDeleting || isCommentsFetching;
   const [contentReady, setContentReady] = useState(false);
   const router = useRouter();
 
@@ -79,7 +90,7 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
   if (!post) return <PostErrorFallback onRetry={refetch} />;
   if (!contentReady) return <PostDetailSkeleton />;
 
-  const { title, viewCount, createdAt, writer } = post;
+  const { title, viewCount, createdAt, writer, commentCount } = post;
 
   const kebabItems = [
     { label: '수정하기', onClick: () => router.push(`/community/${postId}/edit`) },
@@ -147,9 +158,13 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
             <CommentSection
               postId={postId}
               comments={comments}
+              totalCount={commentCount}
               userId={userId}
               isBusy={isBusy}
               onPendingChange={setIsCommentBusy}
+              fetchNextPage={fetchNextPage}
+              hasNextPage={hasNextPage}
+              isFetchingNextPage={isFetchingNextPage}
             />
           </div>
         </div>
