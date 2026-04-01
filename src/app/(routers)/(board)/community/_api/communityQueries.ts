@@ -5,7 +5,6 @@ import type {
   PostInput,
   PostsResponse,
   SortOption,
-  User,
 } from '../types';
 
 import { useRouter } from 'next/navigation';
@@ -21,14 +20,6 @@ import {
 import { communityQueryKeys } from './communityQueryKeys';
 
 const toApiType = (sort: SortOption): 'all' | 'best' => (sort === '인기순' ? 'best' : 'all');
-
-export const useGetUser = () => {
-  return useQuery({
-    queryKey: ['user', 'me'],
-    queryFn: () => apiClient<User>('/users/me'),
-    staleTime: 1000 * 60 * 10,
-  });
-};
 
 // 게시물 목록 조회
 export const useGetPosts = (sort: SortOption = '최신순', isSearchMode: boolean = false) => {
@@ -85,21 +76,21 @@ export const useCreatePost = () => {
 // 게시물 수정
 export const useUpdatePost = (postId: number) => {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
-  const mutation = useMutation({
+  return useMutation({
     mutationFn: (updatePost: PostInput) =>
       apiClient<Post>(`/posts/${postId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatePost),
       }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: communityQueryKeys.post(postId) });
-      queryClient.invalidateQueries({ queryKey: [...communityQueryKeys.all, 'posts'] });
+    onSuccess: (data) => {
+      queryClient.setQueryData(communityQueryKeys.post(data.id), data);
+      queryClient.removeQueries({ queryKey: [...communityQueryKeys.all, 'posts'] });
+      router.replace(`/community/${data.id}`);
     },
   });
-
-  return { ...mutation };
 };
 
 // 게시물 삭제

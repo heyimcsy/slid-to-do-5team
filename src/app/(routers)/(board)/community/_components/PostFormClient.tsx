@@ -1,28 +1,25 @@
 'use client';
 
-import type { Editor } from '@tiptap/react';
-
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useEditorConfig } from '@/hooks/editor';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { EditorContent } from '@tiptap/react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { DeleteIcon } from '@/components/icon/icons/Delete';
 import { Toolbar } from '@/components/Toolbar';
 import { Spinner } from '@/components/ui/spinner';
 
+import { usePostEditor } from '../_hooks/usePostEditor';
+import { usePostImages } from '../_hooks/usePostImages';
 import { DesktopPostHeader } from './DesktopPostHeader';
 import { MobilePostHeader } from './MobilePostHeader';
 
 const TITLE_MAX_LENGTH = 30;
-const IMAGE_LIMIT = 2;
-
-const isEditorFilled = (editor: Editor) => !editor.isEmpty && editor.getText().trim().length > 0;
 
 const postSchema = z.object({
   title: z
@@ -32,7 +29,6 @@ const postSchema = z.object({
 });
 
 type PostFormValues = z.infer<typeof postSchema>;
-type ImageItem = { type: 'existing'; url: string } | { type: 'new'; url: string; file: File };
 
 interface PostFormClientProps {
   mode: 'create' | 'edit';
@@ -52,29 +48,28 @@ export function PostFormClient({
   onSubmit,
 }: PostFormClientProps) {
   const router = useRouter();
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
 
-  const [images, setImages] = useState<ImageItem[]>(
-    initialImageUrls.map((url) => ({ type: 'existing', url })),
-  );
-  const imagesRef = useRef(images);
+  const { editor, hasEditorContent, hasEditorChanged, contentText, charCountWithoutSpaces } = usePostEditor({
+    initialContent: initialValues?.content,
+  });
 
-  useEffect(() => {
-    imagesRef.current = images;
-  }, [images]);
-
-  useEffect(() => {
-    return () => {
-      imagesRef.current.forEach((item) => {
-        if (item.type === 'new') URL.revokeObjectURL(item.url);
-      });
-    };
-  }, []);
+  const {
+    images,
+    IMAGE_LIMIT,
+    hasImagesChanged,
+    handleImageSelected,
+    handleImageRemove,
+    handleImageSizeExceeded,
+    handleImageLimitExceeded,
+  } = usePostImages(initialImageUrls);
 
   const {
     register,
     handleSubmit,
     watch,
-    formState: { isSubmitting },
+    formState: { isSubmitting, isDirty },
   } = useForm<PostFormValues>({
     resolver: zodResolver(postSchema),
     defaultValues: { title: initialValues?.title ?? '' },
@@ -83,33 +78,10 @@ export function PostFormClient({
 
   const titleValue = watch('title');
 
-  const editor = useEditorConfig({
-    content: initialValues?.content,
-    variant: 'post',
-    placeholder: '이 곳을 통해 내용을 작성해주세요',
-  });
-
-  const [hasEditorContent, setHasEditorContent] = useState(false);
-  const [contentText, setContentText] = useState('');
-
-  useEffect(() => {
-    if (!editor) return;
-    setHasEditorContent(isEditorFilled(editor));
-    setContentText(editor.getText());
-
-    const onUpdate = () => {
-      setHasEditorContent(isEditorFilled(editor));
-      setContentText(editor.getText());
-    };
-    editor.on('update', onUpdate);
-    return () => {
-      editor.off('update', onUpdate);
-    };
-  }, [editor]);
-
-  const charCountWithoutSpaces = contentText.replace(/\s/g, '').length;
-
-  const isSubmitDisabled = !titleValue.trim() || !editor || !hasEditorContent || isSubmitting;
+  const hasChanged = isDirty || hasEditorChanged || hasImagesChanged;
+  const isSubmitDisabled =
+    !titleValue.trim() || !editor || !hasEditorContent || isSubmitting ||
+    (mode === 'edit' && !hasChanged);
   const headerTitle = mode === 'create' ? '게시물 작성하기' : '게시물 수정하기';
   const submitLabel = mode === 'create' ? '등록' : '수정';
 
@@ -118,11 +90,11 @@ export function PostFormClient({
     try {
       const contentJson = JSON.stringify(editor.getJSON());
       const newFiles = images
-        .filter((item): item is Extract<ImageItem, { type: 'new' }> => item.type === 'new')
+        .filter((item): item is Extract<typeof item, { type: 'new' }> => item.type === 'new')
         .map((item) => item.file);
       const existingUrls = images
         .filter(
-          (item): item is Extract<ImageItem, { type: 'existing' }> => item.type === 'existing',
+          (item): item is Extract<typeof item, { type: 'existing' }> => item.type === 'existing',
         )
         .map((item) => item.url);
 
@@ -132,34 +104,6 @@ export function PostFormClient({
       toast.error(error instanceof Error ? error.message : '게시물 저장에 실패했습니다.');
     }
   });
-
-  const handleImageSizeExceeded = useCallback(() => {
-    toast.error('이미지 크기는 10MB를 초과할 수 없습니다.');
-  }, []);
-
-  const handleImageLimitExceeded = useCallback(() => {
-    toast.error(`이미지는 최대 ${IMAGE_LIMIT}개까지 첨부할 수 있습니다.`);
-  }, []);
-
-  const handleImageSelected = useCallback(
-    (file: File) => {
-      if (images.length >= IMAGE_LIMIT) {
-        handleImageLimitExceeded();
-        return;
-      }
-      const url = URL.createObjectURL(file);
-      setImages((prev) => [...prev, { type: 'new', url, file }]);
-    },
-    [images.length, handleImageLimitExceeded],
-  );
-
-  const handleImageRemove = (index: number) => {
-    setImages((prev) => {
-      const item = prev[index];
-      if (item.type === 'new') URL.revokeObjectURL(item.url);
-      return prev.filter((_, i) => i !== index);
-    });
-  };
 
   const toolbar = useMemo(
     () => (
@@ -181,9 +125,27 @@ export function PostFormClient({
       onSubmit={handleFormSubmit}
       className="flex h-[calc(100dvh-68px)] w-full flex-col overflow-hidden bg-gray-100 md:h-dvh"
     >
+      <DeleteDialog
+        open={cancelDialogOpen}
+        onOpenChange={setCancelDialogOpen}
+        title="작성을 취소하시겠습니까?"
+        description="작성 중인 내용이 저장되지 않습니다."
+        onConfirm={() => router.back()}
+      />
+      <DeleteDialog
+        open={submitDialogOpen}
+        onOpenChange={setSubmitDialogOpen}
+        title={mode === 'create' ? '게시물을 등록하시겠습니까?' : '게시물을 수정하시겠습니까?'}
+        description="등록 후에도 수정이 가능합니다."
+        onConfirm={() => {
+          setSubmitDialogOpen(false);
+          handleFormSubmit();
+        }}
+      />
       <MobilePostHeader
         isSubmitDisabled={isSubmitDisabled}
-        onCancel={() => router.back()}
+        onCancel={() => setCancelDialogOpen(true)}
+        onSubmitClick={() => setSubmitDialogOpen(true)}
         headerTitle={headerTitle}
         submitLabel={submitLabel}
         toolbar={toolbar}
@@ -192,7 +154,8 @@ export function PostFormClient({
         <div className="mx-auto w-full px-8 pt-8 md:max-w-[636px] lg:max-w-[768px]">
           <DesktopPostHeader
             isSubmitDisabled={isSubmitDisabled}
-            onCancel={() => router.back()}
+            onCancel={() => setCancelDialogOpen(true)}
+            onSubmitClick={() => setSubmitDialogOpen(true)}
             headerTitle={headerTitle}
             submitLabel={submitLabel}
           />
