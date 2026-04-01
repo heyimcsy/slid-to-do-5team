@@ -62,9 +62,11 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
     immediatelyRender: false,
   });
 
-  const { contentWithoutImages, imageUrls } = post
-    ? extractImagesFromContent(post.content)
-    : { contentWithoutImages: '', imageUrls: [] };
+  const { contentWithoutImages, imageUrls } = useMemo(
+    () =>
+      post ? extractImagesFromContent(post.content) : { contentWithoutImages: '', imageUrls: [] },
+    [post],
+  );
 
   useEffect(() => {
     if (editor && post) {
@@ -77,7 +79,7 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
     }
   }, [editor, post]);
 
-  if ((isError && !post) || (isCommentsError && !comments))
+  if ((isError && !post) || isCommentsError)
     return (
       <PostErrorFallback
         onRetry={() => {
