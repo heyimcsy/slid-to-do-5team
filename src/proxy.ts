@@ -190,7 +190,8 @@ export async function forwardToBackend(request: Request, path: string): Promise<
   if (method !== 'GET' && method !== 'HEAD' && request.body) {
     const buf = await request.arrayBuffer();
     if (buf.byteLength > 0) {
-      body = buf;
+      /** 원본 AB는 런타임에 detached 될 수 있음 — undici 업스트림 fetch가 slice 시 실패(Vercel). */
+      body = Buffer.from(buf);
     }
   }
 
