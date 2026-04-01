@@ -258,7 +258,7 @@ describe('proxy', () => {
       expect(calledUrl).toContain('sort=desc');
     });
 
-    it('바디 있음(multipart 등) → upstream fetch에 ArrayBuffer 바디(스트림·duplex 미사용)', async () => {
+    it('바디 있음(multipart 등) → upstream fetch에 Uint8Array 복사본(Edge 호환·duplex 미사용)', async () => {
       (globalThis.fetch as jest.Mock).mockResolvedValue(
         new Response(JSON.stringify({ ok: true }), { status: 200 }),
       );
@@ -280,7 +280,7 @@ describe('proxy', () => {
         duplex?: string;
       };
       expect(fetchOpts.duplex).toBeUndefined();
-      expect(fetchOpts.body).toBeInstanceOf(ArrayBuffer);
+      expect(fetchOpts.body).toBeInstanceOf(Uint8Array);
       expect(fetchOpts.body).not.toBeUndefined();
       expect(globalThis.fetch).toHaveBeenCalledWith(
         expect.stringContaining('/upload'),
@@ -313,7 +313,7 @@ describe('proxy', () => {
         expect.stringMatching(/\/goals$/),
         expect.objectContaining({
           method: 'POST',
-          body: expect.any(ArrayBuffer),
+          body: expect.any(Uint8Array),
         }),
       );
 
@@ -325,9 +325,9 @@ describe('proxy', () => {
       expect(upstreamHeaders.get('Accept-Encoding')).toBe('identity');
       expect(upstreamHeaders.get('Authorization')).toMatch(/^Bearer /);
 
-      const buf = fetchOpts.body as ArrayBuffer;
-      expect(buf).toBeDefined();
-      const forwardedJson = JSON.parse(Buffer.from(buf).toString('utf8'));
+      const u8 = fetchOpts.body as Uint8Array;
+      expect(u8).toBeDefined();
+      const forwardedJson = JSON.parse(new TextDecoder().decode(u8));
       expect(forwardedJson).toEqual(payload);
     });
 
