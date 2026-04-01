@@ -14,6 +14,11 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '*.googleusercontent.com' },
       { protocol: 'https', hostname: '*.kakaocdn.net' },
       { protocol: 'http', hostname: '*.kakaocdn.net' },
+      {
+        protocol: 'https',
+        hostname: 'sprint-fe-project.s3.ap-northeast-2.amazonaws.com',
+        pathname: '/slid-todo/**',
+      },
     ],
   },
 };
