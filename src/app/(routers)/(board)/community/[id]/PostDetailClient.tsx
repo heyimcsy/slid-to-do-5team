@@ -1,7 +1,5 @@
 'use client';
 
-import type { Comment } from '../types';
-
 import { useEffect, useMemo, useState } from 'react';
 import NextImage from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -27,31 +25,17 @@ interface PostDetailClientProps {
 }
 
 export function PostDetailClient({ postId }: PostDetailClientProps) {
+  useGetComments(postId);
   const { data: post, isLoading: isPostLoading, isError, refetch } = useGetPostById(postId);
-  const {
-    data: commentsData,
-    isLoading: isCommentsLoading,
-    isError: isCommentsError,
-    isFetching: isCommentsFetching,
-    refetch: refetchComments,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useGetComments(postId);
   const user = authUserStore((state) => state.user);
   const userId = Number(user?.id);
-
-  const comments: Comment[] = useMemo(() => {
-    const all = (commentsData?.pages ?? []).flatMap((page) => page.comments);
-    return Array.from(new Map(all.map((c) => [c.id, c])).values());
-  }, [commentsData]);
 
   const { mutate: deletePost, isPending: isPostDeleting } = useDeletePost();
   const isWriter = userId === post?.userId;
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isCommentBusy, setIsCommentBusy] = useState(false);
-  const isBusy = isCommentBusy || isPostDeleting || isCommentsFetching;
+  const isBusy = isCommentBusy || isPostDeleting;
   const [contentReady, setContentReady] = useState(false);
   const router = useRouter();
 
@@ -77,18 +61,10 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
       }
       setContentReady(true);
     }
-  }, [editor, post]);
+  }, [editor, post, contentWithoutImages]);
 
-  if ((isError && !post) || isCommentsError)
-    return (
-      <PostErrorFallback
-        onRetry={() => {
-          void refetch();
-          void refetchComments();
-        }}
-      />
-    );
-  if (isPostLoading || isCommentsLoading) return <PostDetailSkeleton />;
+  if (isError && !post) return <PostErrorFallback onRetry={refetch} />;
+  if (isPostLoading) return <PostDetailSkeleton />;
   if (!post) return <PostErrorFallback onRetry={refetch} />;
   if (!contentReady) return <PostDetailSkeleton />;
 
@@ -159,14 +135,10 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
 
             <CommentSection
               postId={postId}
-              comments={comments}
               totalCount={commentCount}
               userId={userId}
-              isBusy={isBusy}
+              isPostDeleting={isPostDeleting}
               onPendingChange={setIsCommentBusy}
-              fetchNextPage={fetchNextPage}
-              hasNextPage={hasNextPage}
-              isFetchingNextPage={isFetchingNextPage}
             />
           </div>
         </div>
