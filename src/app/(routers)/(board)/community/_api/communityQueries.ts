@@ -64,8 +64,8 @@ export const useCreatePost = () => {
     onSuccess: (data) => {
       queryClient.setQueryData(communityQueryKeys.post(data.id), data);
       queryClient.setQueryData(communityQueryKeys.comments(data.id), {
-        comments: [],
-        totalCount: 0,
+        pages: [{ comments: [], totalCount: 0, nextCursor: null }],
+        pageParams: [undefined],
       });
       queryClient.removeQueries({ queryKey: [...communityQueryKeys.all, 'posts'] });
       router.replace(`/community/${data.id}`);
@@ -129,11 +129,16 @@ export const useCreateComment = (postId: number) => {
 
 // 댓글 목록 조회
 export const useGetComments = (postId: number) => {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: communityQueryKeys.comments(postId),
-    queryFn: () => apiClient<CommentsResponse>(`/posts/${postId}/comments`),
+    queryFn: ({ pageParam }) =>
+      apiClient<CommentsResponse>(
+        `/posts/${postId}/comments?limit=5${pageParam ? `&cursor=${pageParam}` : ''}`,
+      ),
     staleTime: 1000 * 60 * 5,
     enabled: Number.isInteger(postId) && postId > 0,
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
 };
 
