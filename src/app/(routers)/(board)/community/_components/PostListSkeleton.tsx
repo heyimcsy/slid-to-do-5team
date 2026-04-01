@@ -21,18 +21,17 @@ export function PostListItemSkeleton() {
         </div>
         <Skeleton variant="gray" className="h-4 w-1/2" />
       </div>
-      <Skeleton variant="gray" className="size-[72px] shrink-0 rounded-[12px] md:size-[120px] md:rounded-[16px]" />
+      <Skeleton
+        variant="gray"
+        className="size-[72px] shrink-0 rounded-[12px] md:size-[120px] md:rounded-[16px]"
+      />
     </div>
   );
 }
 
 export function PostListSkeleton() {
   return (
-    <div
-      className="h-full w-full bg-gray-100 px-4 py-6 md:px-8 md:py-12"
-      aria-busy="true"
-      aria-label="게시물 목록 로딩 중"
-    >
+    <div className="h-full w-full bg-gray-100 px-4 py-6 md:px-8 md:py-12" aria-busy="true">
       <div className="mx-auto w-full max-w-[1200px]">
         <Skeleton variant="gray" className="mb-6 h-8 w-40 md:mb-8" />
 
