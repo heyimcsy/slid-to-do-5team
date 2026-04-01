@@ -25,6 +25,7 @@ export { isPublicPath, PUBLIC_PATHS } from '@/lib/navigation/publicPaths';
 
 /**
  * @description proxy - Next.js 16 라우트 보호 (proxy.ts = 구 middleware.ts)
+ * @note `/` + access·refresh 중 하나라도 있으면 `/dashboard`로 리다이렉트(랜딩 스킵).
  * @note access만 없고 refresh가 있으면 **통과** — 세션 복구 가능(클라이언트 `POST /api/auth/refresh` 등으로 access 재발급).
  *       둘 다 없을 때만 로그인으로 보냄.
  * @param request - NextRequest
@@ -35,6 +36,14 @@ export function proxy(request: NextRequest) {
   const refreshCookie = request.cookies.get(AUTH_CONFIG.REFRESH_TOKEN_KEY);
   const { pathname } = request.nextUrl;
 
+  const hasAccess = Boolean(accessCookie?.value);
+  const hasRefresh = Boolean(refreshCookie?.value);
+
+  /** 랜딩(`/`)은 공개지만, 세션 쿠키가 있으면 대시보드로 (미들웨어에서 `proxy` 호출 시) */
+  if (pathname === '/' && (hasAccess || hasRefresh)) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
   if (isPublicPath(pathname)) {
     return NextResponse.next();
   }
@@ -42,9 +51,6 @@ export function proxy(request: NextRequest) {
   if (!isAuthRouteGuardEnabled()) {
     return NextResponse.next();
   }
-
-  const hasAccess = Boolean(accessCookie?.value);
-  const hasRefresh = Boolean(refreshCookie?.value);
 
   if (!hasAccess && !hasRefresh) {
     const loginUrl = new URL('/login', request.url);
