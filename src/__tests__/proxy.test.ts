@@ -258,7 +258,7 @@ describe('proxy', () => {
       expect(calledUrl).toContain('sort=desc');
     });
 
-    it('바디 있음(multipart 등) → upstream fetch에 duplex: half 전달', async () => {
+    it('바디 있음(multipart 등) → upstream fetch에 ArrayBuffer 바디(스트림·duplex 미사용)', async () => {
       (globalThis.fetch as jest.Mock).mockResolvedValue(
         new Response(JSON.stringify({ ok: true }), { status: 200 }),
       );
@@ -276,17 +276,21 @@ describe('proxy', () => {
       });
       await forwardToBackend(req, 'upload');
 
+      const fetchOpts = (globalThis.fetch as jest.Mock).mock.calls[0][1] as RequestInit & {
+        duplex?: string;
+      };
+      expect(fetchOpts.duplex).toBeUndefined();
+      expect(fetchOpts.body).toBeInstanceOf(ArrayBuffer);
+      expect(fetchOpts.body).not.toBeUndefined();
       expect(globalThis.fetch).toHaveBeenCalledWith(
         expect.stringContaining('/upload'),
         expect.objectContaining({
           method: 'POST',
-          duplex: 'half',
-          body: expect.anything(),
         }),
       );
     });
 
-    it('POST /goals — JSON 바디(title)가 업스트림으로 전달되고 duplex·Authorization·identity 적용', async () => {
+    it('POST /goals — JSON 바디(title)가 업스트림으로 전달되고 Authorization·identity 적용', async () => {
       (globalThis.fetch as jest.Mock).mockResolvedValue(
         new Response(JSON.stringify({ id: '1', title: '프로젝트 완성' }), { status: 201 }),
       );
@@ -309,19 +313,21 @@ describe('proxy', () => {
         expect.stringMatching(/\/goals$/),
         expect.objectContaining({
           method: 'POST',
-          duplex: 'half',
-          body: expect.anything(),
+          body: expect.any(ArrayBuffer),
         }),
       );
 
-      const fetchOpts = (globalThis.fetch as jest.Mock).mock.calls[0][1] as RequestInit;
+      const fetchOpts = (globalThis.fetch as jest.Mock).mock.calls[0][1] as RequestInit & {
+        duplex?: string;
+      };
+      expect(fetchOpts.duplex).toBeUndefined();
       const upstreamHeaders = fetchOpts.headers as Headers;
       expect(upstreamHeaders.get('Accept-Encoding')).toBe('identity');
       expect(upstreamHeaders.get('Authorization')).toMatch(/^Bearer /);
 
-      const streamed = fetchOpts.body;
-      expect(streamed).toBeDefined();
-      const forwardedJson = JSON.parse(await new Response(streamed as BodyInit).text());
+      const buf = fetchOpts.body as ArrayBuffer;
+      expect(buf).toBeDefined();
+      const forwardedJson = JSON.parse(Buffer.from(buf).toString('utf8'));
       expect(forwardedJson).toEqual(payload);
     });
 

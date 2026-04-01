@@ -177,16 +177,22 @@ export async function forwardToBackend(request: Request, path: string): Promise<
    * ERR_CONTENT_DECODING_FAILED가 날 수 있음 — 백엔드 요청만 비압축으로 고정.
    */
   headers.set('Accept-Encoding', 'identity');
+  /**
+   * 스트림 바디 + `duplex: 'half'` 업스트림 fetch는 로컬에선 동작해도 Vercel 등 서버리스에서
+   * undici/Request 조합으로 예외 → 500(빈 바디)이 나는 경우가 있음.
+   * 바디를 버퍼로 읽어 넘기면 duplex 불필요·Content-Length 일치.
+   */
+  headers.delete('content-length');
+  headers.delete('transfer-encoding');
 
-  /** Node.js: ReadableStream 바디 전달 시 안전한 요청 처리를 위해 요청과 응답 스트림 분리 `duplex: half` 필요 (multipart 등) */
-  const upstreamInit: RequestInit & { duplex?: 'half' } = {
-    method: request.method,
-    headers,
-    body: request.body,
-  };
-  if (request.body) {
-    upstreamInit.duplex = 'half';
+  const method = request.method;
+  let body: BodyInit | undefined;
+  if (method !== 'GET' && method !== 'HEAD' && request.body) {
+    const buf = await request.arrayBuffer();
+    if (buf.byteLength > 0) {
+      body = buf;
+    }
   }
 
-  return fetch(url, upstreamInit);
+  return fetch(url, { method, headers, body });
 }
