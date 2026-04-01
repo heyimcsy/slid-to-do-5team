@@ -122,6 +122,15 @@ export function isAllowedOrigin(request: Request): boolean {
 }
 
 /**
+ * 인입 `ArrayBuffer`의 복사본 — 원본이 detached 된 뒤 undici가 slice 할 때 터지는 것을 피함.
+ * `Buffer` 대신 Web 표준만 써서 **Edge Runtime**에서도 동일하게 사용 가능.
+ * (`BodyInit` 단언: TS가 `Uint8Array<ArrayBufferLike>`를 fetch 바디에 넣을 때 좁히지 못하는 경우 대비)
+ */
+function copyArrayBufferBodyForUpstream(buf: ArrayBuffer): BodyInit {
+  return new Uint8Array(buf).slice() as BodyInit;
+}
+
+/**
  * @description forwardToBackend - 클라이언트 요청을 백엔드 API로 전달하는 BFF 프록시
  * @param request - 클라이언트 요청
  * @param path - 백엔드 API 경로(세그먼트만, 선행 `/` 없음). 원 요청의 쿼리스트링은 `request.url`에서 이어붙임.
@@ -190,8 +199,7 @@ export async function forwardToBackend(request: Request, path: string): Promise<
   if (method !== 'GET' && method !== 'HEAD' && request.body) {
     const buf = await request.arrayBuffer();
     if (buf.byteLength > 0) {
-      /** 원본 AB는 런타임에 detached 될 수 있음 — undici 업스트림 fetch가 slice 시 실패(Vercel). */
-      body = Buffer.from(buf);
+      body = copyArrayBufferBodyForUpstream(buf);
     }
   }
 
