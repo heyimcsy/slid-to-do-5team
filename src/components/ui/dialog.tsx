@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/shadcn';
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog';
 
@@ -45,7 +44,6 @@ function DialogContent({
 }: DialogPrimitive.Popup.Props & {
   showCloseButton?: boolean;
 }) {
-  const router = useRouter();
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -72,7 +70,6 @@ function DialogContent({
                 variant="icon"
                 size="none"
                 className="absolute top-4 right-4 md:top-8 md:right-8"
-                onClick={() => router.back()}
               />
             }
           >
