@@ -3,6 +3,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 interface MobilePostHeaderProps {
   isSubmitDisabled: boolean;
   onCancel: () => void;
+  onSubmitClick: () => void;
   headerTitle: string;
   submitLabel: string;
   toolbar: React.ReactNode;
@@ -11,6 +12,7 @@ interface MobilePostHeaderProps {
 export function MobilePostHeader({
   isSubmitDisabled,
   onCancel,
+  onSubmitClick,
   headerTitle,
   submitLabel,
   toolbar,
@@ -32,7 +34,8 @@ export function MobilePostHeader({
               취소
             </button>
             <button
-              type="submit"
+              type="button"
+              onClick={onSubmitClick}
               disabled={isSubmitDisabled}
               className="font-sm-semibold px-[6px] py-[2px] text-orange-500 disabled:cursor-not-allowed disabled:text-gray-300"
             >

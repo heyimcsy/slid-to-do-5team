@@ -2,8 +2,8 @@ import 'server-only';
 
 import type { NextRequest } from 'next/server';
 
-import { NextResponse } from 'next/server';
 import { isPublicPath } from '@/lib/navigation/publicPaths';
+import { NextResponse } from 'next/server';
 
 import { ALLOWED_ORIGINS, API_BASE_URL } from '@/constants/api';
 import { AUTH_CONFIG, isAuthRouteGuardEnabled } from '@/constants/auth-config';
@@ -25,6 +25,7 @@ export { isPublicPath, PUBLIC_PATHS } from '@/lib/navigation/publicPaths';
 
 /**
  * @description proxy - Next.js 16 라우트 보호 (proxy.ts = 구 middleware.ts)
+ * @note `/` + access·refresh 중 하나라도 있으면 `/dashboard`로 리다이렉트(랜딩 스킵).
  * @note access만 없고 refresh가 있으면 **통과** — 세션 복구 가능(클라이언트 `POST /api/auth/refresh` 등으로 access 재발급).
  *       둘 다 없을 때만 로그인으로 보냄.
  * @param request - NextRequest
@@ -35,6 +36,14 @@ export function proxy(request: NextRequest) {
   const refreshCookie = request.cookies.get(AUTH_CONFIG.REFRESH_TOKEN_KEY);
   const { pathname } = request.nextUrl;
 
+  const hasAccess = Boolean(accessCookie?.value);
+  const hasRefresh = Boolean(refreshCookie?.value);
+
+  /** 랜딩(`/`)은 공개지만, 세션 쿠키가 있으면 대시보드로 (미들웨어에서 `proxy` 호출 시) */
+  if (pathname === '/' && (hasAccess || hasRefresh)) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
   if (isPublicPath(pathname)) {
     return NextResponse.next();
   }
@@ -42,9 +51,6 @@ export function proxy(request: NextRequest) {
   if (!isAuthRouteGuardEnabled()) {
     return NextResponse.next();
   }
-
-  const hasAccess = Boolean(accessCookie?.value);
-  const hasRefresh = Boolean(refreshCookie?.value);
 
   if (!hasAccess && !hasRefresh) {
     const loginUrl = new URL('/login', request.url);
@@ -122,6 +128,15 @@ export function isAllowedOrigin(request: Request): boolean {
 }
 
 /**
+ * 인입 `ArrayBuffer`의 복사본 — 원본이 detached 된 뒤 undici가 slice 할 때 터지는 것을 피함.
+ * `Buffer` 대신 Web 표준만 써서 **Edge Runtime**에서도 동일하게 사용 가능.
+ * (`BodyInit` 단언: TS가 `Uint8Array<ArrayBufferLike>`를 fetch 바디에 넣을 때 좁히지 못하는 경우 대비)
+ */
+function copyArrayBufferBodyForUpstream(buf: ArrayBuffer): BodyInit {
+  return new Uint8Array(buf).slice() as BodyInit;
+}
+
+/**
  * @description forwardToBackend - 클라이언트 요청을 백엔드 API로 전달하는 BFF 프록시
  * @param request - 클라이언트 요청
  * @param path - 백엔드 API 경로(세그먼트만, 선행 `/` 없음). 원 요청의 쿼리스트링은 `request.url`에서 이어붙임.
@@ -177,21 +192,22 @@ export async function forwardToBackend(request: Request, path: string): Promise<
    * ERR_CONTENT_DECODING_FAILED가 날 수 있음 — 백엔드 요청만 비압축으로 고정.
    */
   headers.set('Accept-Encoding', 'identity');
-
-  /** Node.js: ReadableStream 바디 전달 시 안전한 요청 처리를 위해 요청과 응답 스트림 분리 `duplex: half` 필요 (multipart 등)
-   * Node.js fetch(undici) 구현은 duplex: 'half'를 설정하면, fetch는 브라우저의 일반적인 동작처럼 "요청 본문을 다 보낸 후 응답을 기다리는" 방식으로 작동함
-   * duplex를 지정하지 않으면 body가 Stream 타입일 때 TypeError가 발생하므로 명시적으로 duplex의 기본값인 'half'를 반드시 설정해야 함
-   * @see https://developer.mozilla.org/en-US/docs/Web/API/RequestInit
-   * @see https://undici.nodejs.org/#/?id=undicifetchinput-init-promise
+  /**
+   * 스트림 바디 + `duplex: 'half'` 업스트림 fetch는 로컬에선 동작해도 Vercel 등 서버리스에서
+   * undici/Request 조합으로 예외 → 500(빈 바디)이 나는 경우가 있음.
+   * 바디를 버퍼로 읽어 넘기면 duplex 불필요·Content-Length 일치.
    */
-  const upstreamInit: RequestInit & { duplex?: 'half' } = {
-    method: request.method,
-    headers,
-    body: request.body,
-  };
-  if (request.body) {
-    upstreamInit.duplex = 'half';
+  headers.delete('content-length');
+  headers.delete('transfer-encoding');
+
+  const method = request.method;
+  let body: BodyInit | undefined;
+  if (method !== 'GET' && method !== 'HEAD' && request.body) {
+    const buf = await request.arrayBuffer();
+    if (buf.byteLength > 0) {
+      body = copyArrayBufferBodyForUpstream(buf);
+    }
   }
 
-  return fetch(url, upstreamInit);
+  return fetch(url, { method, headers, body });
 }
