@@ -2,6 +2,7 @@ import type { Goal } from '@/api/goals';
 import type { PaginatedResponse } from '@/api/response';
 import type { TagColor } from '@/utils/tag';
 
+import { NOTIFICATIONS } from '@/api/notifications';
 import { apiClient } from '@/lib/apiClient.browser';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -215,6 +216,7 @@ export const usePatchTodos = () => {
       // 성공/실패 상관없이 최종적으로 서버 데이터로 동기화
       queryClient.invalidateQueries({ queryKey: [TODOS] });
       queryClient.invalidateQueries({ queryKey: [TODO, payload.id] });
+      queryClient.invalidateQueries({ queryKey: [NOTIFICATIONS] });
     },
   });
 };
