@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useGetGoals, usePostGoals } from '@/api/goals';
 import { useLogout } from '@/hooks/auth/useLogout';
+import { cn } from '@/lib';
 import { authUserStore } from '@/stores/authUserStore';
 import { AnimatePresence, motion } from 'motion/react';
 
@@ -19,6 +20,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 
+import AlertPopover from '../AlertPopover';
 import { Icon } from '../icon/Icon';
 
 const navItems: { label: string; href: string; icon: IconName; hasArrow?: boolean }[] = [
@@ -130,15 +132,21 @@ export default function SidebarNav() {
                         className="overflow-hidden"
                       >
                         <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-                          {goalsData?.goals.map((goal) => (
-                            <Link
-                              key={goal.id}
-                              href={`/goals/${goal.id}`}
-                              className="font-sm-semibold truncate px-6 py-2 text-gray-600 hover:text-gray-900"
-                            >
-                              {goal.title}
-                            </Link>
-                          ))}
+                          {goalsData?.goals.map((goal) => {
+                            const isGoalActive = pathname === `/goals/${goal.id}`;
+                            return (
+                              <Link
+                                key={goal.id}
+                                href={`/goals/${goal.id}`}
+                                className={cn(
+                                  'font-sm-semibold truncate px-6 py-2 hover:text-gray-900',
+                                  isGoalActive ? 'text-orange-600' : 'text-gray-600',
+                                )}
+                              >
+                                {goal.title}
+                              </Link>
+                            );
+                          })}
                           <div
                             className={`mt-1 flex ${!isInputVisible && 'hidden'} items-center gap-2 border border-t-0 border-r-0 border-b-2 border-l-0 border-b-orange-500 bg-orange-200 px-4 py-2 text-orange-700`}
                           >
@@ -236,15 +244,7 @@ export default function SidebarNav() {
           </div>
           <div className="relative hidden group-data-[collapsible=icon]:hidden md:block">
             {/* 아이콘 수정 */}
-            <button
-              aria-label="알림"
-              className="cursor-pointer rounded-full border border-gray-200 p-5"
-              onClick={() => {
-                router.push('/notifications');
-              }}
-            >
-              <Icon name="bell" />
-            </button>
+            <AlertPopover />
           </div>
         </div>
       </SidebarGroup>
