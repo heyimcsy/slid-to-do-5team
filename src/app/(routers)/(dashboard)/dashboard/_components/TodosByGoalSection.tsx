@@ -1,7 +1,11 @@
 'use client';
 
-import { useGetTodos } from '@/api/todos';
 import Image from 'next/image';
+import { useGetTodos } from '@/api/todos';
+
+
+
+
 
 export function TodosByGoalSection() {
   const { data: todos, isLoading, error } = useGetTodos({ limit: 4 });
@@ -12,7 +16,7 @@ export function TodosByGoalSection() {
   console.log(todosByGoal);
 
   return (
-    <section className="task-by-goal-section mt-10 flex w-full">
+    <section className="todos-by-goal-section mt-10 flex w-full">
       <div className="todos-by-goal-section flex w-full flex-col gap-4">
         <div className="todos-by-goal-section-header flex justify-between">
           <section className="flex items-center justify-between">
@@ -40,21 +44,19 @@ export function TodosByGoalSection() {
                 alt="arrow"
                 width={20}
                 height={20}
-                className="text-orange-500"
+                className="h-auto text-orange-500"
               />
             </Link> */}
           </section>
         </div>
-        <div className="w-full rounded-[1.75rem] bg-white text-black md:rounded-[1.75rem] lg:rounded-[2.5rem] dark:bg-black dark:text-white">
+        <div className="w-full rounded-[1.75rem] bg-white px-4 py-4.5 text-black md:min-h-46.5 md:rounded-[1.75rem] md:px-4 md:py-4.5 lg:rounded-[2.5rem] lg:px-8 lg:py-7.5 dark:bg-black dark:text-white">
           {todosByGoal.length === 0 ? (
-            <div className="flex min-h-46.5 items-center justify-center px-4 py-4.5 md:min-h-46.5 md:px-4 md:py-4.5 lg:min-h-64 lg:px-8 lg:py-7.5">
-              최근에 등록한 목표가 없어요
-            </div>
+            <div className="flex items-center justify-center">최근에 등록한 목표가 없어요</div>
           ) : (
             todosByGoal.map((todo) => (
               <div
                 key={todo.id}
-                className="flex min-h-46.5 w-full px-4 py-4.5 md:min-h-46.5 md:px-4 md:py-4.5 lg:min-h-64 lg:px-8 lg:py-7.5"
+                className="flex items-center justify-between px-1 py-1.5 md:px-1 md:py-1.5 lg:px-2 lg:py-2.5"
               >
                 <p className="lg:font-base-semibold md:font-sm-semibold font-sm-semibold">
                   {todo.title}

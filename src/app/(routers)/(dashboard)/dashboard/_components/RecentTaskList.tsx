@@ -1,8 +1,12 @@
 'use client';
 
-import { useGetTodos } from '@/api/todos';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useGetTodos } from '@/api/todos';
+
+
+
+
 
 export function RecentTaskList() {
   /**
@@ -48,21 +52,19 @@ export function RecentTaskList() {
               alt="arrow"
               width={20}
               height={20}
-              className="text-orange-500"
+              className="h-auto text-orange-500"
             />
           </Link>
         </section>
       </div>
-      <div className="w-full rounded-[1.75rem] bg-orange-500 text-white md:rounded-[1.75rem] lg:rounded-[2.5rem] dark:bg-orange-300 dark:text-black">
+      <div className="flex min-h-46.5 w-full flex-col justify-center rounded-[1.75rem] bg-orange-500 px-4 py-4.5 text-white md:min-h-46.5 md:rounded-[1.75rem] md:px-4 md:py-4.5 lg:min-h-64 lg:rounded-[2.5rem] lg:px-8 lg:py-7.5 dark:bg-orange-300 dark:text-black">
         {recentTodos.length === 0 ? (
-          <div className="flex min-h-46.5 items-center justify-center px-4 py-4.5 md:min-h-46.5 md:px-4 md:py-4.5 lg:min-h-64 lg:px-8 lg:py-7.5">
-            최근에 등록한 할 일이 없어요
-          </div>
+          <div className="flex items-center justify-center">최근에 등록한 할 일이 없어요</div>
         ) : (
           recentTodos.map((todo) => (
             <div
               key={todo.id}
-              className="flex min-h-46.5 px-4 py-4.5 md:min-h-46.5 md:px-4 md:py-4.5 lg:min-h-64 lg:px-8 lg:py-7.5"
+              className="flex items-center justify-between px-1 py-1.5 md:px-1 md:py-1.5 lg:px-2 lg:py-2.5"
             >
               <p className="lg:font-base-semibold md:font-sm-semibold font-sm-semibold">
                 {todo.title}
