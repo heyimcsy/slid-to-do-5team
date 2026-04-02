@@ -2,7 +2,7 @@
 
 import type { Task } from '../types';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDeleteTodos, usePatchTodos } from '@/api/todos';
 import { cn } from '@/lib';
@@ -21,6 +21,7 @@ interface TodoItemProps {
 
 export default function TodoItem({ task }: TodoItemProps) {
   const [hovered, setHovered] = useState(false);
+
   const { mutate: patchTodo } = usePatchTodos();
   const { mutate: deleteTodo } = useDeleteTodos();
   const router = useRouter();
@@ -87,6 +88,7 @@ export default function TodoItem({ task }: TodoItemProps) {
                 </div>
               </div>
             )}
+
             <Icon name="outlineStar" />
           </div>
         </div>

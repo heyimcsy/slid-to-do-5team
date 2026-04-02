@@ -3,7 +3,7 @@ import type { PaginatedResponse } from '@/api/response';
 import type { TagColor } from '@/utils/tag';
 
 import { apiClient } from '@/lib/apiClient.browser';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { mapTagsWithColor } from '@/utils/tag';
 
@@ -115,6 +115,48 @@ export const useGetTodos = ({ goalId, done, limit, cursor }: GetTodosParams) => 
         todos: todosWithFavorite,
       };
     },
+  });
+};
+
+export const useInfiniteTodos = ({ goalId, done, limit }: GetTodosParams) => {
+  return useInfiniteQuery<PaginatedResponse<TodoWithFavorites, 'todos'>>({
+    queryKey: [TODOS, 'infinite', { goalId, done, limit }],
+
+    queryFn: async ({ pageParam = 0 }) => {
+      const params = new URLSearchParams();
+
+      if (goalId !== undefined) params.append('goalId', String(goalId));
+      if (done !== undefined) params.append('done', String(done));
+      if (limit !== undefined) params.append('limit', String(limit));
+      if (pageParam !== undefined) params.append('cursor', String(pageParam));
+
+      const queryString = params.toString();
+      const url = queryString ? `${TODOS_URL}?${queryString}` : TODOS_URL;
+
+      // 기존 로직 그대로 유지 👍
+      const [todosData, favoritesData] = await Promise.all([
+        apiClient<PaginatedResponse<Todo, 'todos'>>(url),
+        apiClient<PaginatedResponse<Favorite, 'favorites'>>(`${TODOS_URL}/favorites`),
+      ]);
+
+      const favoriteTodoIds = new Set(favoritesData.favorites.map((f) => f.todoId));
+
+      const todosWithFavorite: TodoWithFavorites[] = todosData.todos.map((todo) => ({
+        ...todo,
+        favorites: favoriteTodoIds.has(todo.id),
+      }));
+
+      return {
+        ...todosData,
+        todos: todosWithFavorite,
+      };
+    },
+
+    getNextPageParam: (lastPage) => {
+      return lastPage.nextCursor ?? undefined;
+    },
+
+    initialPageParam: 0,
   });
 };
 
