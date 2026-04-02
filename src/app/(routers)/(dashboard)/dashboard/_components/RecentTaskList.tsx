@@ -1,12 +1,8 @@
 'use client';
 
+import { useGetTodos } from '@/api/todos';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useGetTodos } from '@/api/todos';
-
-
-
-
 
 export function RecentTaskList() {
   /**
@@ -43,7 +39,7 @@ export function RecentTaskList() {
           </h2>
         </section>
         <section className="recent-task-list-header-link flex items-center">
-          <Link href="/dashboard/todos" className="flex">
+          <Link href="/dashboard/todos" className="flex items-center">
             <span className="font-sm-semibold md:font-sm-semibold lg:font-base-semibold text-orange-500">
               모두 보기
             </span>

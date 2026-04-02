@@ -223,7 +223,7 @@ export default function SidebarNav() {
             className="flex flex-1 cursor-pointer items-center gap-2 rounded-full border border-gray-200 px-3 py-2 group-data-[collapsible=icon]:hidden"
           >
             <Image
-              src={user?.image?.trim() || '/globe.svg'}
+              src={user?.image?.trim() || '/images/user-yellow.svg'}
               alt={`${user?.name ?? '손'}님 프로필 이미지`}
               width={40}
               height={40}

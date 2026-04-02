@@ -14,10 +14,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 export default function AlertPopover({
   collapsed = false,
   className,
-}: {
+}: Readonly<{
   collapsed?: boolean;
   className?: string;
-}) {
+}>) {
   const { data, isLoading, isSuccess } = useGetNotifications({ limit: 20 });
   const { mutate: patchNotis } = usePatchNotifications();
   const notifications: Notification[] = data?.notifications || [];
