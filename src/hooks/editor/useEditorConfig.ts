@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { CharacterCount } from '@tiptap/extension-character-count';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import { Placeholder } from '@tiptap/extension-placeholder';
@@ -11,6 +12,7 @@ interface UseEditorConfigProps {
   onUpdate?: (json: string) => void;
   variant?: 'note' | 'post';
   placeholder?: string;
+  limit?: number;
 }
 
 // 수정 페이지에서 사용하는 에디터
@@ -19,6 +21,7 @@ export function useEditorConfig({
   onUpdate,
   variant,
   placeholder,
+  limit,
 }: UseEditorConfigProps = {}) {
   // stale closure 방지를 위해 onUpdate를 ref로 관리
   const onUpdateRef = useRef(onUpdate);
@@ -49,6 +52,7 @@ export function useEditorConfig({
       Placeholder.configure({
         placeholder: placeholder,
       }),
+      ...(limit ? [CharacterCount.configure({ limit })] : []),
     ],
     onUpdate: ({ editor }) => {
       onUpdateRef.current?.(JSON.stringify(editor.getJSON())); // ✅ 문자열로 직렬화
