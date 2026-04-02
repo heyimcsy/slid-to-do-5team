@@ -9,6 +9,8 @@ import TextAlign from '@tiptap/extension-text-align';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 
+import { formatDate } from '@/utils/date';
+
 import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { KebabMenu } from '@/components/common/KebabMenu';
 
@@ -16,7 +18,6 @@ import { useDeletePost, useGetComments, useGetPostById } from '../_api/community
 import { PostErrorFallback } from '../_components/PostErrorFallback';
 import { WriterAvatar } from '../_components/WriterAvatar';
 import { extractImagesFromContent } from '../_utils/extractImagesFromContent';
-import { formatDate } from '../_utils/formatDate';
 import { CommentSection } from './_components/CommentSection';
 import { PostDetailSkeleton } from './_components/PostDetailSkeleton';
 

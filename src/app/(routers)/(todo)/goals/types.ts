@@ -2,6 +2,8 @@ import type { TodoWithFavorites } from '@/api/todos';
 
 export interface TotalListTabProps {
   goalId: number;
+  todoLists: TodoWithFavorites[];
+  todoListsDone: TodoWithFavorites[];
 }
 
 export interface TodoListProps {

@@ -24,6 +24,7 @@ export default function TodoDetailContainer({ todoId }: { todoId: number }) {
           linkUrl={data.linkUrl}
           noteTitle={noteData?.title}
           noteId={noteData?.id}
+          todoId={Number(todoId)}
         />
       </div>
     );

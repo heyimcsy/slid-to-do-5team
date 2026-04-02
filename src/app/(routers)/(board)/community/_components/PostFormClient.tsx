@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,12 +20,17 @@ import { DesktopPostHeader } from './DesktopPostHeader';
 import { MobilePostHeader } from './MobilePostHeader';
 
 const TITLE_MAX_LENGTH = 30;
+const CONTENT_MAX_LENGTH = 1000;
 
 const postSchema = z.object({
   title: z
     .string()
     .min(1, '제목을 입력해주세요')
     .max(TITLE_MAX_LENGTH, `제목은 최대 ${TITLE_MAX_LENGTH}자까지 입력할 수 있습니다.`),
+  content: z
+    .number()
+    .min(1, '내용을 입력해주세요')
+    .max(CONTENT_MAX_LENGTH, `내용은 최대 ${CONTENT_MAX_LENGTH}자까지 입력할 수 있습니다.`),
 });
 
 type PostFormValues = z.infer<typeof postSchema>;
@@ -51,9 +56,11 @@ export function PostFormClient({
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
 
-  const { editor, hasEditorContent, hasEditorChanged, contentText, charCountWithoutSpaces } = usePostEditor({
-    initialContent: initialValues?.content,
-  });
+  const { editor, hasEditorContent, hasEditorChanged, charCountWithoutSpaces, charCount } =
+    usePostEditor({
+      initialContent: initialValues?.content,
+      limit: CONTENT_MAX_LENGTH,
+    });
 
   const {
     images,
@@ -69,18 +76,27 @@ export function PostFormClient({
     register,
     handleSubmit,
     watch,
-    formState: { isSubmitting, isDirty },
+    setValue,
+    formState: { isSubmitting, isDirty, isValid },
   } = useForm<PostFormValues>({
     resolver: zodResolver(postSchema),
-    defaultValues: { title: initialValues?.title ?? '' },
+    defaultValues: { title: initialValues?.title ?? '', content: 0 },
     mode: 'onChange',
   });
 
   const titleValue = watch('title');
 
+  useEffect(() => {
+    setValue('content', charCount, { shouldValidate: true });
+  }, [charCount, setValue]);
+
   const hasChanged = isDirty || hasEditorChanged || hasImagesChanged;
   const isSubmitDisabled =
-    !titleValue.trim() || !editor || !hasEditorContent || isSubmitting ||
+    !titleValue.trim() ||
+    !editor ||
+    !hasEditorContent ||
+    isSubmitting ||
+    !isValid ||
     (mode === 'edit' && !hasChanged);
   const headerTitle = mode === 'create' ? '게시물 작성하기' : '게시물 수정하기';
   const submitLabel = mode === 'create' ? '등록' : '수정';
@@ -214,11 +230,11 @@ export function PostFormClient({
             </div>
           )}
 
-          <div className="font-xs-regular flex shrink-0 justify-between px-5 py-4 text-gray-400 md:px-10 md:py-6 lg:px-14">
-            <p>이미지는 10MB 이하의 파일만 첨부할 수 있습니다. (최대 {IMAGE_LIMIT}까지)</p>
-            <p>
-              공백포함 {contentText.length}자 | 공백제외 {charCountWithoutSpaces}자
+          <div className="font-xs-regular flex shrink-0 flex-col items-end px-5 py-4 text-gray-400 md:px-10 md:py-6 lg:px-14">
+            <p className={charCount >= CONTENT_MAX_LENGTH ? 'text-red-600' : ''}>
+              공백포함 {charCount}자 | 공백제외 {charCountWithoutSpaces}자
             </p>
+            <p>이미지는 10MB 이하의 파일만 첨부할 수 있습니다. (최대 {IMAGE_LIMIT}까지)</p>
           </div>
         </div>
       </div>

@@ -2,15 +2,17 @@
 
 import type { KeyboardEvent } from 'react';
 
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGetGoals } from '@/api/goals';
 import { usePostTodo } from '@/api/todos';
-import { formatDate } from '@/app/(routers)/(board)/community/_utils/formatDate';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import z from 'zod';
+
+import { formatDate } from '@/utils/date';
 
 import { ImageUploadInput } from '@/components/common/ImageUploadInput';
 import { Icon } from '@/components/icon/Icon';
@@ -58,7 +60,7 @@ const schema = z.object({
     .or(z.literal('')),
 });
 
-export default function NewForm() {
+export default function NewForm({ onCancel }: { onCancel: () => void }) {
   const { data: goalsData } = useGetGoals();
   // 마감기한 날짜 관리 state
   const [date, setDate] = React.useState<Date>();
@@ -81,10 +83,12 @@ export default function NewForm() {
     watch,
     setValue,
     getValues,
-    formState: { isValid: titleValid },
+    trigger,
+    formState: { isValid: titleValid, errors },
   } = useForm<FormValues>({
     // 입력할 때마다 실시간으로 유효성 검증 실행
     mode: 'onChange',
+    reValidateMode: 'onBlur',
     resolver: zodResolver(schema),
     // 초기값을 빈 문자열로 설정해서 처음부터 controlled 컴포넌트로 인식하게 함
     defaultValues: { title: '', link: '' },
@@ -103,7 +107,10 @@ export default function NewForm() {
 
     // 중복된 태그 체크
     const isDuplicate = tags.some((tag) => tag.name === trimmed);
-    if (isDuplicate) return;
+    if (isDuplicate) {
+      toast.error('이미 추가된 태그입니다');
+      return;
+    }
 
     setTags((prev) => [...prev, { name: trimmed, color: getNextColor() }]);
     setTagInput('');
@@ -121,6 +128,15 @@ export default function NewForm() {
     }
     if (e.key === 'Backspace' && tagInput === '' && tags.length > 0) {
       removeTag(tags.length - 1);
+    }
+  };
+
+  const handleLinkValidate = async () => {
+    const isValid = await trigger('link'); // zod validation 실행
+
+    if (!isValid) {
+      const error = errors.link?.message;
+      if (error) toast.error(error);
     }
   };
 
@@ -143,23 +159,21 @@ export default function NewForm() {
         goalId: selectedGoalId,
         dueDate: date.toISOString(),
         linkUrl: link || undefined,
-        tags: tags.map(({ name }) => ({ name })), // color는 프론트 전용이라 제외
+        tags: tags.map((t) => t.name),
       },
       {
-        onSuccess: () => {
-          router.back(); // ← 전송 성공 후 모달 닫기
-        },
+        onSuccess: () => router.back(),
       },
     );
   };
 
-  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+  const title = watch('title');
 
-  const handleCancel = () => setCancelConfirmOpen(true);
-  const handleConfirmCancel = () => {
-    setCancelConfirmOpen(false);
-    router.back();
-  };
+  useEffect(() => {
+    if (title.length > 50) {
+      toast.error('제목은 50자 이내로 입력해주세요');
+    }
+  }, [title]);
 
   // ✅ 공통 폼 (Dialog 전용 컴포넌트 제거)
   const formContent = (
@@ -272,13 +286,23 @@ export default function NewForm() {
         </Field>
 
         <Field>
-          <FieldLabel className="font-sm-semi md:font-base-semibold">링크</FieldLabel>
+          <FieldLabel className="font-sm-semi md:font-base-semibold">
+            링크
+            <Icon name="plus" variant="orange" />
+          </FieldLabel>
           <div className="space-y-2">
             <Input
               type="url"
               placeholder="링크를 업로드해주세요"
               className="w-full border-dashed bg-gray-50"
               {...register('link')}
+              onBlur={handleLinkValidate} // 👈 포커스 아웃시 유효성 검사
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleLinkValidate(); // 👈 엔터 시 유효성 검사
+                }
+              }}
               // onClick={() => setLinkOpen(true)}
               startAdornment={
                 <button>
@@ -310,33 +334,6 @@ export default function NewForm() {
 
   return (
     <>
-      {/* ✅ 취소 확인 모달 */}
-      <Dialog open={cancelConfirmOpen} onOpenChange={setCancelConfirmOpen}>
-        <DialogContent className="z-200 max-w-[343px] md:max-w-[456px]" showCloseButton={false}>
-          <DialogHeader className="mb-6">
-            <DialogTitle className="font-xl-semibold mt-8">작성을 취소하시겠어요?</DialogTitle>
-            <p className="font-xs-medium md:font-base-medium text-center text-orange-600">
-              변경사항은 저장되지 않습니다
-            </p>
-          </DialogHeader>
-
-          <DialogFooter className="mt-4 flex gap-2">
-            <Button
-              variant="ghost"
-              className="font-sm-semibold md:font-lg-semibold flex-1 cursor-pointer py-4"
-              onClick={() => setCancelConfirmOpen(false)}
-            >
-              취소
-            </Button>
-            <Button
-              className="md:font-lg-semibold flex-1 cursor-pointer py-4"
-              onClick={handleConfirmCancel}
-            >
-              확인
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       {isMobile ? (
         <Drawer
           open
@@ -356,14 +353,15 @@ export default function NewForm() {
 
             <div className="mt-4 flex gap-2">
               <Button
+                type="submit"
                 size="lg"
                 variant="ghost"
                 className="flex-1 cursor-pointer"
-                onClick={handleCancel}
+                onClick={() => router.back()}
               >
                 취소
               </Button>
-              <Button size="lg" disabled className="flex-1">
+              <Button size="lg" disabled={!isValid} className="flex-1" onClick={handleSubmit}>
                 확인
               </Button>
             </div>
@@ -371,7 +369,7 @@ export default function NewForm() {
         </Drawer>
       ) : (
         <Dialog open>
-          <DialogContent showCloseButton={false}>
+          <DialogContent>
             <DialogHeader className="mb-8">
               <DialogTitle>할 일 생성</DialogTitle>
             </DialogHeader>
@@ -379,10 +377,11 @@ export default function NewForm() {
             {formContent}
 
             <DialogFooter className="mt-10 w-full">
-              <Button size="lg" variant="ghost" className="flex-1" onClick={handleCancel}>
+              <Button size="lg" variant="ghost" className="flex-1" onClick={onCancel}>
                 취소
               </Button>
               <Button
+                type="submit"
                 onClick={handleSubmit}
                 size="lg"
                 variant="default"

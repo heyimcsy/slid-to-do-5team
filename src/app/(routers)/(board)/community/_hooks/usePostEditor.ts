@@ -9,18 +9,21 @@ const isEditorFilled = (editor: Editor) => !editor.isEmpty && editor.getText().t
 
 interface UsePostEditorOptions {
   initialContent?: string;
+  limit?: number;
 }
 
-export function usePostEditor({ initialContent }: UsePostEditorOptions = {}) {
+export function usePostEditor({ initialContent, limit }: UsePostEditorOptions = {}) {
   const editor = useEditorConfig({
     content: initialContent,
     variant: 'post',
     placeholder: '이 곳을 통해 내용을 작성해주세요',
+    limit,
   });
 
   const [hasEditorContent, setHasEditorContent] = useState(false);
   const [contentText, setContentText] = useState('');
   const [hasEditorChanged, setHasEditorChanged] = useState(false);
+  const [charCount, setCharCount] = useState(0);
 
   useEffect(() => {
     if (!editor) return;
@@ -30,6 +33,7 @@ export function usePostEditor({ initialContent }: UsePostEditorOptions = {}) {
     const onUpdate = () => {
       setHasEditorContent(isEditorFilled(editor));
       setContentText(editor.getText());
+      setCharCount(editor.storage.characterCount?.characters() ?? editor.getText().length);
       setHasEditorChanged(true);
     };
     editor.on('update', onUpdate);
@@ -44,7 +48,7 @@ export function usePostEditor({ initialContent }: UsePostEditorOptions = {}) {
     editor,
     hasEditorContent,
     hasEditorChanged,
-    contentText,
     charCountWithoutSpaces,
+    charCount,
   };
 }

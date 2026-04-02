@@ -7,14 +7,18 @@ import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 
 import 'react-image-crop/dist/ReactCrop.css';
 
+import { uploadImage } from '@/api/images';
+
+import { Icon } from '@/components/icon/Icon';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 
 interface ImageCropperProps {
-  onCropComplete: (croppedFile: File) => void;
+  onCropComplete: (uploadImage: string) => void;
 }
 
-export function ImageCropper({ onCropComplete }: ImageCropperProps) {
+export default function ImageCropper({ onCropComplete }: ImageCropperProps) {
+  const [isUploading, setIsUploading] = useState(false);
   const [src, setSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState<Crop>();
   const [open, setOpen] = useState(false);
@@ -64,16 +68,28 @@ export function ImageCropper({ onCropComplete }: ImageCropperProps) {
     ctx.clip();
     ctx.drawImage(image, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
 
-    canvas.toBlob((blob) => {
+    canvas.toBlob(async (blob) => {
       if (!blob) return;
       const file = new File([blob], 'profile.png', { type: 'image/png' });
-      onCropComplete(file);
-      setOpen(false);
+
+      try {
+        setIsUploading(true);
+        const imageUrl = await uploadImage(file); // ← presigned URL 업로드
+        onCropComplete(imageUrl); // ← URL 전달
+        setOpen(false);
+      } catch (e) {
+        console.error('이미지 업로드 실패', e);
+      } finally {
+        setIsUploading(false);
+      }
     }, 'image/png');
   };
 
   return (
     <>
+      <label htmlFor="profile" className="cursor-pointer">
+        <Icon name="pencil" variant="white" size={21} />
+      </label>
       <input
         type="file"
         accept="image/*"
@@ -84,13 +100,13 @@ export function ImageCropper({ onCropComplete }: ImageCropperProps) {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="w-86 md:w-114">
-          <p className="font-base-semibold text-gray-800">프로필 이미지 편집</p>
+          <p className="font-base-semibold pb-2 text-gray-800">프로필 이미지 편집</p>
           {src && (
             <ReactCrop
               crop={crop}
               onChange={(_, percentCrop) => setCrop(percentCrop)}
               aspect={1}
-              circularCrop // ← 동그란 크롭 UI
+              circularCrop
             >
               <img
                 ref={imgRef}
@@ -101,12 +117,12 @@ export function ImageCropper({ onCropComplete }: ImageCropperProps) {
               />
             </ReactCrop>
           )}
-          <DialogFooter>
+          <DialogFooter className="pt-4">
             <Button variant="ghost" className="w-1/2" onClick={() => setOpen(false)}>
               취소
             </Button>
             <Button variant="default" className="w-1/2" onClick={handleCropConfirm}>
-              확인
+              {isUploading ? '업로드 중...' : '확인'}
             </Button>
           </DialogFooter>
         </DialogContent>

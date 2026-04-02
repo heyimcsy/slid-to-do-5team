@@ -1,4 +1,4 @@
-import { formatDate } from './formatDate';
+import { formatDate } from './date';
 
 export function formatRelativeTime(isoString: string): string {
   const diff = Date.now() - new Date(isoString).getTime();

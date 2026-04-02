@@ -2,8 +2,9 @@ import type { Goal } from '@/api/goals';
 import type { PaginatedResponse } from '@/api/response';
 import type { TagColor } from '@/utils/tag';
 
+import { NOTIFICATIONS } from '@/api/notifications';
 import { apiClient } from '@/lib/apiClient.browser';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { mapTagsWithColor } from '@/utils/tag';
 
@@ -81,7 +82,7 @@ export type TodosWithFavoriteResponse = PaginatedResponse<TodoWithFavorites, 'to
 // usePostTodo 타입
 type CreateTodoPayload = Pick<Todo, 'title' | 'goalId' | 'dueDate'> &
   Partial<Pick<Todo, 'linkUrl' | 'fileUrl'>> & {
-    tags?: { name: string }[];
+    tags?: string[];
   };
 
 export const useGetTodos = ({ goalId, done, limit, cursor }: GetTodosParams) => {
@@ -118,6 +119,47 @@ export const useGetTodos = ({ goalId, done, limit, cursor }: GetTodosParams) => 
   });
 };
 
+export const useInfiniteTodos = ({ goalId, done, limit }: GetTodosParams) => {
+  return useInfiniteQuery<PaginatedResponse<TodoWithFavorites, 'todos'>>({
+    queryKey: [TODOS, 'infinite', { goalId, done, limit }],
+
+    queryFn: async ({ pageParam = 0 }) => {
+      const params = new URLSearchParams();
+
+      if (goalId !== undefined) params.append('goalId', String(goalId));
+      if (done !== undefined) params.append('done', String(done));
+      if (limit !== undefined) params.append('limit', String(limit));
+      if (pageParam !== undefined) params.append('cursor', String(pageParam));
+
+      const queryString = params.toString();
+      const url = queryString ? `${TODOS_URL}?${queryString}` : TODOS_URL;
+
+      const [todosData, favoritesData] = await Promise.all([
+        apiClient<PaginatedResponse<Todo, 'todos'>>(url),
+        apiClient<PaginatedResponse<Favorite, 'favorites'>>(`${TODOS_URL}/favorites`),
+      ]);
+
+      const favoriteTodoIds = new Set(favoritesData.favorites.map((f) => f.todoId));
+
+      const todosWithFavorite: TodoWithFavorites[] = todosData.todos.map((todo) => ({
+        ...todo,
+        favorites: favoriteTodoIds.has(todo.id),
+      }));
+
+      return {
+        ...todosData,
+        todos: todosWithFavorite,
+      };
+    },
+
+    getNextPageParam: (lastPage) => {
+      return lastPage.nextCursor ?? undefined;
+    },
+
+    initialPageParam: 0,
+  });
+};
+
 export const useGetTodo = ({ id }: { id: number }) => {
   return useQuery({
     queryKey: [TODO, id],
@@ -133,7 +175,9 @@ export const useGetTodo = ({ id }: { id: number }) => {
 };
 
 type PatchTodoPayload = Pick<Todo, 'id'> &
-  Partial<Pick<Todo, 'title' | 'done' | 'linkUrl' | 'tags' | 'dueDate' | 'fileUrl'>>;
+  Partial<Pick<Todo, 'title' | 'done' | 'linkUrl' | 'dueDate' | 'fileUrl'>> & {
+    tags?: string[];
+  };
 
 export const usePatchTodos = () => {
   const queryClient = useQueryClient();
@@ -150,7 +194,7 @@ export const usePatchTodos = () => {
       const previousTodos = queryClient.getQueriesData({ queryKey: [TODOS] });
       // 캐시 즉시 업데이트
       queryClient.setQueriesData({ queryKey: [TODOS] }, (old: PaginatedResponse<Todo, 'todos'>) => {
-        if (!old) return old;
+        if (!old || !old.todos) return old;
         return {
           ...old,
           todos: old.todos.map((todo: Todo) =>
@@ -173,6 +217,8 @@ export const usePatchTodos = () => {
       // 성공/실패 상관없이 최종적으로 서버 데이터로 동기화
       queryClient.invalidateQueries({ queryKey: [TODOS] });
       queryClient.invalidateQueries({ queryKey: [TODO, payload.id] });
+      queryClient.invalidateQueries({ queryKey: ['favorites'] });
+      queryClient.invalidateQueries({ queryKey: [NOTIFICATIONS] });
     },
   });
 };
@@ -205,6 +251,7 @@ export const useDeleteTodos = () => {
     onSettled: (_, __, payload) => {
       queryClient.invalidateQueries({ queryKey: [TODOS] });
       queryClient.invalidateQueries({ queryKey: [TODO, payload.id] });
+      queryClient.invalidateQueries({ queryKey: ['favorites'] });
     },
   });
 };
@@ -213,12 +260,51 @@ export const usePostTodo = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: CreateTodoPayload) => {
-      return await apiClient<Todo>(TODOS_URL, {
-        method: 'POST',
-        body: payload,
+      return await apiClient<Todo>(TODOS_URL, { method: 'POST', body: payload });
+    },
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({ queryKey: [TODOS] });
+      const previousTodos = queryClient.getQueriesData({ queryKey: [TODOS] });
+
+      // API 응답 전에 캐시에 즉시 추가
+      queryClient.setQueriesData(
+        { queryKey: [TODOS] },
+        (old: PaginatedResponse<TodoWithFavorites, 'todos'>) => {
+          if (!old || !old.todos) return old;
+
+          const optimisticTodo: TodoWithFavorites = {
+            id: Date.now(), // 임시 id
+            teamId: '',
+            userId: 0,
+            goalId: payload.goalId,
+            title: payload.title,
+            done: false,
+            fileUrl: null,
+            linkUrl: payload.linkUrl ?? null,
+            dueDate: payload.dueDate,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            goal: { id: payload.goalId, title: '' },
+            noteIds: [],
+            tags: [],
+            favorites: false,
+          };
+          return {
+            ...old,
+            todos: [optimisticTodo, ...old.todos],
+            totalCount: old.totalCount + 1,
+          };
+        },
+      );
+
+      return { previousTodos };
+    },
+    onError: (_, __, context) => {
+      context?.previousTodos.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
       });
     },
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [TODOS] });
     },
   });
