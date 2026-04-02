@@ -21,18 +21,15 @@ export function usePostEditor({ initialContent, limit }: UsePostEditorOptions = 
   });
 
   const [hasEditorContent, setHasEditorContent] = useState(false);
-  const [contentText, setContentText] = useState('');
   const [hasEditorChanged, setHasEditorChanged] = useState(false);
   const [charCount, setCharCount] = useState(0);
 
   useEffect(() => {
     if (!editor) return;
     setHasEditorContent(isEditorFilled(editor));
-    setContentText(editor.getText());
 
     const onUpdate = () => {
       setHasEditorContent(isEditorFilled(editor));
-      setContentText(editor.getText());
       setCharCount(editor.storage.characterCount?.characters() ?? editor.getText().length);
       setHasEditorChanged(true);
     };
@@ -42,7 +39,7 @@ export function usePostEditor({ initialContent, limit }: UsePostEditorOptions = 
     };
   }, [editor]);
 
-  const charCountWithoutSpaces = contentText.replace(/\s/g, '').length;
+  const charCountWithoutSpaces = editor?.getText().replace(/\s/g, '').length ?? 0;
 
   return {
     editor,
