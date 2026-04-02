@@ -2,10 +2,10 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { uploadImage } from '@/api/images';
 import { authUserStore } from '@/stores/authUserStore';
 import { toast } from 'sonner';
 
-import { uploadImage } from '../_api/communityApi';
 import { useCreatePost, useGetPostById, useUpdatePost } from '../_api/communityQueries';
 import { compressImage } from '../_utils/compressImage';
 import { extractImagesFromContent } from '../_utils/extractImagesFromContent';
