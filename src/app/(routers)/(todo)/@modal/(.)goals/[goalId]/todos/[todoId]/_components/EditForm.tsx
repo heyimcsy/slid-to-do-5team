@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react'; // useEffect 추가
 import { useRouter } from 'next/navigation';
 import { useGetGoals } from '@/api/goals';
 import { usePatchTodos } from '@/api/todos';
-import { formatDate } from '@/app/(routers)/(board)/community/_utils/formatDate';
+import { formatDate } from '@/utils/date';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useForm } from 'react-hook-form';
 

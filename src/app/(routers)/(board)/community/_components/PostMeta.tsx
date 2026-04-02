@@ -2,9 +2,10 @@ import type { Post } from '../types';
 
 import { cn } from '@/lib';
 
+import { formatRelativeTime } from '@/utils/formatRelativeTime';
+
 import { Icon } from '@/components/icon/Icon';
 
-import { formatRelativeTime } from '../_utils/formatRelativeTime';
 import { WriterAvatar } from './WriterAvatar';
 
 interface PostMetaProps {
