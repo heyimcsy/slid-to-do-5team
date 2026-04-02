@@ -7,11 +7,11 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
+import { EmptyState } from '@/components/EmptyState';
 import { Icon } from '@/components/icon/Icon';
 
 import { useGetPosts } from './_api/communityQueries';
 import { FeaturedPostCard } from './_components/FeaturedPostCard';
-import { PostEmptyState } from './_components/PostEmptyState';
 import { PostErrorFallback } from './_components/PostErrorFallback';
 import { PostListItem } from './_components/PostListItem';
 import { PostListSkeleton } from './_components/PostListSkeleton';
@@ -114,9 +114,9 @@ export default function CommunityClient() {
               />
               <div className="flex flex-col items-start self-stretch">
                 {posts.length === 0 ? (
-                  <PostEmptyState />
+                  <EmptyState />
                 ) : filteredPosts.length === 0 && !isFetching ? (
-                  <PostEmptyState message="검색 결과가 없어요." />
+                  <EmptyState message="검색 결과가 없어요." />
                 ) : (
                   filteredPosts.map((post) => <PostListItem key={post.id} post={post} />)
                 )}
