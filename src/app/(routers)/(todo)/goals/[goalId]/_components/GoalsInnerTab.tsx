@@ -3,10 +3,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import noteImage from '@/../public/images/large-note.svg';
-import { useGetGoal } from '@/api/goals';
 import GoalsInnerTabSkeleton from '@/app/(routers)/(todo)/goals/[goalId]/_components/GoalsInnerTabSkeleton';
 import GoalsTab from '@/app/(routers)/(todo)/goals/[goalId]/_components/GoalsTab';
 import TotalListTab from '@/app/(routers)/(todo)/goals/[goalId]/_components/TotalListTab';
+import { useGoalWithTodos } from '@/app/(routers)/(todo)/goals/[goalId]/hooks/useGoalWithTodos';
 
 import { DonutProgress } from '@/components/common/DonutProgress';
 import { Icon } from '@/components/icon/Icon';
@@ -16,12 +16,10 @@ export default function GoalsInnerTab({ goalId }: { goalId: number }) {
   const parsedUserInfo = userInfo ? JSON.parse(userInfo).state : null;
   const userName: string = parsedUserInfo.user.name ? parsedUserInfo.user.name : '';
 
-  const { data, isLoading, isSuccess } = useGetGoal({ id: goalId });
-  const todoCount: number = data?.todos.filter((todo) => todo.done).length ?? 0;
-  const totalCount: number = data?.todos.length ?? 0;
-  const progressPercent = totalCount === 0 ? 0 : Math.round((todoCount / totalCount) * 100);
+  const { goalData, todoLists, todoListsDone, progressPercent, isLoading, isSuccess } =
+    useGoalWithTodos(goalId);
 
-  if (isLoading) return <GoalsInnerTabSkeleton />;
+  if (isLoading) return <GoalsInnerTabSkeleton userName={userName} />;
   if (isSuccess)
     return (
       <>
@@ -30,7 +28,7 @@ export default function GoalsInnerTab({ goalId }: { goalId: number }) {
         </h1>
         <div className="w-full space-y-4 md:space-y-6 lg:flex lg:space-x-8">
           {/*흰색 목표 표기*/}
-          <GoalsTab goalId={goalId} data={data} />
+          <GoalsTab goalId={goalId} goalData={goalData} />
           <div className="flex flex-col space-y-4 md:flex-row md:space-x-5 lg:w-1/2 lg:flex-row lg:space-y-0 lg:space-x-6">
             {/*목표 진행도*/}
             <div className="flex h-40 w-full items-center justify-center space-x-8 rounded-[16px] bg-orange-500 text-white hover:shadow-2xl hover:shadow-orange-300 lg:w-1/2">
@@ -63,7 +61,7 @@ export default function GoalsInnerTab({ goalId }: { goalId: number }) {
           </div>
         </div>
         {/*할일탭*/}
-        <TotalListTab goalId={goalId} />
+        <TotalListTab goalId={goalId} todoLists={todoLists} todoListsDone={todoListsDone} />
       </>
     );
 }

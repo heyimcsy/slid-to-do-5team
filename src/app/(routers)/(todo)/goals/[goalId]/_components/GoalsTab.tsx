@@ -30,9 +30,9 @@ import {
 
 interface GoalsTabProps {
   goalId: number;
-  data: Omit<Goal, 'completedCount' | 'todoCount'>;
+  goalData: Omit<Goal, 'completedCount' | 'todoCount'> | undefined;
 }
-export default function GoalsTab({ goalId, data }: GoalsTabProps) {
+export default function GoalsTab({ goalId, goalData }: GoalsTabProps) {
   const router = useRouter();
 
   const { mutate: deleteGoal } = useDeleteGoals({
@@ -55,8 +55,8 @@ export default function GoalsTab({ goalId, data }: GoalsTabProps) {
     if (value === 'delete') {
       setDeleteDialogOpen(true);
     } else {
-      if (data?.title) {
-        setTitle(data?.title);
+      if (goalData?.title) {
+        setTitle(goalData?.title);
       }
       setEditDialogOpen(true);
     }
@@ -96,7 +96,7 @@ export default function GoalsTab({ goalId, data }: GoalsTabProps) {
             height={32}
             className="object-contain"
           />
-          <h2 className="font-base-semibold w-full truncate text-gray-700">{data?.title}</h2>
+          <h2 className="font-base-semibold w-full truncate text-gray-700">{goalData?.title}</h2>
         </div>
         <Select items={selectValue} onValueChange={handleSelectChange}>
           <SelectTrigger size="sm" iconTrigger className="shrink-0">
@@ -144,7 +144,7 @@ export default function GoalsTab({ goalId, data }: GoalsTabProps) {
                   type="button"
                   variant="default"
                   className="w-1/2"
-                  disabled={!title.trim() || title === data.title}
+                  disabled={!title.trim() || title === goalData?.title}
                 >
                   확인
                 </Button>
