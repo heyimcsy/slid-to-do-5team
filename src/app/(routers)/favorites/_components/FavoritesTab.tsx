@@ -30,7 +30,7 @@ const TABS: { label: string; value: Tab }[] = [
 
 export default function FavoritesTab() {
   const [tab, setTab] = useState<Tab>('ALL');
-  const [selectedGoalId, setSelectedGoalId] = useState<string>('전체 목표');
+  const [selectedGoalTitle, setSelectedGoalTitle] = useState<string>('전체 목표');
   const [goalSelectOpen, setGoalSelectOpen] = useState(false);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetFavorites();
@@ -55,9 +55,9 @@ export default function FavoritesTab() {
   ];
 
   const goalFiltered =
-    selectedGoalId === '전체 목표'
+    selectedGoalTitle === '전체 목표'
       ? favorites
-      : favorites.filter((fav) => fav.todo.goal?.title === selectedGoalId);
+      : favorites.filter((fav) => fav.todo.goal?.title === selectedGoalTitle);
 
   const filtered = goalFiltered.filter((fav: Favorite) => {
     if (tab === 'TODO') return !fav.todo.done;
@@ -89,8 +89,8 @@ export default function FavoritesTab() {
 
       <div className="flex flex-1 flex-col rounded-[28px] bg-white p-4 shadow-sm md:p-6">
         <Select
-          value={selectedGoalId}
-          onValueChange={(val: string | null) => val && setSelectedGoalId(val)}
+          value={selectedGoalTitle}
+          onValueChange={(val: string | null) => val && setSelectedGoalTitle(val)}
           open={goalSelectOpen}
           onOpenChange={setGoalSelectOpen}
         >
