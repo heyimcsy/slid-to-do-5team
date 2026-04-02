@@ -67,7 +67,7 @@ export default function FavoritesTab() {
 
   return (
     <div className="flex h-full flex-col">
-      <h1 className="font-xl-bold mb-6 text-gray-800">
+      <h1 className="font-xl-bold mb-6 hidden text-gray-800 md:block">
         찜한 할 일 <span className="text-orange-500">{favorites.length}</span>
       </h1>
 

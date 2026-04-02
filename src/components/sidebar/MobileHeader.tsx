@@ -9,6 +9,7 @@ import { SidebarTrigger } from '../ui/sidebar';
 const navItems = [
   { label: '캘린더', href: '/calendar' },
   { label: '모든 할 일', href: '/dashboard/todos' },
+  { label: '찜한 할 일', href: '/favorites' },
 ];
 
 export default function MobileHeader() {
