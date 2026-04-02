@@ -4,11 +4,12 @@ import type { Comment } from '../../types';
 
 import { useState } from 'react';
 
+import { formatRelativeTime } from '@/utils/formatRelativeTime';
+
 import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { KebabMenu } from '@/components/common/KebabMenu';
 
 import { WriterAvatar } from '../../_components/WriterAvatar';
-import { formatRelativeTime } from '../../_utils/formatRelativeTime';
 
 interface CommentItemProps {
   comment: Comment;
