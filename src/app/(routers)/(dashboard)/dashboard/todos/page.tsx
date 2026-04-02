@@ -8,8 +8,8 @@ import { useGetTodos } from '@/api/todos';
 
 import { Button } from '@/components/ui/button';
 
+import TodoList from '../../../../../components/common/TodoList';
 import TodoHeader from './_components/TodoHeader';
-import TodoList from './_components/TodoList';
 import TodoTabs from './_components/TodoTabs';
 
 export default function TodosPage() {
