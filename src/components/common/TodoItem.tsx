@@ -18,6 +18,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+import { Spinner } from '../ui/spinner';
+
 interface TodoItemProps {
   task: Task;
 }
@@ -32,6 +34,8 @@ export default function TodoItem({ task }: TodoItemProps) {
   // 찜하기 아이콘 Ui 상태 관리
   const [isFavorite, setIsFavorite] = useState(task.favorites);
   const isFavoriteRef = useRef(task.favorites);
+
+  const [isNavigating, setIsNavigating] = useState(false); // 추가
 
   const { mutate: patchTodo } = usePatchTodos();
   const { mutate: deleteTodo } = useDeleteTodos();
@@ -94,6 +98,7 @@ export default function TodoItem({ task }: TodoItemProps) {
           'flex cursor-pointer items-center justify-between gap-2 rounded-2xl px-2 py-2 transition-colors duration-150 hover:bg-[var(--orange-alpha-20)] md:px-4 md:py-3 lg:px-8',
         )}
       >
+        {isNavigating && <Spinner text="로딩 중" />}
         {/* 체크박스 */}
         <button onClick={handleToggle} className="shrink-0 cursor-pointer">
           {task.done ? (
@@ -119,7 +124,8 @@ export default function TodoItem({ task }: TodoItemProps) {
                 variant="icon"
                 size="none"
                 onClick={() => {
-                  router.push(`/goals/${task.goalId}/notes/${task.noteIds}`);
+                  setIsNavigating(true);
+                  router.push(`/goals/${task.goalId}/notes/${task.noteIds[0]}`);
                 }}
               >
                 <Icon name="note" variant="orange" />
@@ -144,6 +150,7 @@ export default function TodoItem({ task }: TodoItemProps) {
                 <button
                   className="cursor-pointer"
                   onClick={() => {
+                    setIsNavigating(true);
                     if (task.noteIds && task.noteIds.length > 0) {
                       router.push(`/goals/${task.goalId}/notes/${task.noteIds[0]}/edit`);
                     } else {
