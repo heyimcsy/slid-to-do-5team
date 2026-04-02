@@ -1,8 +1,8 @@
 'use client';
 
-import type { Task } from '../types';
+import type { Task } from '../../app/(routers)/(dashboard)/dashboard/todos/types';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDeleteFavorite, usePostFavorite } from '@/api/favorites';
 import { useDeleteTodos, usePatchTodos } from '@/api/todos';
@@ -24,9 +24,14 @@ interface TodoItemProps {
 
 export default function TodoItem({ task }: TodoItemProps) {
   const router = useRouter();
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   // 마우스 호버 상태 관리 (호버 시 수정/삭제 버튼 노출)
   const [hovered, setHovered] = useState(false);
+
+  // 찜하기 아이콘 Ui 상태 관리
+  const [isFavorite, setIsFavorite] = useState(task.favorites);
+  const isFavoriteRef = useRef(task.favorites);
 
   const { mutate: patchTodo } = usePatchTodos();
   const { mutate: deleteTodo } = useDeleteTodos();
@@ -50,11 +55,34 @@ export default function TodoItem({ task }: TodoItemProps) {
   };
   // 찜하기 토글 (찜 상태면 취소, 아니면 추가)
   const handleFavorite = () => {
-    if (task.favorites) {
-      deleteFavorite(task.id);
-    } else {
-      postFavorite(task.id);
-    }
+    //ref에서 최신값 읽기
+    const next = !isFavoriteRef.current;
+    // ref 즉시 업데이트
+    isFavoriteRef.current = next;
+    // 아이콘 즉각 반영
+    setIsFavorite(next);
+
+    // 이전 타이머가 있으면 취소
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+
+    // 300ms 후에 실행
+    debounceTimer.current = setTimeout(() => {
+      if (next) {
+        postFavorite(task.id, {
+          onError: () => {
+            isFavoriteRef.current = !next;
+            setIsFavorite(!next);
+          },
+        });
+      } else {
+        deleteFavorite(task.id, {
+          onError: () => {
+            isFavoriteRef.current = !next;
+            setIsFavorite(!next);
+          },
+        });
+      }
+    }, 300);
   };
 
   return (
@@ -138,7 +166,14 @@ export default function TodoItem({ task }: TodoItemProps) {
                 </div>
               </div>
             )}
-            <Icon name="outlineStar" />
+
+            <button onClick={handleFavorite} className="cursor-pointer">
+              {isFavorite ? (
+                <Icon name="filledStar" variant="orange" />
+              ) : (
+                <Icon name="outlineStar" />
+              )}
+            </button>
           </div>
         </div>
       </li>
