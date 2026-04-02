@@ -2,6 +2,8 @@ import type { PaginatedResponse } from '@/api/response';
 import type { Todo } from '@/api/todos';
 import type { QueryClient } from '@tanstack/react-query';
 
+import { GOALS } from '@/api/goals';
+import { TODOS } from '@/api/todos';
 import { apiClient } from '@/lib/apiClient.browser';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -173,7 +175,7 @@ export const usePostNote = (options: { onSuccess?: () => void }) => {
     },
     ...options,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [NOTES] });
+      queryClient.invalidateQueries({ queryKey: [NOTES, GOALS, TODOS] });
       options?.onSuccess?.();
     },
   });
@@ -225,7 +227,7 @@ export const useDeleteNote = () => {
       });
     },
     onSettled: (_, __, payload) => {
-      queryClient.invalidateQueries({ queryKey: [NOTES] });
+      queryClient.invalidateQueries({ queryKey: [NOTES, GOALS, TODOS] });
       queryClient.invalidateQueries({ queryKey: [NOTE, payload.id] });
     },
   });

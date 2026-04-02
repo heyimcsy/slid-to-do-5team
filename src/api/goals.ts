@@ -37,9 +37,9 @@ type DeleteGoalPayload = Pick<Goal, 'id'>;
 // PATCH 요청 body - Goal에서 필요한 것만 Pick
 type PatchGoalPayload = Pick<Goal, 'id' | 'title'>;
 
-const GOAL = 'goal';
-const GOALS = 'goals';
-const GOALS_URL = '/goals';
+export const GOAL = 'goal';
+export const GOALS = 'goals';
+export const GOALS_URL = '/goals';
 
 // Pick 원하는 값만 꺼내서 사용
 export const useGetGoals = ({
