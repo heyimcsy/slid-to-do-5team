@@ -5,6 +5,7 @@ import type { KeyboardEvent } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGetGoals } from '@/api/goals';
+import { uploadImage } from '@/api/images';
 import { usePostTodo } from '@/api/todos';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,6 +37,7 @@ import {
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Spinner } from '@/components/ui/spinner';
 
 type TagColor = (typeof COLORS)[number];
 type FormValues = z.infer<typeof schema>;
@@ -47,7 +49,6 @@ interface Tag {
 
 const COLORS = ['gray', 'green', 'yellow', 'red', 'purple'] as const;
 
-// zod 스키마 선언
 const schema = z.object({
   title: z.string().min(1, '제목을 입력해주세요').max(50, '제목은 50자 이내로 입력해주세요'),
   link: z
@@ -62,22 +63,17 @@ const schema = z.object({
 
 export default function NewForm({ onCancel }: { onCancel: () => void }) {
   const { data: goalsData } = useGetGoals();
-  // 마감기한 날짜 관리 state
   const [date, setDate] = React.useState<Date>();
   const [tempDate, setTempDate] = React.useState<Date | undefined>(undefined);
   const [open, setOpen] = React.useState(false);
   const [image, setImage] = React.useState<File | null>(null);
-
-  // 목표탭 상태 관리 state
   const [selectedGoal, setSelectedGoal] = React.useState<string | null>(null);
-
-  // 태그 관리
   const [tags, setTags] = useState<Tag[]>([]);
   const [tagInput, setTagInput] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const colorIndexRef = useRef(0);
 
-  //RHF + Zod
   const {
     register,
     watch,
@@ -86,11 +82,9 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
     trigger,
     formState: { isValid: titleValid, errors },
   } = useForm<FormValues>({
-    // 입력할 때마다 실시간으로 유효성 검증 실행
     mode: 'onChange',
     reValidateMode: 'onBlur',
     resolver: zodResolver(schema),
-    // 초기값을 빈 문자열로 설정해서 처음부터 controlled 컴포넌트로 인식하게 함
     defaultValues: { title: '', link: '' },
   });
 
@@ -100,12 +94,10 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
     return color;
   };
 
-  //태그 추가 함수
   const addTag = () => {
     const trimmed = tagInput.trim();
     if (!trimmed) return;
 
-    // 중복된 태그 체크
     const isDuplicate = tags.some((tag) => tag.name === trimmed);
     if (isDuplicate) {
       toast.error('이미 추가된 태그입니다');
@@ -132,8 +124,7 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
   };
 
   const handleLinkValidate = async () => {
-    const isValid = await trigger('link'); // zod validation 실행
-
+    const isValid = await trigger('link');
     if (!isValid) {
       const error = errors.link?.message;
       if (error) toast.error(error);
@@ -142,16 +133,34 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
 
   const router = useRouter();
   const link = watch('link');
-
-  // 유효성 체크 변수
+  const title = watch('title');
 
   const [selectedGoalId, setSelectedGoalId] = React.useState<number | null>(null);
   const isValid = titleValid && selectedGoalId !== null && date !== undefined;
 
   const { mutate: createTodo } = usePostTodo();
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    if (title.length > 50) {
+      toast.error('제목은 50자 이내로 입력해주세요', { id: 'title-limit' });
+    }
+  }, [title]);
+
+  const handleSubmit = async () => {
     if (!selectedGoalId || !date) return;
+
+    setIsSubmitting(true);
+
+    let fileUrl: string | undefined;
+    if (image) {
+      try {
+        fileUrl = await uploadImage(image);
+      } catch {
+        toast.error('이미지 업로드에 실패했습니다.');
+        setIsSubmitting(false);
+        return;
+      }
+    }
 
     createTodo(
       {
@@ -160,30 +169,23 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
         dueDate: date.toISOString(),
         linkUrl: link || undefined,
         tags: tags.map((t) => t.name),
+        fileUrl,
       },
       {
         onSuccess: () => router.back(),
+        onSettled: () => setIsSubmitting(false),
       },
     );
   };
 
-  const title = watch('title');
-
-  useEffect(() => {
-    if (title.length > 50) {
-      toast.error('제목은 50자 이내로 입력해주세요');
-    }
-  }, [title]);
-
-  // ✅ 공통 폼 (Dialog 전용 컴포넌트 제거)
   const formContent = (
-    <form>
+    <form onSubmit={(e) => e.preventDefault()}>
       <div className="flex flex-col gap-2 md:gap-4">
         <Field>
           <FieldLabel className="font-sm-semi md:font-base-semibold gap-1">
             제목<span className="text-orange-600">*</span>
           </FieldLabel>
-          <Input className="w-full" {...register('title', {})} />
+          <Input className="w-full" {...register('title')} />
         </Field>
 
         <Field>
@@ -234,19 +236,11 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
               <Calendar
                 mode="single"
                 selected={tempDate}
-                onSelect={(date) => {
-                  setTempDate(date);
-                }}
+                onSelect={(date) => setTempDate(date)}
                 defaultMonth={date}
               />
               <div className="flex gap-2 p-3 pt-0">
-                <Button
-                  variant="ghost"
-                  className="flex-1"
-                  onClick={() => {
-                    setOpen(false);
-                  }}
-                >
+                <Button variant="ghost" className="flex-1" onClick={() => setOpen(false)}>
                   취소
                 </Button>
                 <Button
@@ -286,24 +280,20 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
         </Field>
 
         <Field>
-          <FieldLabel className="font-sm-semi md:font-base-semibold">
-            링크
-            <Icon name="plus" variant="orange" />
-          </FieldLabel>
+          <FieldLabel className="font-sm-semi md:font-base-semibold">링크</FieldLabel>
           <div className="space-y-2">
             <Input
               type="url"
               placeholder="링크를 업로드해주세요"
               className="w-full border-dashed bg-gray-50"
               {...register('link')}
-              onBlur={handleLinkValidate} // 👈 포커스 아웃시 유효성 검사
+              onBlur={handleLinkValidate}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
-                  handleLinkValidate(); // 👈 엔터 시 유효성 검사
+                  handleLinkValidate();
                 }
               }}
-              // onClick={() => setLinkOpen(true)}
               startAdornment={
                 <button>
                   <Icon name="linkEditor" />
@@ -311,7 +301,6 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
               }
               endAdornment={
                 link && (
-                  //link태그의 값을 빈문자열로 변경 ->setValue
                   <button onClick={() => setValue('link', '')}>
                     <Icon name="close" color="gray" />
                   </button>
@@ -324,7 +313,7 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
         <Field>
           <FieldLabel className="font-sm-semi md:font-base-semibold">이미지</FieldLabel>
           <ImageUploadInput value={image} onChange={setImage} />
-          <p className="font-sm-medium text-gray-400">이미지는 최대 1개만 첨바를수 있습니다</p>
+          <p className="font-sm-medium text-gray-400">이미지는 최대 1개만 첨부할 수 있습니다</p>
         </Field>
       </div>
     </form>
@@ -334,6 +323,7 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
 
   return (
     <>
+      {isSubmitting && <Spinner text="로딩 중" />}
       {isMobile ? (
         <Drawer
           open
@@ -348,9 +338,7 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
                 <Icon name="close" color="gray" />
               </button>
             </DrawerHeader>
-
             {formContent}
-
             <div className="mt-4 flex gap-2">
               <Button
                 type="submit"
@@ -373,9 +361,7 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
             <DialogHeader className="mb-8">
               <DialogTitle>할 일 생성</DialogTitle>
             </DialogHeader>
-
             {formContent}
-
             <DialogFooter className="mt-10 w-full">
               <Button size="lg" variant="ghost" className="flex-1" onClick={onCancel}>
                 취소

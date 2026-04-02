@@ -3,9 +3,10 @@
 import type { Todo } from '@/api/todos';
 import type { KeyboardEvent } from 'react';
 
-import { useEffect, useRef, useState } from 'react'; // useEffect 추가
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGetGoals } from '@/api/goals';
+import { uploadImage } from '@/api/images';
 import { usePatchTodos } from '@/api/todos';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useForm } from 'react-hook-form';
@@ -35,6 +36,7 @@ import {
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Spinner } from '@/components/ui/spinner';
 
 const COLORS = ['gray', 'green', 'yellow', 'red', 'purple'] as const;
 type TagColor = (typeof COLORS)[number];
@@ -53,7 +55,7 @@ export function EditForm({ todo }: EditFormProps) {
   const { data: goalsData } = useGetGoals();
   const router = useRouter();
   const isMobile = useIsMobile();
-  const { mutate: patchTodo, isSuccess } = usePatchTodos(); // isSuccess 추가
+  const { mutate: patchTodo, isSuccess } = usePatchTodos();
 
   const initialTags: Tag[] = (todo.tags ?? []).map((tag, index) => ({
     name: tag.name,
@@ -65,11 +67,13 @@ export function EditForm({ todo }: EditFormProps) {
   const [tempDate, setTempDate] = useState<Date | undefined>(new Date(todo.dueDate));
   const [open, setOpen] = useState(false);
   const [image, setImage] = useState<File | null>(null);
+  const [existingUrl, setExistingUrl] = useState<string | null>(todo.fileUrl ?? null);
   const [selectedGoal, setSelectedGoal] = useState<string | null>(todo.goal?.title || null);
   const [selectedGoalId, setSelectedGoalId] = useState<number | null>(todo.goal?.id || null);
   const [link, setLink] = useState(todo.linkUrl ?? '');
   const [tags, setTags] = useState<Tag[]>(initialTags);
   const [tagInput, setTagInput] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const colorIndexRef = useRef(initialTags.length);
@@ -77,16 +81,24 @@ export function EditForm({ todo }: EditFormProps) {
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid: titleValid },
+    watch,
+    formState: { isValid: titleValid },
   } = useForm({
     mode: 'onChange',
     defaultValues: { title: todo.title },
   });
 
-  // API 성공 시 모달 닫기
   useEffect(() => {
     if (isSuccess) router.back();
   }, [isSuccess, router]);
+
+  const title = watch('title');
+
+  useEffect(() => {
+    if (title.length > 30) {
+      toast.error('제목은 30자 이내로 입력해주세요', { id: 'title-limit' });
+    }
+  }, [title]);
 
   const getNextColor = (): TagColor => {
     const color = COLORS[colorIndexRef.current % COLORS.length];
@@ -98,10 +110,9 @@ export function EditForm({ todo }: EditFormProps) {
     const trimmed = tagInput.trim();
     if (!trimmed) return;
 
-    // 중복된 태그 체크
     const isDuplicate = tags.some((tag) => tag.name === trimmed);
     if (isDuplicate) {
-      toast.error('이미 추가된 태그입니다');
+      toast.error('이미 추가된 태그입니다', { id: 'tag-duplicate' });
       return;
     }
 
@@ -126,15 +137,34 @@ export function EditForm({ todo }: EditFormProps) {
 
   const isValid = titleValid && selectedGoalId !== null && date !== undefined;
 
-  const onSubmit = handleSubmit((formValues) => {
-    patchTodo({
-      id: todo.id,
-      title: formValues.title,
-      done: status === 'DONE',
-      dueDate: date.toISOString(),
-      linkUrl: link || null,
-      tags: tags.map((t) => t.name),
-    });
+  const onSubmit = handleSubmit(async (formValues) => {
+    setIsSubmitting(true);
+
+    let fileUrl: string | undefined;
+    if (image) {
+      try {
+        fileUrl = await uploadImage(image);
+      } catch {
+        toast.error('이미지 업로드에 실패했습니다.');
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    patchTodo(
+      {
+        id: todo.id,
+        title: formValues.title,
+        done: status === 'DONE',
+        dueDate: date.toISOString(),
+        linkUrl: link || null,
+        tags: tags.map((t) => t.name),
+        fileUrl: fileUrl ?? existingUrl ?? null,
+      },
+      {
+        onSettled: () => setIsSubmitting(false),
+      },
+    );
   });
 
   const formContent = (
@@ -162,10 +192,18 @@ export function EditForm({ todo }: EditFormProps) {
         <FieldLabel className="font-sm-semi md:font-base-semibold gap-1">
           제목<span className="text-orange-600">*</span>
         </FieldLabel>
-        <Input className="w-full" {...register('title', { required: true, maxLength: 50 })} />
-        {errors.title?.type === 'maxLength' && (
-          <p className="font-sm-medium text-red-500">제목은 50자 이내로 입력해주세요</p>
-        )}
+        <Input
+          className="w-full"
+          {...register('title', {
+            required: true,
+            maxLength: 30,
+            onChange: (e) => {
+              if (e.target.value.length > 30) {
+                toast.error('제목은 30자 이내로 입력해주세요', { id: 'title-limit' });
+              }
+            },
+          })}
+        />
       </Field>
 
       <Field>
@@ -188,7 +226,7 @@ export function EditForm({ todo }: EditFormProps) {
                 className="p-2 focus:bg-orange-200"
                 onClick={() => {
                   setSelectedGoal(goal.title);
-                  setSelectedGoalId(goal.id); // ← 추가
+                  setSelectedGoalId(goal.id);
                 }}
               >
                 {goal.title}
@@ -284,7 +322,12 @@ export function EditForm({ todo }: EditFormProps) {
 
       <Field>
         <FieldLabel className="font-sm-semi md:font-base-semibold">이미지</FieldLabel>
-        <ImageUploadInput value={image} onChange={setImage} />
+        <ImageUploadInput
+          value={image}
+          onChange={setImage}
+          existingUrl={existingUrl}
+          onExistingUrlRemove={() => setExistingUrl(null)}
+        />
         <p className="font-sm-medium text-gray-400">이미지는 최대 1개만 첨부할 수 있습니다</p>
       </Field>
     </div>
@@ -292,6 +335,7 @@ export function EditForm({ todo }: EditFormProps) {
 
   return (
     <>
+      {isSubmitting && <Spinner text="로딩 중" />}
       {isMobile ? (
         <Drawer
           open
