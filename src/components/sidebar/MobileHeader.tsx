@@ -16,7 +16,6 @@ export default function MobileHeader() {
   const { data } = useGetTodos({ limit: 40 });
   const currentPage = navItems.find((item) => item.href === pathname);
   const todoCount = data?.totalCount ?? 0;
-  console.log(data?.totalCount);
   return (
     <header className="flex items-center justify-between gap-3 px-5 py-3 md:hidden">
       <div className="flex items-center gap-2">
