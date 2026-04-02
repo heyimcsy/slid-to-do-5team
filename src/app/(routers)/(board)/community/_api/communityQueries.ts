@@ -123,6 +123,7 @@ export const useCreateComment = (postId: number) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: communityQueryKeys.post(postId) });
       queryClient.invalidateQueries({ queryKey: communityQueryKeys.comments(postId) });
+      queryClient.invalidateQueries({ queryKey: [...communityQueryKeys.all, 'posts'] });
     },
   });
 };
@@ -154,6 +155,7 @@ export const useDeleteComment = (postId: number) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: communityQueryKeys.post(postId) });
       queryClient.invalidateQueries({ queryKey: communityQueryKeys.comments(postId) });
+      queryClient.invalidateQueries({ queryKey: [...communityQueryKeys.all, 'posts'] });
     },
   });
 };
