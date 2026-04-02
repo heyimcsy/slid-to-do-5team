@@ -4,9 +4,10 @@ import type { TodoWithFavorites } from '@/api/todos';
 
 import { useState } from 'react';
 import Image from 'next/image';
-import TodoList from '@/app/(routers)/(todo)/goals/[goalId]/_components/TodoList';
 import { cn } from '@/lib';
 
+import TodoItem from '@/components/common/TodoItem';
+import { EmptyState } from '@/components/EmptyState';
 import {
   Select,
   SelectContent,
@@ -90,7 +91,6 @@ export default function FavoritesTab() {
                 className="shrink-0"
               />
               <SelectValue placeholder="전체 목표" />
-              {/* <span>{goals.find((g) => g.id === selectedGoalId)?.title ?? '전체 목표'}</span> */}
             </div>
           </SelectTrigger>
           <SelectContent>
@@ -106,26 +106,17 @@ export default function FavoritesTab() {
 
         <div className="flex flex-col">
           {filtered.length > 0 ? (
-            filtered.map((todo: TodoWithFavorites) => (
-              <TodoList
-                key={todo.id}
-                goalId={todo.goal.id}
-                id={todo.id}
-                done={todo.done}
-                title={todo.title}
-                noteIds={todo.noteIds}
-                linkUrl={todo.linkUrl}
-                favorites={todo.favorites}
-              />
-            ))
+            filtered.map((todo) => <TodoItem key={todo.id} task={todo} />)
           ) : (
-            <p className="font-base-regular py-10 text-center text-gray-400">
-              {tab === 'ALL'
-                ? '찜한 할 일이 없어요'
-                : tab === 'TODO'
-                  ? '남은 할 일이 없어요'
-                  : '완료한 할 일이 없어요'}
-            </p>
+            <div>
+              {tab === 'ALL' ? (
+                <EmptyState message="아직 찜한 할일이 없어요" />
+              ) : tab === 'TODO' ? (
+                <EmptyState message="남은 할 일이 없어요" />
+              ) : (
+                <EmptyState message="완료한 할 일이 없어요" />
+              )}
+            </div>
           )}
         </div>
       </div>
