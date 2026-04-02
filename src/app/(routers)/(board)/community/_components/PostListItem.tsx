@@ -3,6 +3,7 @@
 import type { Post } from '../types';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { PostMeta } from './PostMeta';
@@ -32,9 +33,11 @@ export function PostListItem({ post }: PostListItemProps) {
 
       {image && !imageError && (
         <div className="size-[72px] shrink-0 overflow-hidden rounded-[12px] border border-gray-200 md:size-[120px] md:rounded-[16px]">
-          <img
+          <Image
             src={image}
             alt={title}
+            width={120}
+            height={120}
             className="size-full object-cover"
             onError={() => setImageError(true)}
           />
