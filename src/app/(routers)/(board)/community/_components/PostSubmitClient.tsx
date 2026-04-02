@@ -7,7 +7,6 @@ import { authUserStore } from '@/stores/authUserStore';
 import { toast } from 'sonner';
 
 import { useCreatePost, useGetPostById, useUpdatePost } from '../_api/communityQueries';
-import { compressImage } from '../_utils/compressImage';
 import { extractImagesFromContent } from '../_utils/extractImagesFromContent';
 import { PostFormClient } from './PostFormClient';
 
@@ -45,8 +44,7 @@ export function PostSubmitClient({ mode, postId }: Props) {
     newFiles: File[],
     existingUrls: string[],
   ) => {
-    const compressedFiles = await Promise.all(newFiles.map(compressImage));
-    const newUrls = await Promise.all(compressedFiles.map(uploadImage));
+    const newUrls = await Promise.all(newFiles.map(uploadImage));
 
     const finalImageUrls = [...existingUrls, ...newUrls];
 
