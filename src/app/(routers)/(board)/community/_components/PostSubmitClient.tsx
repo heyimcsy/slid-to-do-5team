@@ -72,7 +72,7 @@ export function PostSubmitClient({ mode, postId }: Props) {
     const payload = {
       title: data.title,
       content: contentWithImages,
-      image: finalImageUrls[0] ?? null,
+      ...(finalImageUrls[0] && { image: finalImageUrls[0] }),
     };
 
     if (mode === 'create') {
