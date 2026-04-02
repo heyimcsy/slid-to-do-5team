@@ -7,7 +7,7 @@ import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 
 import 'react-image-crop/dist/ReactCrop.css';
 
-import { uploadImage } from '@/app/(routers)/(board)/community/_api/communityApi';
+import { uploadImage } from '@/api/images';
 
 import { Icon } from '@/components/icon/Icon';
 import { Button } from '@/components/ui/button';
