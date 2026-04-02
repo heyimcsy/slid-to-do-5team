@@ -17,22 +17,25 @@ export default function NoteDetailContainer({ noteId }: { noteId: number }) {
   const onClose = () => router.back();
   const { data: linkData } = useOgInfo(todoData?.linkUrl);
 
-  if (isLoading) return <NoteDetailSkeleton />;
   if (!isSuccess || !noteData || !todoData) return null;
   return (
     <Sheet open onOpenChange={onClose}>
       <SheetContent side="right">
-        <NoteDetailContent
-          content={noteData?.content}
-          noteTitle={noteData?.title}
-          linkUrl={noteData?.linkUrl}
-          done={todoData?.done}
-          createdAt={todoData?.createdAt}
-          goal={todoData?.goal}
-          tags={todoData?.tags}
-          todoTitle={todoData?.title}
-          linkData={linkData}
-        />
+        {isLoading ? (
+          <NoteDetailSkeleton />
+        ) : (
+          <NoteDetailContent
+            content={noteData?.content}
+            noteTitle={noteData?.title}
+            linkUrl={noteData?.linkUrl}
+            done={todoData?.done}
+            createdAt={todoData?.createdAt}
+            goal={todoData?.goal}
+            tags={todoData?.tags}
+            todoTitle={todoData?.title}
+            linkData={linkData}
+          />
+        )}
       </SheetContent>
     </Sheet>
   );

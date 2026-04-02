@@ -45,6 +45,13 @@ export const useNoteDraft = ({
 
   // 로컬스토리지에 값을 저장하는 함수
   const saveDraft = () => {
+    const EMPTY_CONTENT =
+      '{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null}}]}';
+
+    const isEmpty: boolean =
+      !title.trim() && !linkUrl?.trim() && JSON.stringify(editor?.getJSON()) === EMPTY_CONTENT;
+
+    if (isEmpty) return; // 저장 안 함
     const now = new Date();
     const draft: NoteDraft = {
       title,
