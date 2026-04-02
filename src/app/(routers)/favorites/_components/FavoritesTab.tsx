@@ -1,9 +1,10 @@
 'use client';
 
-import type { TodoWithFavorites } from '@/api/todos';
+import type { Favorite } from '../_api/favoritesQueries';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { cn } from '@/lib';
 
 import TodoItem from '@/components/common/TodoItem';
@@ -17,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-import { MOCK_FAVORITES } from '../mock';
+import { toTask, useGetFavorites } from '../_api/favoritesQueries';
 
 type Tab = 'ALL' | 'TODO' | 'DONE';
 
@@ -29,32 +30,44 @@ const TABS: { label: string; value: Tab }[] = [
 
 export default function FavoritesTab() {
   const [tab, setTab] = useState<Tab>('ALL');
-  const [selectedGoalId, setSelectedGoalId] = useState<string>('전체 목표');
+  const [selectedGoalTitle, setSelectedGoalTitle] = useState<string>('전체 목표');
   const [goalSelectOpen, setGoalSelectOpen] = useState(false);
 
-  const favorites = MOCK_FAVORITES;
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetFavorites();
+  const favorites: Favorite[] = useMemo(
+    () => (data?.pages ?? []).flatMap((page) => page.favorites),
+    [data],
+  );
+
+  const { observerRef } = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  });
 
   const goals = [
     { id: 'all', title: '전체 목표' },
-    ...Array.from(new Map(favorites.map((todo) => [todo.goal.id, todo.goal])).values()).map(
-      (goal) => ({ id: String(goal.id), title: goal.title }),
-    ),
+    ...Array.from(
+      new Map(
+        favorites.filter((fav) => fav.todo.goal).map((fav) => [fav.todo.goal!.id, fav.todo.goal!]),
+      ).values(),
+    ).map((goal) => ({ id: String(goal.id), title: goal.title })),
   ];
 
   const goalFiltered =
-    selectedGoalId === '전체 목표'
+    selectedGoalTitle === '전체 목표'
       ? favorites
-      : favorites.filter((todo) => String(todo.goal.title) === selectedGoalId);
+      : favorites.filter((fav) => fav.todo.goal?.title === selectedGoalTitle);
 
-  const filtered = goalFiltered.filter((todo: TodoWithFavorites) => {
-    if (tab === 'TODO') return !todo.done;
-    if (tab === 'DONE') return todo.done;
+  const filtered = goalFiltered.filter((fav: Favorite) => {
+    if (tab === 'TODO') return !fav.todo.done;
+    if (tab === 'DONE') return fav.todo.done;
     return true;
   });
 
   return (
     <div className="flex h-full flex-col">
-      <h1 className="font-xl-bold mb-6 text-gray-800">
+      <h1 className="font-xl-bold mb-6 hidden text-gray-800 md:block">
         찜한 할 일 <span className="text-orange-500">{favorites.length}</span>
       </h1>
 
@@ -76,8 +89,8 @@ export default function FavoritesTab() {
 
       <div className="flex flex-1 flex-col rounded-[28px] bg-white p-4 shadow-sm md:p-6">
         <Select
-          value={selectedGoalId}
-          onValueChange={(val: string | null) => val && setSelectedGoalId(val)}
+          value={selectedGoalTitle}
+          onValueChange={(val: string | null) => val && setSelectedGoalTitle(val)}
           open={goalSelectOpen}
           onOpenChange={setGoalSelectOpen}
         >
@@ -104,9 +117,9 @@ export default function FavoritesTab() {
           </SelectContent>
         </Select>
 
-        <div className="flex flex-col">
+        <div ref={observerRef} className="flex flex-col">
           {filtered.length > 0 ? (
-            filtered.map((todo) => <TodoItem key={todo.id} task={todo} />)
+            filtered.map((fav) => <TodoItem key={fav.todo.id} task={toTask(fav)} />)
           ) : (
             <div>
               {tab === 'ALL' ? (
