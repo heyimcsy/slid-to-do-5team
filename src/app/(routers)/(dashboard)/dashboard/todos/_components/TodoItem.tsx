@@ -2,7 +2,7 @@
 
 import type { Task } from '../types';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDeleteTodos, usePatchTodos } from '@/api/todos';
 import { cn } from '@/lib';
