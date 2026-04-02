@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { uploadImage } from '@/api/images';
-import { authUserStore } from '@/stores/authUserStore';
+import { useGetMe } from '@/app/(routers)/profile/api/users';
 import { toast } from 'sonner';
 
 import { useCreatePost, useGetPostById, useUpdatePost } from '../_api/communityQueries';
@@ -19,7 +19,7 @@ export function PostSubmitClient({ mode, postId }: Props) {
   const router = useRouter();
 
   const { data: post } = useGetPostById(postId ?? 0);
-  const user = authUserStore((state) => state.user);
+  const { data: user } = useGetMe();
   const userId = Number(user?.id);
 
   const { mutateAsync: createPost } = useCreatePost();

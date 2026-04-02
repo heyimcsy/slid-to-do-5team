@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import NextImage from 'next/image';
 import { useRouter } from 'next/navigation';
-import { authUserStore } from '@/stores/authUserStore';
+import { useGetMe } from '@/app/(routers)/profile/api/users';
 import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
 import { EditorContent, useEditor } from '@tiptap/react';
@@ -29,7 +29,7 @@ interface PostDetailClientProps {
 export function PostDetailClient({ postId }: PostDetailClientProps) {
   useGetComments(postId);
   const { data: post, isLoading: isPostLoading, isError, refetch } = useGetPostById(postId);
-  const user = authUserStore((state) => state.user);
+  const { data: user } = useGetMe();
   const userId = Number(user?.id);
 
   const { mutate: deletePost, isPending: isPostDeleting } = useDeletePost();
