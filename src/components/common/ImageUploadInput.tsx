@@ -7,9 +7,16 @@ import { Input } from '@/components/ui/input';
 interface ImageUploadInputProps {
   value: File | null;
   onChange: (file: File | null) => void;
+  existingUrl?: string | null;
+  onExistingUrlRemove?: () => void;
 }
 
-export function ImageUploadInput({ value, onChange }: ImageUploadInputProps) {
+export function ImageUploadInput({
+  value,
+  onChange,
+  existingUrl,
+  onExistingUrlRemove,
+}: ImageUploadInputProps) {
   const inputId = useId();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -18,13 +25,9 @@ export function ImageUploadInput({ value, onChange }: ImageUploadInputProps) {
       setPreviewUrl(null);
       return;
     }
-
     const url = URL.createObjectURL(value);
     setPreviewUrl(url);
-
-    return () => {
-      URL.revokeObjectURL(url);
-    };
+    return () => URL.revokeObjectURL(url);
   }, [value]);
 
   const handleImageAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,7 +39,11 @@ export function ImageUploadInput({ value, onChange }: ImageUploadInputProps) {
 
   const handleImageRemove = () => {
     onChange(null);
+    onExistingUrlRemove?.();
   };
+
+  const displayUrl = previewUrl ?? existingUrl ?? null;
+  const hasImage = !!value || !!existingUrl;
 
   return (
     <div className="flex flex-col gap-2">
@@ -48,7 +55,7 @@ export function ImageUploadInput({ value, onChange }: ImageUploadInputProps) {
         onChange={handleImageAdd}
       />
 
-      {!value && (
+      {!hasImage && (
         <label
           htmlFor={inputId}
           className="flex h-[101px] w-full cursor-pointer items-center justify-center gap-[10px] rounded-[16px] border border-dashed border-gray-300 bg-gray-50 p-3"
@@ -60,12 +67,10 @@ export function ImageUploadInput({ value, onChange }: ImageUploadInputProps) {
         </label>
       )}
 
-      {value && previewUrl && (
+      {hasImage && displayUrl && (
         <div
           className="relative h-[101px] w-[160px] rounded-[16px]"
-          style={{
-            background: `url(${previewUrl}) lightgray 50% / cover no-repeat`,
-          }}
+          style={{ background: `url(${displayUrl}) lightgray 50% / cover no-repeat` }}
         >
           <button
             type="button"

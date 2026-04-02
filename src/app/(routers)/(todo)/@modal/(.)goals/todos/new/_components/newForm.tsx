@@ -6,12 +6,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGetGoals } from '@/api/goals';
 import { usePostTodo } from '@/api/todos';
-import { formatDate } from '@/utils/date';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import z from 'zod';
+
+import { formatDate } from '@/utils/date';
 
 import { ImageUploadInput } from '@/components/common/ImageUploadInput';
 import { Icon } from '@/components/icon/Icon';

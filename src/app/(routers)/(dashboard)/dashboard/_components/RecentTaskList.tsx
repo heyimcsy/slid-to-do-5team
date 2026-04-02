@@ -4,10 +4,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useGetTodos } from '@/api/todos';
 
-
-
-
-
 export function RecentTaskList() {
   /**
    * ////TODO: 최근 등록한 할 일에 필요한 기능

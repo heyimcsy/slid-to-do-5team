@@ -22,7 +22,10 @@ export default function MobileHeader() {
       <div className="flex items-center gap-2">
         <SidebarTrigger />
         <span className="font-lg-semibold">{`${currentPage?.label ?? ''}`}</span>
-        <span className="font-base-semibold mt-0.5 items-center text-orange-600">{todoCount}</span>
+        <span className="font-base-semibold mt-0.5 items-center text-orange-600">
+          {' '}
+          {currentPage?.href === '/dashboard/todos' && todoCount > 0 ? todoCount : ''}
+        </span>
       </div>
       <AlertPopover />
     </header>

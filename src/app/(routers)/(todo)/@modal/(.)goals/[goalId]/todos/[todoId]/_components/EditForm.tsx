@@ -7,10 +7,11 @@ import { useEffect, useRef, useState } from 'react'; // useEffect 추가
 import { useRouter } from 'next/navigation';
 import { useGetGoals } from '@/api/goals';
 import { usePatchTodos } from '@/api/todos';
-import { formatDate } from '@/utils/date';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+
+import { formatDate } from '@/utils/date';
 
 import { ImageUploadInput } from '@/components/common/ImageUploadInput';
 import { Icon } from '@/components/icon/Icon';

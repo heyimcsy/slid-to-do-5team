@@ -3,10 +3,6 @@
 import Image from 'next/image';
 import { useGetTodos } from '@/api/todos';
 
-
-
-
-
 export function TodosByGoalSection() {
   const { data: todos, isLoading, error } = useGetTodos({ limit: 4 });
   if (isLoading) return <div>로딩중...</div>;

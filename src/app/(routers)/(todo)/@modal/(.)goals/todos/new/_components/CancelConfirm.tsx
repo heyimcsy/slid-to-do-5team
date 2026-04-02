@@ -15,12 +15,9 @@ export default function CancelConfirmModal({ onConfirm, onCancel }: CancelConfir
   const isMobile = useIsMobile();
 
   const content = (
-    <div className="flex flex-col items-center gap-6 py-4">
-      <p className="text-center text-sm text-gray-600">
-        작성 중인 내용이 사라져요.
-        <br />
-        정말 나가시겠어요?
-      </p>
+    <div className="flex flex-col items-center gap-6 py-2">
+      <p className="text-center text-sm text-orange-600">작성 중인 내용이 사라져요.</p>
+
       <div className="flex w-full gap-2">
         <Button size="lg" variant="ghost" className="flex-1" onClick={onCancel}>
           돌아가기

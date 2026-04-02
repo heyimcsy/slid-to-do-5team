@@ -270,7 +270,8 @@ export const usePostTodo = () => {
       queryClient.setQueriesData(
         { queryKey: [TODOS] },
         (old: PaginatedResponse<TodoWithFavorites, 'todos'>) => {
-          if (!old) return old;
+          if (!old || !old.todos) return old;
+
           const optimisticTodo: TodoWithFavorites = {
             id: Date.now(), // 임시 id
             teamId: '',
