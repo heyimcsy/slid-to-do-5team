@@ -4,6 +4,7 @@ import type { Comment } from '../../types';
 
 import { useEffect, useMemo, useState } from 'react';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { toast } from 'sonner';
 
 import { useCreateComment, useDeleteComment, useGetComments } from '../../_api/communityQueries';
 import { CommentItem } from './CommentItem';
@@ -58,7 +59,7 @@ export function CommentSection({
     if (!inputValue.trim() || isCreating) return;
     createComment(inputValue, {
       onSuccess: () => setInputValue(''),
-      onError: () => alert('댓글 등록에 실패했습니다. 다시 시도해주세요.'),
+      onError: () => toast.error('댓글 등록에 실패했습니다. 다시 시도해주세요.'),
     });
   };
 

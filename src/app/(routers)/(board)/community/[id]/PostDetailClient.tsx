@@ -8,6 +8,7 @@ import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { toast } from 'sonner';
 
 import { formatDate } from '@/utils/date';
 
@@ -86,7 +87,7 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
         onConfirm={() => {
           deletePost(postId, {
             onSuccess: () => router.push('/community'),
-            onError: () => alert('게시물 삭제에 실패했습니다. 다시 시도해주세요.'),
+            onError: () => toast.error('게시물 삭제에 실패했습니다. 다시 시도해주세요.'),
           });
         }}
       />

@@ -3,6 +3,7 @@
 import type { Comment } from '../../types';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 import { formatRelativeTime } from '@/utils/formatRelativeTime';
 
@@ -36,7 +37,7 @@ export function CommentItem({ comment, isMyComment, onDelete, isDeleting }: Comm
         description="삭제된 댓글은 복구할 수 없습니다."
         onConfirm={() => {
           onDelete(comment.id, {
-            onError: () => alert('댓글 삭제에 실패했습니다. 다시 시도해주세요.'),
+            onError: () => toast.error('댓글 삭제에 실패했습니다. 다시 시도해주세요.'),
           });
         }}
       />
