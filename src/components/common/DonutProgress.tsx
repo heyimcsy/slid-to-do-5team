@@ -6,6 +6,7 @@ interface DonutProgressProps {
   trackColor?: string;
   responsive?: boolean;
   ariaLabel?: string;
+  className?: string;
 }
 
 /**
@@ -32,6 +33,7 @@ export function DonutProgress({
   color = '#FFFFFF',
   trackColor = '#009D97',
   responsive = false,
+  className,
 }: Readonly<DonutProgressProps>) {
   const r = 80;
   const circumference = 2 * Math.PI * r;
@@ -39,7 +41,7 @@ export function DonutProgress({
 
   return (
     <div
-      className={cn('size-27', responsive && 'lg:size-46')}
+      className={cn('size-27', responsive && 'lg:size-46', className)}
       role="progressbar"
       aria-label="donut progress"
       aria-valuemin={0}

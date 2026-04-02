@@ -2,8 +2,8 @@ import 'server-only';
 
 import type { NextRequest } from 'next/server';
 
-import { NextResponse } from 'next/server';
 import { isPublicPath } from '@/lib/navigation/publicPaths';
+import { NextResponse } from 'next/server';
 
 import { ALLOWED_ORIGINS, API_BASE_URL } from '@/constants/api';
 import { AUTH_CONFIG, isAuthRouteGuardEnabled } from '@/constants/auth-config';
