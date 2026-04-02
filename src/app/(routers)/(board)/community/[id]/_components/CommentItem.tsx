@@ -24,7 +24,6 @@ export function CommentItem({ comment, isMyComment, onDelete, isDeleting }: Comm
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const kebabItems = [
-    { label: '수정하기', onClick: () => {} /* TODO: 댓글 수정 API 연동 */ },
     { label: '삭제하기', onClick: () => setDeleteDialogOpen(true), variant: 'danger' as const },
   ];
 
