@@ -49,19 +49,14 @@ export function CommentSection({
     return Array.from(new Map(all.map((c) => [c.id, c])).values());
   }, [commentsData]);
 
-  const [inputValue, setInputValue] = useState('');
   const { mutate: createComment, isPending: isCreating } = useCreateComment(postId);
   const { mutate: deleteComment, isPending: isDeleting } = useDeleteComment(postId);
 
   const isBusy = isPostDeleting || isFetching;
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    watch,
-    formState: { errors },
-  } = useForm<CommentForm>({ resolver: zodResolver(schema) });
+  const { register, handleSubmit, reset, watch } = useForm<CommentForm>({
+    resolver: zodResolver(schema),
+  });
 
   const contentValue = watch('content');
 
@@ -110,7 +105,7 @@ export function CommentSection({
         <button
           type="button"
           onClick={handleSubmit(onSubmit)}
-          disabled={!inputValue.trim() || isBusy || isCreating}
+          disabled={!contentValue?.trim() || isBusy || isCreating}
           className="font-sm-semibold md:font-base-semibold w-16 shrink-0 rounded-full bg-orange-500 py-2.5 text-white disabled:cursor-not-allowed disabled:bg-gray-300 md:w-20 md:py-3"
         >
           등록
