@@ -216,6 +216,7 @@ export const usePatchTodos = () => {
       // 성공/실패 상관없이 최종적으로 서버 데이터로 동기화
       queryClient.invalidateQueries({ queryKey: [TODOS] });
       queryClient.invalidateQueries({ queryKey: [TODO, payload.id] });
+      queryClient.invalidateQueries({ queryKey: ['favorites'] });
     },
   });
 };
@@ -248,6 +249,7 @@ export const useDeleteTodos = () => {
     onSettled: (_, __, payload) => {
       queryClient.invalidateQueries({ queryKey: [TODOS] });
       queryClient.invalidateQueries({ queryKey: [TODO, payload.id] });
+      queryClient.invalidateQueries({ queryKey: ['favorites'] });
     },
   });
 };
