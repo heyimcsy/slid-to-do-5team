@@ -2,6 +2,7 @@ import type { Goal } from '@/api/goals';
 import type { PaginatedResponse } from '@/api/response';
 import type { TagColor } from '@/utils/tag';
 
+import { NOTIFICATIONS } from '@/api/notifications';
 import { apiClient } from '@/lib/apiClient.browser';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -217,6 +218,7 @@ export const usePatchTodos = () => {
       queryClient.invalidateQueries({ queryKey: [TODOS] });
       queryClient.invalidateQueries({ queryKey: [TODO, payload.id] });
       queryClient.invalidateQueries({ queryKey: ['favorites'] });
+      queryClient.invalidateQueries({ queryKey: [NOTIFICATIONS] });
     },
   });
 };
