@@ -4,17 +4,38 @@ import type { QueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/apiClient.browser';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-export interface Notification {
+// comment 타입
+export interface NotificationCommentData {
+  commentAuthor: string;
+  commentContent: string;
+  postTitle: string;
+  userImage: string;
+}
+
+// todo 타입
+export interface NotificationTodoData {
+  goalTitle: string;
+  todoTitle: string;
+  userImage: string;
+}
+
+interface NotificationBase {
   id: number;
   teamId: string;
   userId: number;
-  type: string;
   message: string;
-  data: null;
   isRead: boolean;
   resourceId: number;
   createdAt: string;
 }
+
+export type Notification = NotificationBase &
+  (
+    | { type: 'comment'; data: NotificationCommentData }
+    | { type: 'todo'; data: NotificationTodoData }
+    | { type: string; data: null }
+  );
+
 export type NotificationResponse = PaginatedResponse<Notification, 'notifications'>;
 
 export const NOTIFICATIONS = 'notifications';
