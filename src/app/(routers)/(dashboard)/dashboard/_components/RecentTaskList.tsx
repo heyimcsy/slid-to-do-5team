@@ -1,8 +1,12 @@
 'use client';
 
-import { useGetTodos } from '@/api/todos';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useGetTodos } from '@/api/todos';
+
+
+
+
 
 export function RecentTaskList() {
   /**
@@ -18,7 +22,6 @@ export function RecentTaskList() {
   if (error || !todos) return <div>에러</div>;
 
   const recentTodos = todos.todos.slice(0, 4);
-  console.log(recentTodos);
 
   return (
     <div className="recent-task-list flex flex-col gap-4">

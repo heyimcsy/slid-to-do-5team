@@ -1,7 +1,11 @@
 'use client';
 
-import { useGetTodos } from '@/api/todos';
 import Image from 'next/image';
+import { useGetTodos } from '@/api/todos';
+
+
+
+
 
 export function TodosByGoalSection() {
   const { data: todos, isLoading, error } = useGetTodos({ limit: 4 });
@@ -9,7 +13,6 @@ export function TodosByGoalSection() {
   if (error || !todos) return <div>에러</div>;
 
   const todosByGoal = todos.todos.slice(0, 4);
-  console.log(todosByGoal);
 
   return (
     <section className="todos-by-goal-section mt-10 flex w-full">
