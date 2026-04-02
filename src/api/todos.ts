@@ -133,7 +133,6 @@ export const useInfiniteTodos = ({ goalId, done, limit }: GetTodosParams) => {
       const queryString = params.toString();
       const url = queryString ? `${TODOS_URL}?${queryString}` : TODOS_URL;
 
-      // 기존 로직 그대로 유지 👍
       const [todosData, favoritesData] = await Promise.all([
         apiClient<PaginatedResponse<Todo, 'todos'>>(url),
         apiClient<PaginatedResponse<Favorite, 'favorites'>>(`${TODOS_URL}/favorites`),
@@ -194,7 +193,7 @@ export const usePatchTodos = () => {
       const previousTodos = queryClient.getQueriesData({ queryKey: [TODOS] });
       // 캐시 즉시 업데이트
       queryClient.setQueriesData({ queryKey: [TODOS] }, (old: PaginatedResponse<Todo, 'todos'>) => {
-        if (!old) return old;
+        if (!old || !old.todos) return old;
         return {
           ...old,
           todos: old.todos.map((todo: Todo) =>
