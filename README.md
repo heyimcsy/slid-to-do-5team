@@ -8,38 +8,46 @@
 
 ## 팀원 구성
 
-| 이름 | 역할 | Github |
-| --- | --- | --- |
+| 이름   | 역할 | Github                                   |
+| ------ | ---- | ---------------------------------------- |
 | 최서윤 | 팀장 | [@heyimcsy](https://github.com/heyimcsy) |
 | 이수지 | 팀원 | [@suwojiii](https://github.com/suwojiii) |
-| 이현우 | 팀원 | [@gealot](https://github.com/gealot) |
-| 조승기 | 팀원 | [@jojosg](https://github.com/jojosg) |
+| 이현우 | 팀원 | [@gealot](https://github.com/gealot)     |
+| 조승기 | 팀원 | [@jojosg](https://github.com/jojosg)     |
 
 ## 기술 스택
 
-| 종류 | 기술 |
-| --- | --- |
-| 언어 | Typescript |
-| 프레임워크 | NextJS 16 App Router |
-| 서버 상태 관리 | Tanstack Query 5 |
-| 클라이언트 상태 관리 | Zustand |
-| 스타일링 | Tailwind CSS 4, shadcn/ui |
-| 폼 관리 및 유효성 검사 | React Hook Form + Zod |
-| 애니메이션 | Motion |
-| 리치 텍스트 에디터 | Tiptap |
-| CI/CD | Github Actions |
-| 테스팅 | Jest(or Vitest) |
-| Quality | ESLint/Prettier |
+| 종류                   | 기술                                |
+| ---------------------- | ----------------------------------- |
+| 언어                   | Typescript                          |
+| 프레임워크             | NextJS 16 App Router                |
+| 서버 상태 관리         | Tanstack Query 5                    |
+| 클라이언트 상태 관리   | Zustand                             |
+| 스타일링               | Tailwind CSS 4, shadcn/ui           |
+| 폼 관리 및 유효성 검사 | React Hook Form + Zod               |
+| 애니메이션             | Motion                              |
+| 리치 텍스트 에디터     | Tiptap                              |
+| CI/CD                  | Github Actions                      |
+| 테스팅                 | Jest                                |
+| 코드 품질              | ESLint/Prettier, Husky, Lint-staged |
 
 ## 요구사항
 
-- PNPM을 패키지 매니저로 사용할 것이므로 아래 명령어를 통해 전역 설치
+- PNPM을 패키지 매니저로 사용할 것이므로 프로젝트 루트에서 아래 명령어를 통해 전역 설치
 
 ```bash
 # npm을 사용하여 pnpm 전역 설치
 npm i -g pnpm@latest
-# macOS의 경우
+# macOS의 경우(mise, asdf 등 사용시 설치 명령어에 맞게 조정)
 brew install pnpm
+```
+
+- Node.js, PNPM 등 버전 업그레이드 시
+
+```bash
+# Homebrew 사용 시
+brew upgrade node@24
+brew upgrade pnpm
 ```
 
 ### 사용방법

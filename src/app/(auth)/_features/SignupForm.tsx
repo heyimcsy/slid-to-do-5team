@@ -1,0 +1,152 @@
+'use client';
+
+import type { SignupBody } from '@/lib/auth/schemas/signup';
+import type { User } from '@/lib/auth/schemas/user';
+import type { FieldErrors } from 'react-hook-form';
+
+import { apiClient, ApiClientError } from '@/lib/apiClient';
+import { toastRhfValidationErrors } from '@/lib/auth/rhfToastValidationError';
+import { signupBodySchema } from '@/lib/auth/schemas/signup';
+import { authUserStore } from '@/stores/authUserStore';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
+import { useCallback } from 'react';
+import { useForm, useFormState } from 'react-hook-form';
+import { toast } from 'sonner';
+
+import { PasswordFieldWithToggle } from '@/components/common/PasswordFieldWithToggle';
+import { Button } from '@/components/ui/button';
+import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
+
+import { AuthFooter, AuthHeader } from '../_components/AuthHeaderFooter';
+import { AuthRHFTextField } from '../_components/AuthRHFTextField';
+
+function SignupFormBody() {
+  const router = useRouter();
+
+  const { control, handleSubmit } = useForm<SignupBody>({
+    resolver: zodResolver(signupBodySchema),
+    defaultValues: { name: '', email: '', password: '', passwordConfirm: '' },
+    mode: 'onSubmit',
+  });
+  const { isSubmitting } = useFormState({ control });
+
+  const toastInvalid = useCallback((errors: FieldErrors<SignupBody>) => {
+    toastRhfValidationErrors(errors, { toastId: 'signup-rhf-validation' });
+  }, []);
+
+  const runValidationToast = useCallback(() => {
+    void handleSubmit(() => {}, toastInvalid)();
+  }, [handleSubmit, toastInvalid]);
+
+  const onSubmit = async (data: SignupBody) => {
+    try {
+      const res = await apiClient<{
+        success?: boolean;
+        message?: string;
+        sessionIssued?: boolean;
+        emailVerificationRequired?: boolean;
+        user?: User;
+      }>('/signup', {
+        method: 'POST',
+        body: data,
+        clientPublicBase: '/api/auth',
+        retry: false,
+        skipSessionExpiredRedirect: true,
+      });
+      if (res.sessionIssued) {
+        if (res.user) {
+          authUserStore.getState().setUser(res.user);
+        } else {
+          authUserStore.getState().clearUser();
+        }
+        router.refresh();
+        router.push('/dashboard');
+        return;
+      }
+      authUserStore.getState().clearUser();
+      router.push('/login');
+    } catch (err) {
+      if (err instanceof ApiClientError) {
+        toast.error(err.message || '회원가입 실패', { id: 'signup-api-error' });
+        return;
+      }
+      toast.error(err instanceof Error ? err.message : '회원가입 실패', { id: 'signup-api-error' });
+    }
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit(onSubmit, toastInvalid)}
+      className="flex w-full flex-col"
+      noValidate
+    >
+      <FieldGroup className="pb-8 *:gap-x-0 *:gap-y-2 **:data-[slot=field-description]:gap-x-1 **:data-[slot=field-description]:pt-2 **:data-[slot=field-error]:text-justify">
+        <Field>
+          <FieldLabel htmlFor="signup-name">이름</FieldLabel>
+          <AuthRHFTextField
+            control={control}
+            name="name"
+            id="signup-name"
+            type="text"
+            autoComplete="name"
+            placeholder="이름을 입력해 주세요"
+            hideValidationMessage
+            onValidateToast={runValidationToast}
+          />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="signup-email">이메일</FieldLabel>
+          <AuthRHFTextField
+            control={control}
+            name="email"
+            id="signup-email"
+            type="email"
+            autoComplete="email"
+            placeholder="이메일을 입력해 주세요"
+            hideValidationMessage
+            onValidateToast={runValidationToast}
+          />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="signup-password">비밀번호</FieldLabel>
+          <PasswordFieldWithToggle
+            control={control}
+            name="password"
+            id="signup-password"
+            autoComplete="new-password"
+            className="w-full md:w-100"
+            placeholder="비밀번호를 입력해 주세요"
+            hideValidationMessage
+            onValidateToast={runValidationToast}
+          />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="signup-password-confirm">비밀번호 확인</FieldLabel>
+          <PasswordFieldWithToggle
+            control={control}
+            name="passwordConfirm"
+            id="signup-password-confirm"
+            autoComplete="new-password"
+            placeholder="비밀번호를 한 번 더 입력해 주세요"
+            hideValidationMessage
+            onValidateToast={runValidationToast}
+          />
+        </Field>
+      </FieldGroup>
+      <Button type="submit" disabled={isSubmitting} size="lg">
+        {isSubmitting ? '처리 중...' : '가입하기'}
+      </Button>
+    </form>
+  );
+}
+
+export default function SignupForm() {
+  return (
+    <main className="mx-auto flex min-h-dvh w-full max-w-100 flex-col justify-center px-4 text-center md:px-0">
+      <AuthHeader />
+      <SignupFormBody />
+      <AuthFooter variant="signup" />
+    </main>
+  );
+}
