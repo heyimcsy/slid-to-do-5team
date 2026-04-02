@@ -1,12 +1,6 @@
 import { z } from 'zod';
 
-
-
 import { AUTH_CONFIG } from '@/constants/auth-config';
-
-
-
-
 
 /**
  * 앱 전역에서 쓰는 사용자 모델 (camelCase). 비밀번호 등 민감 필드는 포함하지 않는다.

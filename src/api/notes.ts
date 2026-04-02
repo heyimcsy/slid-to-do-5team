@@ -163,7 +163,6 @@ export const useGetNote = ({ id }: { id: number }) => {
     enabled: !!id,
   });
 };
-
 export const usePostNote = (options: { onSuccess?: () => void }) => {
   const queryClient: QueryClient = useQueryClient();
   return useMutation({
@@ -173,10 +172,55 @@ export const usePostNote = (options: { onSuccess?: () => void }) => {
         body: payload,
       });
     },
-    ...options,
+
+    onMutate: async (payload: CreateNotePayload) => {
+      // 진행 중인 refetch 취소 (낙관적 업데이트 덮어씌워지는 거 방지)
+      await queryClient.cancelQueries({ queryKey: [NOTES] });
+
+      // 현재 캐시 스냅샷 저장 (롤백용)
+      const previousNotes = queryClient.getQueriesData({ queryKey: [NOTES] });
+
+      // 낙관적으로 캐시에 추가
+      queryClient.setQueriesData({ queryKey: [NOTES] }, (old: NotesGetResponse | undefined) => {
+        if (!old) return old;
+        const optimisticNote: Notes = {
+          id: Date.now(), // 임시 id
+          title: payload.title,
+          content: payload.content ?? { type: 'doc', content: [] },
+          linkUrl: payload.linkUrl ?? '',
+          todoId: payload.todoId,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          teamId: '',
+          userId: 0,
+          todo: { id: payload.todoId, title: '', done: false },
+        };
+        return {
+          ...old,
+          notes: [optimisticNote, ...old.notes],
+          totalCount: old.totalCount + 1,
+        };
+      });
+
+      return { previousNotes };
+    },
+
+    onError: (_, __, context) => {
+      // 실패 시 롤백
+      context?.previousNotes.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+    },
+
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [NOTES, GOALS, TODOS] });
       options?.onSuccess?.();
+    },
+
+    onSettled: () => {
+      // 성공/실패 모두 진짜 서버 데이터로 동기화
+      queryClient.invalidateQueries({ queryKey: [NOTES] });
+      queryClient.invalidateQueries({ queryKey: [GOALS] });
+      queryClient.invalidateQueries({ queryKey: [TODOS] });
     },
   });
 };

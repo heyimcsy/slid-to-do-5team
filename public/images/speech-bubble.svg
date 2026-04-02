@@ -1,16 +1,1 @@
-<svg width="341" height="176" viewBox="0 0 341 176" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g filter="url(#filter0_d_17937_60315)">
-<path d="M249.084 31.6816C248.36 30.8901 249.221 29.6687 250.21 30.085L252.69 31.1299C256.353 32.6732 259.601 35.0287 262.199 38.002H287C300.255 38.002 311 48.7471 311 62.002V122.002C311 135.257 300.255 146.002 287 146.002H54C40.7452 146.002 30 135.257 30 122.002V62.002C30 48.7471 40.7452 38.002 54 38.002H251.202C251.444 35.7412 250.711 33.4598 249.149 31.7529L249.084 31.6816Z" fill="#FFF8E4"/>
-</g>
-<defs>
-<filter id="filter0_d_17937_60315" x="0" y="0" width="341" height="176.002" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-<feOffset/>
-<feGaussianBlur stdDeviation="15"/>
-<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0"/>
-<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_17937_60315"/>
-<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_17937_60315" result="shape"/>
-</filter>
-</defs>
-</svg>
+<svg fill="none" height="176" viewBox="0 0 341 176" width="341" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><filter id="a" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse" height="176.002" width="341" x="0" y="0"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"/><feOffset/><feGaussianBlur stdDeviation="15"/><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0"/><feBlend in2="BackgroundImageFix" mode="normal" result="effect1_dropShadow_17937_60315"/><feBlend in="SourceGraphic" in2="effect1_dropShadow_17937_60315" mode="normal" result="shape"/></filter><g filter="url(#a)"><path d="m249.084 31.6816c-.724-.7915.137-2.0129 1.126-1.5966l2.48 1.0449c3.663 1.5433 6.911 3.8988 9.509 6.8721h24.801c13.255 0 24 10.7451 24 24v60c0 13.255-10.745 24-24 24h-233c-13.2548 0-24-10.745-24-24v-60c0-13.2549 10.7452-24 24-24h197.202c.242-2.2608-.491-4.5422-2.053-6.2491z" fill="#fff8e4"/></g></svg>
