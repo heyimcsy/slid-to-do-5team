@@ -46,7 +46,7 @@ export default function AlertContent({
               <div className="flex h-full flex-1 flex-col space-y-1 text-left">
                 <div className="font-sm-medium line-clamp-2 h-10 text-gray-700">{item.message}</div>
                 {item.type === 'comment' && item.data && (
-                  <p className="font-sm-medium text-gray-400">
+                  <p className="font-sm-medium mt-[-16px] line-clamp-1 text-gray-400">
                     &#34;{item.data.commentContent}&#34;
                   </p>
                 )}
