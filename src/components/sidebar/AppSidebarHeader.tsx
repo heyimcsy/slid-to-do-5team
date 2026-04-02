@@ -4,7 +4,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import AlertPopover from '../AlertPopover';
-import { Icon } from '../icon/Icon';
 import { SidebarHeader, SidebarTrigger, useSidebar } from '../ui/sidebar';
 
 export default function AppSidebarHeader() {
