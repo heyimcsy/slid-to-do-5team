@@ -100,3 +100,11 @@ export async function getRefreshToken(): Promise<string | undefined> {
   const cookieStore = await cookies();
   return cookieStore.get(AUTH_CONFIG.REFRESH_TOKEN_KEY)?.value;
 }
+
+/**
+ * `proxy`와 동일 기준: access·refresh 중 하나라도 있으면 비로그인 강제 리다이렉트 대상이 아님(세션·갱신 가능).
+ */
+export async function hasAuthSessionCookies(): Promise<boolean> {
+  const [access, refresh] = await Promise.all([getAccessToken(), getRefreshToken()]);
+  return Boolean(access || refresh);
+}

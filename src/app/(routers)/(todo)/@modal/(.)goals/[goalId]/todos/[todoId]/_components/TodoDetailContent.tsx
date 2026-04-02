@@ -13,7 +13,6 @@ import { IconButton } from '@/components/ui/button';
 
 import { AttachmentPreview } from './AttachmentPreview';
 
-// 나중에 API 연결할 때 받을 타입
 interface TodoDetailProps {
   title: string;
   done: 'TO DO' | 'DONE';
@@ -24,6 +23,7 @@ interface TodoDetailProps {
   linkUrl: string | null;
   noteTitle?: string;
   noteId?: number;
+  todoId: number;
 }
 
 export function TodoDetailContent({
@@ -36,6 +36,7 @@ export function TodoDetailContent({
   linkUrl,
   noteTitle,
   noteId,
+  todoId,
 }: TodoDetailProps) {
   return (
     <div className="flex min-w-0 flex-col gap-6">
@@ -66,7 +67,7 @@ export function TodoDetailContent({
       <div className="font-sm-regular flex items-center gap-2">
         <span className="text-gray-400"># 태그</span>
         <div className="flex flex-wrap gap-1">
-          {tags.map((tag, index) => (
+          {tags.map((tag: Tags, index: number) => (
             <Badge key={index} color={tag.color}>
               {tag.name}
             </Badge>
@@ -89,7 +90,7 @@ export function TodoDetailContent({
 
           <IconButton variant="ghost" className="rounded-xl border border-gray-100 p-4">
             <Link
-              href={`/goals/${goalId}/notes/${noteId}`}
+              href={`/goals/${goalId}/notes/${noteId}?todoId=${todoId}`}
               className="flex h-full w-full items-center justify-start gap-2"
             >
               <Image src={noteImage} alt="describe note icon" width={32} height={32} />

@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { Icon } from '../icon/Icon';
+import AlertPopover from '../AlertPopover';
 import { SidebarHeader, SidebarTrigger, useSidebar } from '../ui/sidebar';
 
 export default function AppSidebarHeader() {
@@ -68,11 +68,7 @@ export default function AppSidebarHeader() {
           )}
         </Link>
       )}
-      {!isMobile && state === 'collapsed' && (
-        <button aria-label="알림" className="mt-8 p-3 lg:hidden">
-          <Icon name="bell" size={24} />
-        </button>
-      )}
+      {!isMobile && state === 'collapsed' && <AlertPopover collapsed className="lg:hidden" />}
     </SidebarHeader>
   );
 }

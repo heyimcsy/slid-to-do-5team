@@ -41,18 +41,20 @@ export default function NoteEditor({
   const withSpace = getText().length;
   const withoutSpace = getText().replace(/\s/g, '').length;
   return (
-    <div className="mt-4 flex h-full w-[343px] flex-col rounded-[24px] bg-white p-4 pb-8 md:w-full">
+    <div className="mt-4 flex w-[343px] flex-1 flex-col overflow-hidden rounded-[24px] bg-white p-4 pb-8 md:w-full">
       <Toolbar editor={editor} variant="note" onLinkConfirm={(url) => setLinkUrl(url)} />
       <div className="mt-4 flex h-fit w-full items-center space-x-2 md:mt-7 md:space-x-3">
         <div className="flex w-full items-center space-x-0.5">
           <Image src={noteImage} alt="describe note icon" width={40} height={40} />
-          <Input
-            value={title}
-            onChange={onHandleChange}
-            maxLength={30}
-            placeholder="노트의 제목을 작성해주세요."
-            className="font-xl-semibold md:font-2xl-semibold w-[400px] border-0 leading-tight text-gray-800"
-          />
+          <div className="w-full">
+            <Input
+              value={title}
+              onChange={onHandleChange}
+              maxLength={30}
+              placeholder="노트의 제목을 작성해주세요."
+              className="font-xl-semibold md:font-2xl-semibold border-0 leading-tight text-gray-800"
+            />
+          </div>
         </div>
         <p className="font-xs-medium shrink-0 text-gray-500">
           {titleLength}/<span className="text-orange-600">30</span>
@@ -75,7 +77,12 @@ export default function NoteEditor({
               <LinkEmbed url={linkUrl} onDelete={handleLinkDelete} data={linkData} />
             </div>
           )}
-          <EditorContent editor={editor} />
+          <div
+            className="min-h-0 flex-1 overflow-y-auto px-5 pt-2 md:px-10 [&::-webkit-scrollbar]:hidden"
+            onClick={() => editor?.commands.focus()}
+          >
+            <EditorContent editor={editor} className="text-gray-800" />
+          </div>
         </div>
       </div>
       <div className="flex w-full justify-end">

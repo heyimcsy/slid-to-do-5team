@@ -138,13 +138,7 @@ export default function TodoItem({ task }: TodoItemProps) {
                 </div>
               </div>
             )}
-            <button onClick={handleFavorite} className="cursor-pointer">
-              {task.favorites ? (
-                <Icon name="filledStar" variant="orange" />
-              ) : (
-                <Icon name="outlineStar" />
-              )}
-            </button>
+            <Icon name="outlineStar" />
           </div>
         </div>
       </li>
