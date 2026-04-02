@@ -33,6 +33,7 @@ export default function DividedModal({ todoId }: { todoId: string }) {
       linkUrl={data.linkUrl}
       noteTitle={noteData?.title}
       noteId={noteData?.id}
+      todoId={Number(todoId)}
     />
   ) : null;
 
