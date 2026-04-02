@@ -123,7 +123,7 @@ export function EditForm({ todo }: EditFormProps) {
     }
   };
 
-  const isValid = titleValid && selectedGoal !== null && date !== undefined;
+  const isValid = titleValid && selectedGoalId !== null && date !== undefined;
 
   const onSubmit = handleSubmit((formValues) => {
     patchTodo({
