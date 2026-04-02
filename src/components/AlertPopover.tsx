@@ -11,7 +11,13 @@ import { Icon } from '@/components/icon/Icon';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
-export default function AlertPopover() {
+export default function AlertPopover({
+  collapsed = false,
+  className,
+}: {
+  collapsed?: boolean;
+  className?: string;
+}) {
   const { data, isLoading, isSuccess } = useGetNotifications({ limit: 20 });
   const { mutate: patchNotis } = usePatchNotifications();
   const notifications: Notification[] = data?.notifications || [];
@@ -27,11 +33,22 @@ export default function AlertPopover() {
         render={
           <button
             aria-label="알림"
-            className="relative cursor-pointer rounded-full border border-gray-200 p-5"
+            className={cn(
+              'relative cursor-pointer rounded-full p-0 md:p-5',
+              !collapsed && 'md:border md:border-gray-200',
+              className,
+            )}
           >
-            <Icon name="bell" />
+            <Icon name="bell" className={cn(collapsed && 'lg:size-6')} />
             {hasUnread && (
-              <span className="absolute top-1 right-1 size-3 rounded-full bg-orange-500" />
+              <span
+                className={cn(
+                  'absolute rounded-full bg-orange-500',
+                  collapsed
+                    ? 'mt-2 size-2 md:top-3 md:right-5 lg:hidden' // collapsed: 큰 뱃지, 우상단 붙임
+                    : 'top-0 right-0 size-2 md:top-1 md:right-1 md:size-3', // 기본
+                )}
+              />
             )}
           </button>
         }
