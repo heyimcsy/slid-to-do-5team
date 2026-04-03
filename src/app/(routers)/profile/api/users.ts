@@ -1,6 +1,8 @@
 import { apiClient } from '@/lib/apiClient.browser';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { communityQueryKeys } from '../../(board)/community/_api/communityQueryKeys';
+
 const USER_ME = 'user-me';
 const USERS_URL = '/users';
 
@@ -66,6 +68,7 @@ export const usePatchProfile = () => {
     },
     onSuccess: (data) => {
       queryClient.setQueryData([USER_ME], data); // 캐시 즉시 업데이트
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.all });
     },
     onError: (error: Response) => {
       console.error(error);
