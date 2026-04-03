@@ -1,29 +1,35 @@
-import { useOgImage } from '@/app/(routers)/(todo)/@modal/(.)goals/[goalId]/todos/[todoId]/hooks/useOgImage';
+import Image from 'next/image';
 
 import { Icon } from '@/components/icon/Icon';
 
 interface AttachmentPreviewProps {
-  url?: string;
+  linkUrl: string | null;
+  fileUrl: string | null;
 }
 
-export function AttachmentPreview({ url }: AttachmentPreviewProps) {
-  const { data: ogImage } = useOgImage(url);
+export function AttachmentPreview({ linkUrl, fileUrl }: AttachmentPreviewProps) {
   return (
     <div className="flex flex-col gap-2">
-      {url && (
+      {linkUrl && (
         <a
-          href={url}
+          href={linkUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="font-base-regular flex items-center gap-1 text-sm text-gray-700 no-underline"
         >
-          <Icon name="linkEditor" size={24} />
-          {url}
+          <Icon name="link" size={24} variant="default" />
+          {linkUrl}
         </a>
       )}
-      {ogImage && (
+      {fileUrl && (
         <div className="relative h-44.5 w-full overflow-hidden rounded-[16px] border-gray-200 md:h-51.5">
-          <img src={ogImage} alt="링크 미리보기 이미지" className="h-full w-full object-cover" />
+          <Image
+            src={fileUrl}
+            alt="할일 관련 이미지"
+            width={500}
+            height={350}
+            className="h-full w-full object-cover"
+          />
         </div>
       )}
     </div>

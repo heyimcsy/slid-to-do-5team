@@ -14,7 +14,7 @@ import { Icon } from '@/components/icon/Icon';
 export default function GoalsInnerTab({ goalId }: { goalId: number }) {
   const userInfo = localStorage.getItem('user-info');
   const parsedUserInfo = userInfo ? JSON.parse(userInfo).state : null;
-  const userName: string = parsedUserInfo.user.name ? parsedUserInfo.user.name : '';
+  const userName: string = parsedUserInfo?.user?.name ? parsedUserInfo.user.name : '';
 
   const { goalData, todoLists, todoListsDone, progressPercent, isLoading, isSuccess } =
     useGoalWithTodos(goalId);

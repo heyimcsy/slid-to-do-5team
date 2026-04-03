@@ -46,7 +46,11 @@ function DrawerContent({
   return (
     <DrawerPortal>
       <DrawerOverlay />
-      <DrawerPrimitive.Viewport className="fixed inset-0 z-50 flex items-end">
+      <DrawerPrimitive.Viewport
+        className="fixed inset-0 z-50 flex items-end"
+        // TODO: 모바일 버전의 할 일 상세 Drawer가 화면에 나타나지 않는 버그로 인한 임시 추가
+        style={{ minHeight: '100dvh' }}
+      >
         <DrawerPrimitive.Popup
           data-slot="drawer-content"
           className={cn(
@@ -54,12 +58,13 @@ function DrawerContent({
             'w-full rounded-t-lg border-t',
             'transition-transform duration-300 ease-out',
             'data-[ending-style]:translate-y-full data-[starting-style]:translate-y-full',
-            'mb-[-100vh] pb-[100vh]',
+            // TODO: 모바일 버전의 할 일 상세 Drawer가 화면에 나타나지 않는 버그로 인한 임시 삭제
+            // 'mb-[-100vh] pb-[100vh]',
             className,
           )}
           {...props}
         >
-          <div className="bg-muted mx-auto mt-4 mb-2 h-1.5 w-[100px] shrink-0 rounded-full" />
+          {/* <div className="bg-muted mx-auto mt-4 mb-2 h-1.5 w-[100px] shrink-0 rounded-full" /> */}
           <DrawerPrimitive.Content className="relative flex h-full flex-col overflow-y-auto">
             {children}
           </DrawerPrimitive.Content>

@@ -13,11 +13,13 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 
 export default function DividedModal({ todoId }: { todoId: string }) {
+  const router = useRouter();
+  const isMd = useMediaQuery('(min-width: 768px)');
+
   const { data, isLoading, isSuccess } = useGetTodo({ id: Number(todoId) });
   const noteId = data?.noteIds?.[0];
   const { data: noteData } = useGetNote({ id: Number(noteId) });
-  const router = useRouter();
-  const isMd = useMediaQuery('(min-width: 768px)');
+
   const onClose = () => router.back();
 
   const content = isLoading ? (
@@ -34,6 +36,7 @@ export default function DividedModal({ todoId }: { todoId: string }) {
       noteTitle={noteData?.title}
       noteId={noteData?.id}
       todoId={Number(todoId)}
+      fileUrl={data?.fileUrl}
     />
   ) : null;
 

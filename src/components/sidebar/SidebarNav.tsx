@@ -10,6 +10,7 @@ import { useGetGoals, usePostGoals } from '@/api/goals';
 import { useLogout } from '@/hooks/auth/useLogout';
 import { cn } from '@/lib';
 import { authUserStore } from '@/stores/authUserStore';
+import { useSettingsModal } from '@/stores/useSettingModal';
 import { AnimatePresence, motion } from 'motion/react';
 
 import {
@@ -61,6 +62,8 @@ const bottomItems: {
 ];
 
 export default function SidebarNav() {
+  const { open: openSettings } = useSettingsModal();
+
   const router = useRouter();
   const { data: goalsData } = useGetGoals();
   const [goalInput, setGoalInput] = React.useState('');
@@ -175,12 +178,25 @@ export default function SidebarNav() {
         <SidebarMenu className="gap-3">
           {middleItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <Link href={item.href} className="flex items-center gap-2 px-2 py-3">
-                <Icon name={item.icon} className="group-data-[collapsible=icon]:hidden" />
-                <span className="font-lg-semibold text-gray-500 group-data-[collapsible=icon]:hidden">
-                  {item.label}
-                </span>
-              </Link>
+              {item.href === '/settings' ? (
+                <button
+                  type="button"
+                  onClick={openSettings}
+                  className="flex w-full cursor-pointer items-center gap-2 px-2 py-3 text-left"
+                >
+                  <Icon name={item.icon} className="group-data-[collapsible=icon]:hidden" />
+                  <span className="font-lg-semibold text-gray-500 group-data-[collapsible=icon]:hidden">
+                    {item.label}
+                  </span>
+                </button>
+              ) : (
+                <Link href={item.href} className="flex items-center gap-2 px-2 py-3">
+                  <Icon name={item.icon} className="group-data-[collapsible=icon]:hidden" />
+                  <span className="font-lg-semibold text-gray-500 group-data-[collapsible=icon]:hidden">
+                    {item.label}
+                  </span>
+                </Link>
+              )}
             </SidebarMenuItem>
           ))}
           <SidebarMenuItem key="logout">

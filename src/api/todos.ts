@@ -3,6 +3,7 @@ import type { PaginatedResponse } from '@/api/response';
 import type { TagColor } from '@/utils/tag';
 
 import { NOTIFICATIONS } from '@/api/notifications';
+import { favoritesQueryKeys } from '@/app/(routers)/favorites/_api/favoritesQueries';
 import { apiClient } from '@/lib/apiClient.browser';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -217,7 +218,7 @@ export const usePatchTodos = () => {
       // 성공/실패 상관없이 최종적으로 서버 데이터로 동기화
       queryClient.invalidateQueries({ queryKey: [TODOS] });
       queryClient.invalidateQueries({ queryKey: [TODO, payload.id] });
-      queryClient.invalidateQueries({ queryKey: ['favorites'] });
+      queryClient.invalidateQueries({ queryKey: favoritesQueryKeys.all });
       queryClient.invalidateQueries({ queryKey: [NOTIFICATIONS] });
     },
   });
@@ -234,7 +235,7 @@ export const useDeleteTodos = () => {
       await queryClient.cancelQueries({ queryKey: [TODOS] });
       const previousTodos = queryClient.getQueriesData({ queryKey: [TODOS] });
       queryClient.setQueriesData({ queryKey: [TODOS] }, (old: PaginatedResponse<Todo, 'todos'>) => {
-        if (!old) return old;
+        if (!old || !old.todos) return old;
         return {
           ...old,
           todos: old.todos.filter((todo: Todo) => todo.id !== id),
@@ -251,7 +252,7 @@ export const useDeleteTodos = () => {
     onSettled: (_, __, payload) => {
       queryClient.invalidateQueries({ queryKey: [TODOS] });
       queryClient.invalidateQueries({ queryKey: [TODO, payload.id] });
-      queryClient.invalidateQueries({ queryKey: ['favorites'] });
+      queryClient.invalidateQueries({ queryKey: favoritesQueryKeys.all });
     },
   });
 };

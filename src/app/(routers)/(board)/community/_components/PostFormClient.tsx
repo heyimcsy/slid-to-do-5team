@@ -232,7 +232,7 @@ export function PostFormClient({
 
           <div className="font-xs-regular flex shrink-0 flex-col items-end px-5 py-4 text-gray-400 md:px-10 md:py-6 lg:px-14">
             <p className={charCount >= CONTENT_MAX_LENGTH ? 'text-red-600' : ''}>
-              공백포함 {charCount}자 | 공백제외 {charCountWithoutSpaces}자
+              공백포함 {charCount}자 / {CONTENT_MAX_LENGTH}자 | 공백제외 {charCountWithoutSpaces}자
             </p>
             <p>이미지는 10MB 이하의 파일만 첨부할 수 있습니다. (최대 {IMAGE_LIMIT}까지)</p>
           </div>

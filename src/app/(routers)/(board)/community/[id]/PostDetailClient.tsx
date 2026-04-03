@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import NextImage from 'next/image';
 import { useRouter } from 'next/navigation';
-import { authUserStore } from '@/stores/authUserStore';
+import { useGetMe } from '@/app/(routers)/profile/api/users';
 import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { toast } from 'sonner';
 
 import { formatDate } from '@/utils/date';
 
@@ -28,7 +29,7 @@ interface PostDetailClientProps {
 export function PostDetailClient({ postId }: PostDetailClientProps) {
   useGetComments(postId);
   const { data: post, isLoading: isPostLoading, isError, refetch } = useGetPostById(postId);
-  const user = authUserStore((state) => state.user);
+  const { data: user } = useGetMe();
   const userId = Number(user?.id);
 
   const { mutate: deletePost, isPending: isPostDeleting } = useDeletePost();
@@ -86,7 +87,7 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
         onConfirm={() => {
           deletePost(postId, {
             onSuccess: () => router.push('/community'),
-            onError: () => alert('게시물 삭제에 실패했습니다. 다시 시도해주세요.'),
+            onError: () => toast.error('게시물 삭제에 실패했습니다. 다시 시도해주세요.'),
           });
         }}
       />

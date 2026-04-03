@@ -67,7 +67,7 @@ export const useCreatePost = () => {
         pages: [{ comments: [], totalCount: 0, nextCursor: null }],
         pageParams: [undefined],
       });
-      queryClient.removeQueries({ queryKey: [...communityQueryKeys.all, 'posts'] });
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.posts() });
       router.replace(`/community/${data.id}`);
     },
   });
@@ -87,7 +87,7 @@ export const useUpdatePost = (postId: number) => {
       }),
     onSuccess: (data) => {
       queryClient.setQueryData(communityQueryKeys.post(data.id), data);
-      queryClient.removeQueries({ queryKey: [...communityQueryKeys.all, 'posts'] });
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.posts() });
       router.replace(`/community/${data.id}`);
     },
   });
@@ -121,9 +121,7 @@ export const useCreateComment = (postId: number) => {
         body: JSON.stringify({ content }),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: communityQueryKeys.post(postId) });
-      queryClient.invalidateQueries({ queryKey: communityQueryKeys.comments(postId) });
-      queryClient.invalidateQueries({ queryKey: [...communityQueryKeys.all, 'posts'] });
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.all });
     },
   });
 };
@@ -153,9 +151,7 @@ export const useDeleteComment = (postId: number) => {
         method: 'DELETE',
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: communityQueryKeys.post(postId) });
-      queryClient.invalidateQueries({ queryKey: communityQueryKeys.comments(postId) });
-      queryClient.invalidateQueries({ queryKey: [...communityQueryKeys.all, 'posts'] });
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.all });
     },
   });
 };

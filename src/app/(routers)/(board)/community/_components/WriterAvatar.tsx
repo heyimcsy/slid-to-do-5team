@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 
 interface WriterAvatarProps {
   name: string;
@@ -19,9 +20,12 @@ export function WriterAvatar({ name, image }: WriterAvatarProps) {
   return (
     <div className="size-5 shrink-0 overflow-hidden rounded-full bg-gray-200">
       {image && !imageError ? (
-        <img
+        <Image
           src={image}
           alt={name}
+          width={20}
+          height={20}
+          unoptimized
           className="size-full object-cover"
           onError={() => setImageError(true)}
         />

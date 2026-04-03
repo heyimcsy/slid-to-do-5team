@@ -1,3 +1,4 @@
+import { favoritesQueryKeys } from '@/app/(routers)/favorites/_api/favoritesQueries';
 import { apiClient } from '@/lib/apiClient.browser';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -19,7 +20,7 @@ export const usePostFavorite = () => {
       queryClient.setQueriesData(
         { queryKey: [TODOS] },
         (old: PaginatedResponse<TodoWithFavorites, 'todos'>) => {
-          if (!old) return old;
+          if (!old || !old.todos) return old;
           return {
             ...old,
             todos: old.todos.map((todo) =>
@@ -40,6 +41,7 @@ export const usePostFavorite = () => {
 
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [TODOS] });
+      queryClient.invalidateQueries({ queryKey: favoritesQueryKeys.all });
     },
   });
 };
@@ -56,7 +58,7 @@ export const useDeleteFavorite = () => {
       queryClient.setQueriesData(
         { queryKey: [TODOS] },
         (old: PaginatedResponse<TodoWithFavorites, 'todos'>) => {
-          if (!old) return old;
+          if (!old || !old.todos) return old;
           return {
             ...old,
             todos: old.todos.map((todo) =>
@@ -77,6 +79,7 @@ export const useDeleteFavorite = () => {
 
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [TODOS] });
+      queryClient.invalidateQueries({ queryKey: favoritesQueryKeys.all });
     },
   });
 };

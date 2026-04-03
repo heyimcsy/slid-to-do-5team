@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-
 import type { Post } from '../types';
+
+import { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 
 import { PostMeta } from './PostMeta';
 
@@ -24,9 +25,12 @@ export function FeaturedPostCard({ post }: FeaturedPostCardProps) {
         <p className="font-base-semibold md:font-xl-semibold truncate text-gray-900">{title}</p>
         {image && !imageError && (
           <div className="size-[100px] shrink-0 overflow-hidden rounded-[16px] border border-gray-200">
-            <img
+            <Image
               src={image}
               alt={title}
+              width={100}
+              height={100}
+              unoptimized
               className="size-full object-cover"
               onError={() => setImageError(true)}
             />
