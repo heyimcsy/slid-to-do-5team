@@ -49,9 +49,10 @@ interface Tag {
 
 interface EditFormProps {
   todo: Todo;
+  onCancel: () => void;
 }
 
-export function EditForm({ todo }: EditFormProps) {
+export function EditForm({ todo, onCancel }: EditFormProps) {
   const { data: goalsData } = useGetGoals();
   const router = useRouter();
   const isMobile = useIsMobile();
@@ -343,7 +344,8 @@ export function EditForm({ todo }: EditFormProps) {
             if (!v) router.back();
           }}
         >
-          <DrawerContent className="mb-4 p-6">
+          {/* TODO: DrawerContent 내부 CSS 문제로 mb-[-96vh] pb-[100vh] 임시 추가 */}
+          <DrawerContent className="mb-[-96vh] p-6 pb-[100vh]">
             <form onSubmit={onSubmit}>
               <DrawerHeader className="mt-0 mb-4 flex flex-row justify-between p-0">
                 <DrawerTitle className="font-xl-semibold">할 일 수정</DrawerTitle>
@@ -375,14 +377,16 @@ export function EditForm({ todo }: EditFormProps) {
             if (!v) router.back();
           }}
         >
-          <DialogContent>
-            <form onSubmit={onSubmit}>
-              <DialogHeader className="mb-8">
+          <DialogContent className="flex max-h-svh flex-col overflow-hidden [&_.absolute]:hidden">
+            <form onSubmit={onSubmit} className="flex flex-1 flex-col overflow-hidden">
+              <DialogHeader className="mb-8 shrink-0">
                 <DialogTitle>할 일 수정</DialogTitle>
               </DialogHeader>
-              {formContent}
+              <div className="flex-1 overflow-y-auto pr-1 [&::-webkit-scrollbar]:hidden">
+                {formContent}
+              </div>
               <DialogFooter className="mt-10 w-full">
-                <Button size="lg" variant="ghost" className="flex-1" onClick={() => router.back()}>
+                <Button size="lg" variant="ghost" className="flex-1" onClick={onCancel}>
                   취소
                 </Button>
                 <Button type="submit" size="lg" disabled={!isValid} className="flex-1">

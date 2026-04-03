@@ -19,7 +19,7 @@ export const usePostFavorite = () => {
       queryClient.setQueriesData(
         { queryKey: [TODOS] },
         (old: PaginatedResponse<TodoWithFavorites, 'todos'>) => {
-          if (!old) return old;
+          if (!old || !old.todos) return old;
           return {
             ...old,
             todos: old.todos.map((todo) =>
@@ -56,7 +56,7 @@ export const useDeleteFavorite = () => {
       queryClient.setQueriesData(
         { queryKey: [TODOS] },
         (old: PaginatedResponse<TodoWithFavorites, 'todos'>) => {
-          if (!old) return old;
+          if (!old || !old.todos) return old;
           return {
             ...old,
             todos: old.todos.map((todo) =>
