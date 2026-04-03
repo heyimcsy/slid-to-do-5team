@@ -38,6 +38,7 @@ export function PostListItem({ post }: PostListItemProps) {
             alt={title}
             width={120}
             height={120}
+            unoptimized
             className="size-full object-cover"
             onError={() => setImageError(true)}
           />

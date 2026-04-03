@@ -56,6 +56,7 @@ export function CommentSection({
 
   const { register, handleSubmit, reset, watch } = useForm<CommentForm>({
     resolver: zodResolver(schema),
+    defaultValues: { content: '' },
   });
 
   const contentValue = watch('content');
