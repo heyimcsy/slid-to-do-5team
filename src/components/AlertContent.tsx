@@ -3,6 +3,7 @@
 import type { Notification } from '@/api/notifications';
 
 import Image from 'next/image';
+import basicImage from '@/../public/images/user-yellow.svg';
 import { usePatchNotification } from '@/api/notifications';
 import { useDebouncedCallback } from '@/hooks/useDebounceCallback';
 import { cn } from '@/lib';
@@ -16,9 +17,7 @@ export default function AlertContent({
   const handleReadNoti = useDebouncedCallback((id: number) => {
     patchNoti({ id });
   }, 300);
-  const userInfo = localStorage.getItem('user-info');
-  const parsedUserInfo = userInfo ? JSON.parse(userInfo).state : null;
-  const accountUserImage: string = parsedUserInfo.user.image ? parsedUserInfo.user.image : '';
+
   return (
     <div
       className={cn(
@@ -57,7 +56,7 @@ export default function AlertContent({
 
               <div className="flex h-full items-center">
                 <Image
-                  src={item.data ? item.data.userImage : accountUserImage}
+                  src={item.data?.userImage || basicImage}
                   alt="유저 이미지"
                   height={40}
                   width={40}
