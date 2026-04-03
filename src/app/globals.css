@@ -46,8 +46,8 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  --color-white:var(--white);
-  --color-black:var(--black);
+  --color-white: var(--white);
+  --color-black: var(--black);
   --color-gray-50: var(--gray-50);
   --color-gray-100: var(--gray-100);
   --color-gray-200: var(--gray-200);
@@ -469,15 +469,15 @@ body {
 }
 
 .ProseMirror p {
-  @apply font-sm-regular leading-relaxed my-2 text-gray-700;
+  @apply font-sm-regular my-2 leading-relaxed text-gray-700;
 }
 
 .ProseMirror h3 {
-  @apply font-base-semibold text-gray-800 mt-6 mb-2;
+  @apply font-base-semibold mt-6 mb-2 text-gray-800;
 }
 
 .ProseMirror ul {
-  @apply pl-5 space-y-1 list-disc;
+  @apply list-disc space-y-1 pl-5;
 }
 
 .ProseMirror li {
