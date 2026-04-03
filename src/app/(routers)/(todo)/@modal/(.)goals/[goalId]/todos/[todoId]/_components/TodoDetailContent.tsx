@@ -24,6 +24,7 @@ interface TodoDetailProps {
   noteTitle?: string;
   noteId?: number;
   todoId: number;
+  fileUrl: string | null;
 }
 
 export function TodoDetailContent({
@@ -37,6 +38,7 @@ export function TodoDetailContent({
   noteTitle,
   noteId,
   todoId,
+  fileUrl,
 }: TodoDetailProps) {
   return (
     <div className="flex min-w-0 flex-col gap-6">
@@ -76,10 +78,10 @@ export function TodoDetailContent({
       </div>
 
       {/* 첨부자료 */}
-      {linkUrl && (
+      {(linkUrl || fileUrl) && (
         <div className="flex flex-col gap-2">
           <span className="font-sm-semibold md:font-base-semibold text-gray-700">첨부 자료</span>
-          <AttachmentPreview url={linkUrl} />
+          <AttachmentPreview linkUrl={linkUrl} fileUrl={fileUrl} />
         </div>
       )}
 
