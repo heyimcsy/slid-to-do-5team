@@ -234,7 +234,7 @@ export const useDeleteTodos = () => {
       await queryClient.cancelQueries({ queryKey: [TODOS] });
       const previousTodos = queryClient.getQueriesData({ queryKey: [TODOS] });
       queryClient.setQueriesData({ queryKey: [TODOS] }, (old: PaginatedResponse<Todo, 'todos'>) => {
-        if (!old) return old;
+        if (!old || !old.todos) return old;
         return {
           ...old,
           todos: old.todos.filter((todo: Todo) => todo.id !== id),
