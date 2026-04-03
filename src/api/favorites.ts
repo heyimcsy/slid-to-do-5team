@@ -1,3 +1,4 @@
+import { favoritesQueryKeys } from '@/app/(routers)/favorites/_api/favoritesQueries';
 import { apiClient } from '@/lib/apiClient.browser';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -40,6 +41,7 @@ export const usePostFavorite = () => {
 
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [TODOS] });
+      queryClient.invalidateQueries({ queryKey: favoritesQueryKeys.all });
     },
   });
 };
@@ -77,6 +79,7 @@ export const useDeleteFavorite = () => {
 
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [TODOS] });
+      queryClient.invalidateQueries({ queryKey: favoritesQueryKeys.all });
     },
   });
 };
