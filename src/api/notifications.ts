@@ -19,6 +19,11 @@ export interface NotificationTodoData {
   userImage: string;
 }
 
+export interface NotificationGoalData {
+  goalTitle: string;
+  totalTodos: number;
+  userImage: string;
+}
 interface NotificationBase {
   id: number;
   teamId: string;
@@ -33,6 +38,7 @@ export type Notification = NotificationBase &
   (
     | { type: 'comment'; data: NotificationCommentData }
     | { type: 'todo'; data: NotificationTodoData }
+    | { type: 'goal'; data: NotificationGoalData }
     | { type: string; data: null }
   );
 

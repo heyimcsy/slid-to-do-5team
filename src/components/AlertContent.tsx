@@ -1,21 +1,44 @@
 'use client';
 
 import type { Notification } from '@/api/notifications';
+import type { TodoResponse } from '@/api/todos';
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import basicImage from '@/../public/images/user-yellow.svg';
 import { usePatchNotification } from '@/api/notifications';
+import { fetchTodo } from '@/api/todos';
 import { useDebouncedCallback } from '@/hooks/useDebounceCallback';
 import { cn } from '@/lib';
+import { useQueryClient } from '@tanstack/react-query';
+
+import { ROUTES } from '@/constants/routes';
 
 import { formatRelativeTime } from '@/utils/formatRelativeTime';
 
 export default function AlertContent({
   notifications,
 }: Readonly<{ notifications: Notification[] }>) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const { mutate: patchNoti } = usePatchNotification();
-  const handleReadNoti = useDebouncedCallback((id: number) => {
-    patchNoti({ id });
+
+  const handleReadNoti = useDebouncedCallback(async (item: Notification) => {
+    if (item.type === 'todo') {
+      const data: TodoResponse = await queryClient.fetchQuery({
+        queryKey: ['todo', item.resourceId],
+        queryFn: () => fetchTodo(item.resourceId),
+      });
+      router.push(ROUTES.TODO_DETAIL(data.goalId, item.resourceId));
+    }
+    if (item.type === 'goal') {
+      router.push(ROUTES.GOAL_DETAIL(item.resourceId));
+    }
+    if (item.type === 'comment') {
+      router.push(ROUTES.COMMUNITY_DETAIL(item.resourceId));
+    }
+    if (item.isRead) return;
+    patchNoti({ id: item.id });
   }, 300);
 
   return (
@@ -32,8 +55,7 @@ export default function AlertContent({
           {notifications.map((item: Notification) => (
             <button
               onClick={() => {
-                if (item.isRead) return;
-                handleReadNoti(item.id);
+                handleReadNoti(item);
               }}
               key={item.id}
               className="flex h-21 w-full items-start gap-2 rounded-[16px] px-2 py-3 hover:bg-gray-50"

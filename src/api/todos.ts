@@ -161,16 +161,18 @@ export const useInfiniteTodos = ({ goalId, done, limit }: GetTodosParams) => {
   });
 };
 
-export const useGetTodo = ({ id }: { id: number }) => {
+export const fetchTodo = async (id: number) => {
+  const data = await apiClient<Todo>(`${TODOS_URL}/${id}`);
+  return {
+    ...data,
+    tags: mapTagsWithColor(data.tags),
+  };
+};
+
+export const useGetTodo = ({ id }: { id: number | null }) => {
   return useQuery({
     queryKey: [TODO, id],
-    queryFn: async () => {
-      const data = await apiClient<Todo>(`${TODOS_URL}/${id}`);
-      return {
-        ...data,
-        tags: mapTagsWithColor(data.tags),
-      };
-    },
+    queryFn: () => fetchTodo(id!),
     enabled: !!id,
   });
 };
