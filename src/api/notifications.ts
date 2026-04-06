@@ -158,15 +158,11 @@ export const useDeleteNotification = () => {
       });
     },
 
-    onMutate: async ({ id }: { id: number }) => {
+    onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: [NOTIFICATIONS] });
-      console.log(id);
       const previousData = queryClient.getQueriesData<NotificationResponse>({
         queryKey: [NOTIFICATIONS],
       });
-
-      // TODO: 단건 삭제 낙관적 업데이트 (API 스펙 확정 후 작성)
-      // queryClient.setQueriesData(...)
 
       return { previousData };
     },
@@ -199,9 +195,6 @@ export const useDeleteNotifications = () => {
       const previousData = queryClient.getQueriesData<NotificationResponse>({
         queryKey: [NOTIFICATIONS],
       });
-
-      // TODO: 전체 삭제 낙관적 업데이트 (API 스펙 확정 후 작성)
-      // queryClient.setQueriesData(...)
 
       return { previousData };
     },
