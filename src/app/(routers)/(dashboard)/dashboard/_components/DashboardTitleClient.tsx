@@ -14,7 +14,10 @@ type DashboardTitleClientProps = {
  */
 export function DashboardTitleClient({ initialUser }: DashboardTitleClientProps) {
   const storeUser = useUserInfo();
-  const user = storeUser ?? initialUser;
+  const user =
+    storeUser && initialUser && storeUser.email !== initialUser.email
+      ? initialUser
+      : (storeUser ?? initialUser);
   return (
     <header className="dashboard-title pt-12 pb-7 md:pt-20 md:pb-10">
       <h1 className="font-base-semibold md:font-xl-semibold lg:text-2xl-semibold text-black">{`${user?.name ?? '손'}님의 대시보드`}</h1>
