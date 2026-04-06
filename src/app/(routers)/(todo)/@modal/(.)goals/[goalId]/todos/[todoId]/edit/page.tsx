@@ -17,13 +17,15 @@ export default function EditPage() {
   if (isPending || !todo) return null;
   if (!todo.goal) return null;
 
-  if (showCancel) {
-    return (
-      <CancelConfirmModal
-        onConfirm={() => router.back()} // 나가기
-        onCancel={() => setShowCancel(false)} // 돌아가기
-      />
-    );
-  }
-  return <EditForm todo={todo} onCancel={() => setShowCancel(true)} />;
+  return (
+    <>
+      {showCancel && (
+        <CancelConfirmModal
+          onConfirm={() => router.back()} // 나가기
+          onCancel={() => setShowCancel(false)} // 돌아가기
+        />
+      )}
+      <EditForm todo={todo} onCancel={() => setShowCancel(true)} />;
+    </>
+  );
 }
