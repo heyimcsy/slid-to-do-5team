@@ -67,6 +67,39 @@ describe('proxy', () => {
       expect(res.status).toBe(200);
     });
 
+    it('/login + access 또는 refresh → redirect (callbackUrl 없으면 /dashboard)', () => {
+      const reqAccess = createRequest('/login', { access: 'valid-token' });
+      expect(proxy(reqAccess).headers.get('location')).toMatch(/\/dashboard$/);
+      expect(proxy(reqAccess).status).toBe(307);
+
+      const reqRefresh = createRequest('/login', { refresh: 'refresh-only' });
+      expect(proxy(reqRefresh).headers.get('location')).toMatch(/\/dashboard$/);
+      expect(proxy(reqRefresh).status).toBe(307);
+    });
+
+    it('/login + 세션 + callbackUrl(안전) → 해당 경로로 redirect', () => {
+      const req = createRequest(
+        `/login?${new URLSearchParams({ callbackUrl: '/profile' }).toString()}`,
+        { access: 'valid-token' },
+      );
+      const res = proxy(req);
+      expect(res.headers.get('location')).toMatch(/\/profile$/);
+      expect(res.status).toBe(307);
+    });
+
+    it('/login + 세션 + ?error= → OAuth 실패 처리용으로 next() (리다이렉트 안 함)', () => {
+      const req = createRequest('/login?error=access_denied', { access: 'valid-token' });
+      const res = proxy(req);
+      expect(res.status).toBe(200);
+    });
+
+    it('/signup + 세션 → /dashboard로 redirect', () => {
+      const req = createRequest('/signup', { access: 'valid-token' });
+      const res = proxy(req);
+      expect(res.headers.get('location')).toMatch(/\/dashboard$/);
+      expect(res.status).toBe(307);
+    });
+
     it('루트 "/" + access 또는 refresh 있음 → redirect /dashboard', () => {
       const reqAccess = createRequest('/', { access: 'valid-token' });
       expect(proxy(reqAccess).headers.get('location')).toMatch(/\/dashboard$/);
