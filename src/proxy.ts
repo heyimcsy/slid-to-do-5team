@@ -2,8 +2,9 @@ import 'server-only';
 
 import type { NextRequest } from 'next/server';
 
-import { isPublicPath } from '@/lib/navigation/publicPaths';
 import { NextResponse } from 'next/server';
+import { isPublicPath } from '@/lib/navigation/publicPaths';
+import { getSafeCallbackPath } from '@/lib/navigation/safeCallbackPath';
 
 import { ALLOWED_ORIGINS, API_BASE_URL } from '@/constants/api';
 import { AUTH_CONFIG, isAuthRouteGuardEnabled } from '@/constants/auth-config';
@@ -25,7 +26,7 @@ export { isPublicPath, PUBLIC_PATHS } from '@/lib/navigation/publicPaths';
 
 /**
  * @description proxy - Next.js 16 라우트 보호 (proxy.ts = 구 middleware.ts)
- * @note `/` + access·refresh 중 하나라도 있으면 `/dashboard`로 리다이렉트(랜딩 스킵).
+ * @note 세션(access·refresh 중 하나) 있을 때: `/` → `/dashboard`; `/login`·`/signup` → 안전한 `callbackUrl` 또는 `/dashboard`(OAuth 실패 `?error=` 는 로그인/가입만 스킵).
  * @note access만 없고 refresh가 있으면 **통과** — 세션 복구 가능(클라이언트 `POST /api/auth/refresh` 등으로 access 재발급).
  *       둘 다 없을 때만 로그인으로 보냄.
  * @param request - NextRequest
@@ -38,10 +39,21 @@ export function proxy(request: NextRequest) {
 
   const hasAccess = Boolean(accessCookie?.value);
   const hasRefresh = Boolean(refreshCookie?.value);
+  const hasSession = hasAccess || hasRefresh;
 
-  /** 랜딩(`/`)은 공개지만, 세션 쿠키가 있으면 대시보드로 (미들웨어에서 `proxy` 호출 시) */
-  if (pathname === '/' && (hasAccess || hasRefresh)) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+  /** 세션 있으면 랜딩·인증 화면 스킵 — OAuth 콜백 실패 `?error=` 는 로그인/가입에서만 리다이렉트 생략 */
+  if (hasSession) {
+    if (pathname === '/') {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+    if (
+      (pathname === '/login' || pathname === '/signup') &&
+      !request.nextUrl.searchParams.get('error')?.trim()
+    ) {
+      const nextPath =
+        getSafeCallbackPath(request.nextUrl.searchParams.get('callbackUrl')) ?? '/dashboard';
+      return NextResponse.redirect(new URL(nextPath, request.url));
+    }
   }
 
   if (isPublicPath(pathname)) {

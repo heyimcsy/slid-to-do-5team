@@ -1,6 +1,4 @@
 import Image from 'next/image';
-import { redirect } from 'next/navigation';
-import { hasAuthSessionCookies } from '@/lib/auth/cookies';
 
 import { FeatureCard } from './_components/FeatureCard';
 import { StartButton } from './_components/StartButton';
@@ -9,11 +7,7 @@ import { STEPS } from './_constants/steps';
 /** 비로그인 CTA는 로그인 후 대시보드로 — 보호 라우트·`/signup` 예외는 `proxy` + `isPublicPath` */
 const START_HREF = `/login?${new URLSearchParams({ callbackUrl: '/dashboard' }).toString()}`;
 
-export default async function HomePage() {
-  if (await hasAuthSessionCookies()) {
-    redirect('/dashboard');
-  }
-
+export default function HomePage() {
   return (
     <main className="min-dvh font-pretendard flex flex-col bg-white **:tracking-[-0.03em] dark:bg-black">
       <section className="hero flex w-full flex-col items-center justify-center bg-[linear-gradient(220deg,#FFF9E5_20.84%,#D4FFFE_93.31%)] px-6 pt-20">
