@@ -9,6 +9,7 @@ import { cn } from '@/lib';
 
 import TodoItem from '@/components/common/TodoItem';
 import { EmptyState } from '@/components/EmptyState';
+import { ErrorFallback } from '@/components/ErrorFallback';
 import {
   Select,
   SelectContent,
@@ -33,7 +34,8 @@ export default function FavoritesTab() {
   const [selectedGoalId, setSelectedGoalId] = useState<string>('all');
   const [goalSelectOpen, setGoalSelectOpen] = useState(false);
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useGetFavorites();
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, refetch } =
+    useGetFavorites();
   const favorites: Favorite[] = useMemo(
     () => (data?.pages ?? []).flatMap((page) => page.favorites),
     [data],
@@ -66,6 +68,7 @@ export default function FavoritesTab() {
   });
 
   if (isLoading) return <FavoritesTabSkeleton />;
+  if (isError) return <ErrorFallback onRetry={() => refetch()} title="찜한 할 일" />;
 
   return (
     <div className="flex h-full flex-col">

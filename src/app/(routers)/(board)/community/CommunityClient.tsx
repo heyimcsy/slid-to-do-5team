@@ -8,11 +8,11 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
 import { EmptyState } from '@/components/EmptyState';
+import { ErrorFallback } from '@/components/ErrorFallback';
 import { Icon } from '@/components/icon/Icon';
 
 import { useGetPosts } from './_api/communityQueries';
 import { FeaturedPostCard } from './_components/FeaturedPostCard';
-import { PostErrorFallback } from './_components/PostErrorFallback';
 import { PostListItem } from './_components/PostListItem';
 import { PostListSkeleton } from './_components/PostListSkeleton';
 import { PostSearchBar } from './_components/PostSearchBar';
@@ -84,7 +84,7 @@ export default function CommunityClient() {
   };
 
   if (isLoading) return <PostListSkeleton />;
-  if (isError && !data) return <PostErrorFallback onRetry={refetch} />;
+  if (isError && !data) return <ErrorFallback onRetry={refetch} title="소통 게시판" />;
 
   return (
     <div className="relative h-full w-full">
