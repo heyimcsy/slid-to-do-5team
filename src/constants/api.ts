@@ -1,3 +1,5 @@
+import { getLocalSubnetList } from '@/lib/network';
+
 export const APP_URL = process.env.APP_URL;
 export const API_URL = process.env.API_URL;
 export const TEAM_ID = process.env.TEAM_ID;
@@ -23,8 +25,17 @@ export const ALLOWED_ORIGINS = (() => {
   }
   // BFF origin 검증 — 아래는 dev/prod 구분 없이 항상 허용할 도메인임
   origins.push(`https://potato-admin.shop`, `https://slid-to-do-5team.vercel.app`);
+
   if (process.env.NODE_ENV === 'development') {
-    origins.push(`http://localhost:3000`, `http://127.0.0.1:3000`, `https://*.ngrok-free.app`);
+    // 개발 환경에서 subnet에 따라 허용
+    const subnetList = getLocalSubnetList();
+    const subnetOrigins = subnetList.map((subnet) => `http://${subnet}:3000`);
+    origins.push(
+      `http://localhost:3000`,
+      `http://127.0.0.1:3000`,
+      ...subnetOrigins,
+      `https://*.ngrok-free.app`,
+    );
   }
   return origins;
 })();
