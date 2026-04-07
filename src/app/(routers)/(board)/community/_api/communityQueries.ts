@@ -141,6 +141,23 @@ export const useGetComments = (postId: number) => {
   });
 };
 
+// 댓글 수정
+export const useUpdateComment = (postId: number, commentId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (content: string) =>
+      apiClient<Comment>(`/posts/${postId}/comments/${commentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.comments(postId) });
+    },
+  });
+};
+
 // 댓글 삭제
 export const useDeleteComment = (postId: number) => {
   const queryClient = useQueryClient();

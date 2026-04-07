@@ -1,23 +1,17 @@
 'use client';
 
 import type { Comment } from '../../types';
+import type { CommentForm } from './CommentInput';
 
 import { useEffect, useMemo } from 'react';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
-import { cn } from '@/lib';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import z from 'zod';
 
 import { useCreateComment, useDeleteComment, useGetComments } from '../../_api/communityQueries';
+import { CommentInput, commentSchema } from './CommentInput';
 import { CommentItem } from './CommentItem';
-
-const schema = z.object({
-  content: z.string().min(1, '댓글을 입력해주세요.').max(500, '500자 이내로 입력해주세요'),
-});
-
-type CommentForm = z.infer<typeof schema>;
 
 interface CommentSectionProps {
   postId: number;
@@ -55,7 +49,7 @@ export function CommentSection({
   const isBusy = isPostDeleting || isFetching;
 
   const { register, handleSubmit, reset, watch } = useForm<CommentForm>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(commentSchema),
     defaultValues: { content: '' },
   });
 
@@ -86,23 +80,7 @@ export function CommentSection({
       </div>
 
       <div className="flex gap-3 md:gap-4">
-        <div
-          className={cn(
-            'flex flex-1 items-center justify-between rounded-xl border px-3 py-3 md:rounded-2xl md:px-4 md:py-4',
-            contentValue?.length >= 500 ? 'border-red-400 bg-red-50' : 'border-gray-300',
-          )}
-        >
-          <input
-            {...register('content')}
-            type="text"
-            disabled={isBusy}
-            placeholder="댓글을 입력해주세요"
-            maxLength={500}
-            aria-label="댓글 입력"
-            className="font-sm-regular md:font-base-regular flex-1 pr-3 text-gray-700 outline-none placeholder:text-gray-500 disabled:bg-gray-50"
-          />
-          <span className="font-xs-regular text-gray-500">{contentValue?.length}/500</span>
-        </div>
+        <CommentInput register={register('content')} contentLength={contentValue?.length ?? 0} />
         <button
           type="button"
           onClick={handleSubmit(onSubmit)}
