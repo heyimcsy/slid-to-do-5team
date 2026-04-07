@@ -68,7 +68,7 @@ export default function FavoritesTab() {
   });
 
   if (isLoading) return <FavoritesTabSkeleton />;
-  if (isError) return <ErrorFallback onRetry={() => refetch()} title="찜한 할 일" />;
+  if (isError) return <ErrorFallback onRetry={refetch} title="찜한 할 일" />;
 
   return (
     <div className="flex h-full flex-col">
