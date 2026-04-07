@@ -75,10 +75,6 @@
   --color-blue-300: var(--blue-300);
 }
 
-body {
-  font-family: var(--font-pretendard);
-}
-
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -203,14 +199,22 @@ body {
   --blue-300: oklch(0.897 0.053 190.5);
 }
 
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
-  }
-  html {
+    font-family: var(--font-pretendard);
   }
 }
 
