@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select';
 
 import { toTask, useGetFavorites } from '../_api/favoritesQueries';
+import { FavoritesTabSkeleton } from './FavoritesTabSkeleton';
 
 type Tab = 'ALL' | 'TODO' | 'DONE';
 
@@ -32,7 +33,7 @@ export default function FavoritesTab() {
   const [selectedGoalId, setSelectedGoalId] = useState<string>('all');
   const [goalSelectOpen, setGoalSelectOpen] = useState(false);
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetFavorites();
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useGetFavorites();
   const favorites: Favorite[] = useMemo(
     () => (data?.pages ?? []).flatMap((page) => page.favorites),
     [data],
@@ -63,6 +64,8 @@ export default function FavoritesTab() {
     if (tab === 'DONE') return fav.todo.done;
     return true;
   });
+
+  if (isLoading) return <FavoritesTabSkeleton />;
 
   return (
     <div className="flex h-full flex-col">
