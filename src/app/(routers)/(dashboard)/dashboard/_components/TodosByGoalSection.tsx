@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useGetTodos } from '@/api/todos';
+import TodoList from '@/app/(routers)/(todo)/goals/[goalId]/_components/TodoList';
 
 export function TodosByGoalSection() {
   const { data: todos, isLoading, error } = useGetTodos({ limit: 4 });
@@ -11,7 +12,7 @@ export function TodosByGoalSection() {
   const todosByGoal = todos.todos.slice(0, 4);
 
   return (
-    <section className="todos-by-goal-section mt-10 flex w-full">
+    <section className="todos-by-goal-section mt-8 flex w-full md:mt-10 lg:mt-10">
       <div className="todos-by-goal-section flex w-full flex-col gap-4">
         <div className="todos-by-goal-section-header flex justify-between">
           <section className="flex items-center justify-between">
@@ -29,34 +30,36 @@ export function TodosByGoalSection() {
               </span>
             </h2>
           </section>
-          <section className="todos-by-goal-section-header-link flex items-center">
-            {/* <Link href="/dashboard/todos" className="flex items-center">
-              <span className="font-sm-semibold md:font-sm-semibold lg:font-base-semibold text-orange-500">
-                모두 보기
-              </span>
-              <Image
-                src="/images/img-chevron-right.svg"
-                alt="arrow"
-                width={20}
-                height={20}
-                className="h-auto text-orange-500"
-              />
-            </Link> */}
-          </section>
         </div>
-        <div className="w-full rounded-[1.75rem] bg-white px-4 py-4.5 text-black md:min-h-46.5 md:rounded-[1.75rem] md:px-4 md:py-4.5 lg:rounded-[2.5rem] lg:px-8 lg:py-7.5 dark:bg-black dark:text-white">
+        <div className="w-full rounded-[1.75rem] bg-white px-4 py-4.5 text-black md:min-h-46.5 md:rounded-[1.75rem] md:px-4 md:py-4.5 lg:rounded-[2.5rem] lg:px-8 lg:py-7.5">
           {todosByGoal.length === 0 ? (
-            <div className="flex items-center justify-center">최근에 등록한 목표가 없어요</div>
+            <div className="flex h-full flex-col items-center justify-center gap-y-4.5 py-4.25">
+              <Image
+                src="/images/big-zero-done.svg"
+                alt="최근에 등록한 목표 없음"
+                width={130}
+                height={140}
+                className="h-21.25 w-20 object-contain md:h-35 md:w-32.5 lg:h-35 lg:w-32.5"
+              />
+              <span className="font-sm-medium md:font-base-medium lg:font-base-medium text-gray-500">
+                최근에 등록한 목표가 없어요
+              </span>
+            </div>
           ) : (
+            /**
+             * 목표별로 화면 구분하기
+             */
             todosByGoal.map((todo) => (
-              <div
+              <TodoList
                 key={todo.id}
-                className="flex items-center justify-between px-1 py-1.5 md:px-1 md:py-1.5 lg:px-2 lg:py-2.5"
-              >
-                <p className="lg:font-base-semibold md:font-sm-semibold font-sm-semibold">
-                  {todo.title}
-                </p>
-              </div>
+                goalId={todo.goalId}
+                id={todo.id}
+                done={todo.done}
+                title={todo.title}
+                noteIds={todo.noteIds}
+                linkUrl={todo.linkUrl}
+                favorites={todo.favorites}
+              />
             ))
           )}
         </div>
