@@ -69,8 +69,9 @@ export default function AlertPopover({
             onClick={handleReadNotis}
             variant="icon"
             size="none"
+            disabled={!hasUnread}
             className={cn(
-              notifications.length > 0 || !hasUnread ? 'text-orange-500' : 'text-gray-200',
+              notifications.length === 0 || !hasUnread ? 'text-gray-200' : 'text-orange-500',
               'font-xs-regular',
             )}
           >
