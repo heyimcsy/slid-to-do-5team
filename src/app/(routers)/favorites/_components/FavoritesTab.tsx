@@ -15,7 +15,6 @@ import {
   SelectGroup,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/components/ui/select';
 
 import { toTask, useGetFavorites } from '../_api/favoritesQueries';
