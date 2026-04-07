@@ -1,20 +1,5 @@
 import { Skeleton } from '@/components/ui/skeleton';
 
-function CommentItemSkeleton() {
-  return (
-    <li className="flex flex-col gap-3">
-      <div className="flex items-center gap-3">
-        <Skeleton variant="gray" className="size-8 rounded-full" />
-        <Skeleton variant="gray" className="h-4 w-20" />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Skeleton variant="gray" className="h-4 w-full" />
-        <Skeleton variant="gray" className="h-3 w-16" />
-      </div>
-    </li>
-  );
-}
-
 export function PostDetailSkeleton() {
   return (
     <div
@@ -39,18 +24,13 @@ export function PostDetailSkeleton() {
             <Skeleton variant="gray" className="mt-4 h-3 w-32" />
           </div>
 
-          {/* 댓글 */}
+          {/* 댓글 작성폼 */}
           <div className="flex flex-col gap-6">
             <Skeleton variant="gray" className="h-5 w-16" />
             <div className="flex gap-3 md:gap-4">
               <Skeleton variant="gray" className="h-12 flex-1 md:h-14 md:rounded-2xl" />
               <Skeleton variant="gray" className="h-12 w-16 rounded-full md:h-14 md:w-20" />
             </div>
-            <ul className="flex flex-col gap-8 md:gap-10">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <CommentItemSkeleton key={i} />
-              ))}
-            </ul>
           </div>
         </div>
       </div>
