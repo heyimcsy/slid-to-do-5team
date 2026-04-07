@@ -89,7 +89,7 @@ export default function FavoritesTab() {
 
       <div className="flex flex-1 flex-col rounded-[28px] bg-white p-4 shadow-sm md:p-6">
         <Select
-          value={goals.find((goal) => goal.id === selectedGoalId)?.title}
+          value={selectedGoalId}
           onValueChange={(val: string | null) => val && setSelectedGoalId(val)}
           open={goalSelectOpen}
           onOpenChange={setGoalSelectOpen}
@@ -103,7 +103,7 @@ export default function FavoritesTab() {
                 height={24}
                 className="shrink-0"
               />
-              <SelectValue placeholder="전체 목표" />
+              <span>{goals.find((goal) => goal.id === selectedGoalId)?.title ?? '전체 목표'}</span>
             </div>
           </SelectTrigger>
           <SelectContent>
