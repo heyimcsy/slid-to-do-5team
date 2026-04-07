@@ -1,12 +1,17 @@
 import type { SVGProps } from 'react';
 
+
+
+
+
 type OutlineStarIconProps = SVGProps<SVGSVGElement> & {
-  variant?: 'default' | 'orange';
+  variant?: 'default' | 'orange' | 'white';
 };
 
 const variantStyles = {
   default: 'var(--color-orange-alpha-30)',
   orange: 'var(--color-orange-300)',
+  white: '#ffffff99',
 };
 
 export const OutlineStarIcon = ({ variant = 'default', ...props }: OutlineStarIconProps) => {

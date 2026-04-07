@@ -1,12 +1,17 @@
 import type { SVGProps } from 'react';
 
+
+
+
+
 type FilledStarIconProps = SVGProps<SVGSVGElement> & {
-  variant?: 'default' | 'orange';
+  variant?: 'default' | 'orange' | 'white';
 };
 
 const variantStyles = {
   default: 'var(--color-gray-300)',
   orange: 'var(--color-orange-600)',
+  white: '#ffffffcc',
 };
 
 export const FilledStarIcon = ({ variant = 'default', ...props }: FilledStarIconProps) => {
