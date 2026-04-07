@@ -9,6 +9,7 @@ import { cn } from '@/lib';
 
 import TodoItem from '@/components/common/TodoItem';
 import { EmptyState } from '@/components/EmptyState';
+import { ErrorFallback } from '@/components/ErrorFallback';
 import {
   Select,
   SelectContent,
@@ -18,6 +19,7 @@ import {
 } from '@/components/ui/select';
 
 import { toTask, useGetFavorites } from '../_api/favoritesQueries';
+import { FavoritesTabSkeleton } from './FavoritesTabSkeleton';
 
 type Tab = 'ALL' | 'TODO' | 'DONE';
 
@@ -32,7 +34,8 @@ export default function FavoritesTab() {
   const [selectedGoalId, setSelectedGoalId] = useState<string>('all');
   const [goalSelectOpen, setGoalSelectOpen] = useState(false);
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetFavorites();
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, refetch } =
+    useGetFavorites();
   const favorites: Favorite[] = useMemo(
     () => (data?.pages ?? []).flatMap((page) => page.favorites),
     [data],
@@ -63,6 +66,9 @@ export default function FavoritesTab() {
     if (tab === 'DONE') return fav.todo.done;
     return true;
   });
+
+  if (isLoading) return <FavoritesTabSkeleton />;
+  if (isError) return <ErrorFallback onRetry={refetch} title="찜한 할 일" />;
 
   return (
     <div className="flex h-full flex-col">
@@ -116,7 +122,7 @@ export default function FavoritesTab() {
           </SelectContent>
         </Select>
 
-        <div ref={observerRef} className="flex flex-col">
+        <div className="flex flex-col">
           {filtered.length > 0 ? (
             filtered.map((fav) => <TodoItem key={fav.todo.id} task={toTask(fav)} />)
           ) : (
@@ -130,6 +136,7 @@ export default function FavoritesTab() {
               )}
             </div>
           )}
+          <div ref={observerRef} className="h-4" />
         </div>
       </div>
     </div>

@@ -1,12 +1,13 @@
-interface PostErrorFallbackProps {
+interface ErrorFallbackProps {
   onRetry: () => void;
+  title: string;
 }
 
-export function PostErrorFallback({ onRetry }: PostErrorFallbackProps) {
+export function ErrorFallback({ onRetry, title }: ErrorFallbackProps) {
   return (
     <div className="h-full w-full bg-gray-100 px-4 py-6 md:px-8 md:py-12">
       <h1 className="font-xl-semibold md:font-2xl-semibold mb-6 px-2 text-black md:mb-8">
-        소통 게시판
+        {title}
       </h1>
       <div className="flex flex-col items-center gap-4 py-40">
         <p className="font-3xl-regular mb-4 text-gray-600">데이터를 불러오지 못했어요.</p>
