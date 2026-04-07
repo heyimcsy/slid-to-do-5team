@@ -47,6 +47,11 @@ export function CommentItem({ comment, isMyComment, onDelete, isDeleting }: Comm
   ];
 
   const onSubmit = ({ content }: CommentForm) => {
+    if (!isMyComment) {
+      toast.error('본인이 작성한 댓글만 수정할 수 있습니다.');
+      return;
+    }
+
     updateComment(content, {
       onSuccess: () => {
         reset();
@@ -64,6 +69,11 @@ export function CommentItem({ comment, isMyComment, onDelete, isDeleting }: Comm
         title="정말 삭제하시겠어요?"
         description="삭제된 댓글은 복구할 수 없습니다."
         onConfirm={() => {
+          if (!isMyComment) {
+            toast.error('본인이 작성한 댓글만 삭제할 수 있습니다.');
+            return;
+          }
+
           onDelete(comment.id, {
             onError: () => toast.error('댓글 삭제에 실패했습니다. 다시 시도해주세요.'),
           });

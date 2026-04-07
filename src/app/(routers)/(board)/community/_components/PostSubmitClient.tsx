@@ -76,6 +76,10 @@ export function PostSubmitClient({ mode, postId }: Props) {
       if (mode === 'create') {
         await createPost(payload);
       } else {
+        if (post?.userId !== userId) {
+          toast.error('본인이 작성한 게시물만 수정할 수 있습니다.', { id: 'unauthorized' });
+          return;
+        }
         await updatePost(payload);
       }
     } catch (err) {
