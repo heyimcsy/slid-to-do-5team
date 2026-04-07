@@ -22,6 +22,7 @@ export default function AlertPopover({
   const { mutate: patchNotis } = usePatchNotifications();
   const notifications: Notification[] = data?.notifications || [];
   const hasUnread: boolean = notifications.some((item: Notification) => !item.isRead);
+  const anchorRef = useRef<HTMLDivElement>(null);
 
   const handleReadNotis = useDebouncedCallback(() => {
     patchNotis();
@@ -29,31 +30,34 @@ export default function AlertPopover({
 
   return (
     <Popover>
-      <PopoverTrigger
-        render={
-          <button
-            aria-label="알림"
-            className={cn(
-              'relative cursor-pointer rounded-full p-0 hover:animate-bounce hover:border-orange-500 md:p-5',
-              !collapsed && 'md:border md:border-gray-200',
-              className,
-            )}
-          >
-            <Icon name="bell" className={cn(collapsed && 'lg:size-6')} />
-            {hasUnread && (
-              <span
-                className={cn(
-                  'absolute rounded-full bg-orange-500',
-                  collapsed
-                    ? 'mt-2 size-2 md:top-3 md:right-5 lg:hidden' // collapsed: 큰 뱃지, 우상단 붙임
-                    : 'top-0 right-0 size-2 md:top-1 md:right-1 md:size-3', // 기본
-                )}
-              />
-            )}
-          </button>
-        }
-      ></PopoverTrigger>
+      <div ref={anchorRef}>
+        <PopoverTrigger
+          render={
+            <button
+              aria-label="알림"
+              className={cn(
+                'relative cursor-pointer rounded-full p-0 hover:animate-bounce hover:border-orange-500 md:p-5',
+                !collapsed && 'md:border md:border-gray-200',
+                className,
+              )}
+            >
+              <Icon name="bell" className={cn(collapsed && 'lg:size-6')} />
+              {hasUnread && (
+                <span
+                  className={cn(
+                    'absolute rounded-full bg-orange-500',
+                    collapsed
+                      ? 'mt-2 size-2 md:top-3 md:right-5 lg:hidden' // collapsed: 큰 뱃지, 우상단 붙임
+                      : 'top-0 right-0 size-2 md:top-1 md:right-1 md:size-3', // 기본
+                  )}
+                />
+              )}
+            </button>
+          }
+        ></PopoverTrigger>
+      </div>
       <PopoverContent
+        anchor={anchorRef}
         className="w-[289px] border border-gray-200 px-3 py-5"
         align="end"
         side="right"
