@@ -122,7 +122,7 @@ export default function FavoritesTab() {
           </SelectContent>
         </Select>
 
-        <div ref={observerRef} className="flex flex-col">
+        <div className="flex flex-col">
           {filtered.length > 0 ? (
             filtered.map((fav) => <TodoItem key={fav.todo.id} task={toTask(fav)} />)
           ) : (
@@ -136,6 +136,7 @@ export default function FavoritesTab() {
               )}
             </div>
           )}
+          <div ref={observerRef} className="h-4" />
         </div>
       </div>
     </div>
