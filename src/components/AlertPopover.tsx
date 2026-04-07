@@ -2,6 +2,7 @@
 
 import type { Notification } from '@/api/notifications';
 
+import { useRef } from 'react';
 import { useGetNotifications, usePatchNotifications } from '@/api/notifications';
 import { useDebouncedCallback } from '@/hooks/useDebounceCallback';
 import { cn } from '@/lib';
