@@ -1,7 +1,7 @@
 import type { UseFormRegisterReturn } from 'react-hook-form';
 
 import { cn } from '@/lib';
-import z from 'zod';
+import { z } from 'zod';
 
 export const commentSchema = z.object({
   content: z

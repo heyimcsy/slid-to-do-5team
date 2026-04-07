@@ -42,8 +42,8 @@ export function CommentItem({ comment, isMyComment, onDelete, isDeleting }: Comm
   );
 
   const kebabItems = [
-    { label: '삭제하기', onClick: () => setDeleteDialogOpen(true), variant: 'danger' as const },
     { label: '수정하기', onClick: () => setIsEditing(true) },
+    { label: '삭제하기', onClick: () => setDeleteDialogOpen(true), variant: 'danger' as const },
   ];
 
   const onSubmit = ({ content }: CommentForm) => {
@@ -107,7 +107,7 @@ export function CommentItem({ comment, isMyComment, onDelete, isDeleting }: Comm
               </button>
               <button
                 type="submit"
-                disabled={isUpdating}
+                disabled={!contentValue?.trim() || contentValue === content || isUpdating}
                 className="font-sm-semibold w-16 rounded-full bg-orange-500 px-[18px] py-[10px] text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
                 수정
