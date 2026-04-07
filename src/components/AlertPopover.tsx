@@ -34,7 +34,7 @@ export default function AlertPopover({
           <button
             aria-label="알림"
             className={cn(
-              'relative cursor-pointer rounded-full p-0 md:p-5',
+              'relative cursor-pointer rounded-full p-0 hover:animate-bounce hover:border-orange-500 md:p-5',
               !collapsed && 'md:border md:border-gray-200',
               className,
             )}
