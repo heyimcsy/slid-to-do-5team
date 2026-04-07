@@ -14,12 +14,19 @@ export function useGoalWithTodos(goalId: number) {
   const totalCount = todoListsDone.length + todoLists.length;
   const progressPercent = totalCount === 0 ? 0 : Math.round((todoDoneCount / totalCount) * 100);
 
+  const refetch = () => {
+    if (goalResult.isError) goalResult.refetch();
+    if (todosResult.isError) todosResult.refetch();
+  };
+
   return {
     goalData: goalResult.data,
     todoLists,
     todoListsDone,
     progressPercent,
     isLoading: goalResult.isLoading || todosResult.isLoading,
+    isError: goalResult.isError || todosResult.isError,
     isSuccess: goalResult.isSuccess && todosResult.isSuccess,
+    refetch,
   };
 }
