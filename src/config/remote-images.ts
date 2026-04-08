@@ -47,10 +47,7 @@ export function remoteImageSourceToPattern(source: string): ImageRemotePattern {
 
   const { hostname, port } = splitHostPort(authority);
 
-  const pattern: ImageRemotePattern = { protocol, hostname };
-  if (port !== undefined) {
-    pattern.port = port;
-  }
+  const pattern: ImageRemotePattern = { protocol, hostname, port: port ?? '' };
   if (rawPathname !== undefined && rawPathname !== '' && rawPathname !== '/') {
     pattern.pathname = rawPathname;
   }
