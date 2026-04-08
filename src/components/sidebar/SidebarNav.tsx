@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useGetGoals, usePostGoals } from '@/api/goals';
 import { useLogout } from '@/hooks/auth/useLogout';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib';
 import { authUserStore } from '@/stores/authUserStore';
 import { useSettingsModal } from '@/stores/useSettingModal';
@@ -19,6 +20,7 @@ import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from '@/components/ui/sidebar';
 
 import AlertPopover from '../AlertPopover';
@@ -96,6 +98,9 @@ export default function SidebarNav() {
     }, 350);
   };
 
+  const { setOpen, setOpenMobile } = useSidebar();
+  const isMobile = useIsMobile();
+
   return (
     <div>
       <SidebarGroup className="p-0">
@@ -108,7 +113,11 @@ export default function SidebarNav() {
                   size="lg"
                   isActive={isActive}
                   render={!item.hasArrow ? <Link href={item.href} /> : undefined}
-                  onClick={item.hasArrow ? () => setIsGoalsOpen((prev) => !prev) : undefined}
+                  onClick={
+                    item.hasArrow
+                      ? () => setIsGoalsOpen((prev) => !prev)
+                      : () => (isMobile ? setOpenMobile(false) : setOpen(false))
+                  }
                   className="cursor-pointer px-4 group-data-[collapsible=icon]:hidden active:bg-transparent active:text-inherit [&_svg]:size-6"
                 >
                   <Icon name={item.icon} variant={isActive ? 'orange' : 'default'} />
@@ -139,6 +148,7 @@ export default function SidebarNav() {
                             const isGoalActive = pathname === `/goals/${goal.id}`;
                             return (
                               <Link
+                                onClick={() => (isMobile ? setOpenMobile(false) : setOpen(false))}
                                 key={goal.id}
                                 href={`/goals/${goal.id}`}
                                 className={cn(
@@ -235,6 +245,11 @@ export default function SidebarNav() {
           <div
             onClick={() => {
               router.push('/profile');
+              if (isMobile) {
+                setOpenMobile(false);
+              } else {
+                setOpen(false);
+              }
             }}
             className="flex flex-1 cursor-pointer items-center gap-2 rounded-full border border-gray-200 px-3 py-2 group-data-[collapsible=icon]:hidden"
           >
