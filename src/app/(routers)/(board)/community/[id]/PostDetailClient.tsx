@@ -85,6 +85,12 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
         title="정말 삭제하시겠어요?"
         description="삭제된 게시물은 복구할 수 없습니다."
         onConfirm={() => {
+          if (!isWriter) {
+            toast.error('본인이 작성한 게시물만 삭제할 수 있습니다.');
+            setDeleteDialogOpen(false);
+            return;
+          }
+
           deletePost(postId, {
             onSuccess: () => router.push('/community'),
             onError: () => toast.error('게시물 삭제에 실패했습니다. 다시 시도해주세요.'),
