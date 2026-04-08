@@ -36,7 +36,7 @@ export default function CancelConfirmModal({ onConfirm, onCancel }: CancelConfir
         if (!v) onCancel();
       }}
     >
-      <DrawerContent className="mb-4 p-6">
+      <DrawerContent className="mb-4 p-6 [&>button]:hidden">
         <DrawerHeader className="mb-4 p-0">
           <DrawerTitle className="font-xl-semibold">정말 나가시겠어요?</DrawerTitle>
         </DrawerHeader>
@@ -45,7 +45,7 @@ export default function CancelConfirmModal({ onConfirm, onCancel }: CancelConfir
     </Drawer>
   ) : (
     <Dialog open>
-      <DialogContent>
+      <DialogContent className="[&>button]:hidden">
         <DialogHeader className="mb-4">
           <DialogTitle>정말 나가시겠어요?</DialogTitle>
         </DialogHeader>

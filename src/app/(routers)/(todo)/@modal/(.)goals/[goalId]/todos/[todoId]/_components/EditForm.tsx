@@ -348,8 +348,8 @@ export function EditForm({ todo, onCancel }: EditFormProps) {
       {isMobile ? (
         <Drawer
           open
-          onOpenChange={(v) => {
-            if (!v) router.back();
+          onOpenChange={(isOpen) => {
+            if (!isOpen) router.back();
           }}
         >
           {/* TODO: DrawerContent 내부 CSS 문제로 mb-[-96vh] pb-[100vh] 임시 추가 */}
@@ -387,8 +387,8 @@ export function EditForm({ todo, onCancel }: EditFormProps) {
       ) : (
         <Dialog
           open
-          onOpenChange={(v) => {
-            if (!v) router.back();
+          onOpenChange={(isOpen) => {
+            if (!isOpen) router.back();
           }}
         >
           <DialogContent className="flex max-h-svh flex-col overflow-hidden [&>button]:hidden">
