@@ -75,7 +75,12 @@ export default function NotesContainer() {
 
         {/* 노트 리스트 */}
         <div className="mt-4 md:mt-6">
-          <NoteList notes={filteredNotes ?? []} goalId={goalId} observerRef={observerRef} />
+          <NoteList
+            notes={filteredNotes ?? []}
+            goalId={goalId}
+            observerRef={observerRef}
+            hasNextPage={hasNextPage}
+          />
         </div>
       </>
     );
