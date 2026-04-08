@@ -35,18 +35,23 @@ export function usePostDraft({ mode, titleValue, editor, setValue }: UsePostDraf
     const raw = localStorage.getItem(POST_CREATE);
     if (!raw) return;
 
-    const draft = JSON.parse(raw) as PostDraft;
-    setValue('title', draft.title);
-    editor?.commands.setContent(JSON.parse(draft.content));
+    try {
+      const draft = JSON.parse(raw) as PostDraft;
+      setValue('title', draft.title);
+      editor?.commands.setContent(JSON.parse(draft.content));
+    } catch {
+      clearDraft();
+      toast.error('임시저장 데이터가 손상되어 불러올 수 없습니다.');
+    }
   };
 
   const clearDraft = () => localStorage.removeItem(POST_CREATE);
 
   const saveDraft = () => {
-    if (!isCreateMode) return;
+    if (!isCreateMode || !editor) return;
 
-    const content = JSON.stringify(editor?.getJSON());
-    const isEmpty = !titleValue.trim() && editor?.isEmpty;
+    const content = JSON.stringify(editor.getJSON());
+    const isEmpty = !titleValue.trim() && editor.isEmpty;
     if (isEmpty) return;
 
     const draft: PostDraft = {
