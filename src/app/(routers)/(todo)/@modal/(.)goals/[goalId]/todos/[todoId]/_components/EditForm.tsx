@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGetGoals } from '@/api/goals';
 import { uploadImage } from '@/api/images';
-import { useGetTodos, usePatchTodos } from '@/api/todos';
+import { usePatchTodos } from '@/api/todos';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
