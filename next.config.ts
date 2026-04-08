@@ -1,8 +1,5 @@
 import type { NextConfig } from 'next';
 
-
-
-import { csp } from '@/config/csp';
 import { getImageRemotePatterns } from '@/config/remote-images';
 import { getLocalSubnetList } from '@/lib/network';
 
@@ -11,14 +8,6 @@ import { version } from './package.json';
 const isProduction = process.env.NODE_ENV === 'production';
 
 const nextConfig: NextConfig = {
-  async headers() {
-    return [
-      {
-        source: '/:path*',
-        headers: [{ key: 'Content-Security-Policy', value: csp }],
-      },
-    ];
-  },
   env: {
     NEXT_PUBLIC_APP_VERSION: version,
   },
