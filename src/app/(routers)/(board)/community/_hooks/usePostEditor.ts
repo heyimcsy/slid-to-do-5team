@@ -2,7 +2,7 @@
 
 import type { Editor } from '@tiptap/react';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useEditorConfig } from '@/hooks/editor';
 
 const isEditorFilled = (editor: Editor) => !editor.isEmpty && editor.getText().trim().length > 0;
@@ -19,19 +19,22 @@ export function usePostEditor({ initialContent, limit }: UsePostEditorOptions = 
     placeholder: '이 곳을 통해 내용을 작성해주세요',
     limit,
   });
-
+  const initialContentRef = useRef(initialContent);
   const [hasEditorContent, setHasEditorContent] = useState(false);
   const [hasEditorChanged, setHasEditorChanged] = useState(false);
   const [charCount, setCharCount] = useState(0);
 
   useEffect(() => {
     if (!editor) return;
+    initialContentRef.current = JSON.stringify(editor.getJSON());
     setHasEditorContent(isEditorFilled(editor));
+    setCharCount(editor.storage.characterCount?.characters() ?? editor.getText().length);
 
     const onUpdate = () => {
+      const currentContent = JSON.stringify(editor.getJSON());
       setHasEditorContent(isEditorFilled(editor));
       setCharCount(editor.storage.characterCount?.characters() ?? editor.getText().length);
-      setHasEditorChanged(true);
+      setHasEditorChanged(currentContent !== initialContentRef.current);
     };
     editor.on('update', onUpdate);
     return () => {

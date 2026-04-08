@@ -1,5 +1,7 @@
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
+import { PostHeaderActions } from './PostHeaderActions';
+
 interface MobilePostHeaderProps {
   isSubmitDisabled: boolean;
   onCancel: () => void;
@@ -25,23 +27,13 @@ export function MobilePostHeader({
             <SidebarTrigger />
             <span className="font-base-semibold text-gray-700">{headerTitle}</span>
           </div>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="font-sm-medium px-[6px] py-[2px] text-gray-500"
-            >
-              취소
-            </button>
-            <button
-              type="button"
-              onClick={onSubmitClick}
-              disabled={isSubmitDisabled}
-              className="font-sm-semibold px-[6px] py-[2px] text-orange-500 disabled:cursor-not-allowed disabled:text-gray-300"
-            >
-              {submitLabel}
-            </button>
-          </div>
+          <PostHeaderActions
+            variant="mobile"
+            isSubmitDisabled={isSubmitDisabled}
+            submitLabel={submitLabel}
+            onCancel={onCancel}
+            onSubmitClick={onSubmitClick}
+          />
         </header>
         <div className="bg-gray-50 px-4 py-1.5">{toolbar}</div>
       </div>
