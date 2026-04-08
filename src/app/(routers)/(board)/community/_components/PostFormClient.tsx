@@ -200,7 +200,7 @@ export function PostFormClient({
           </div>
 
           <div
-            className="min-h-0 flex-1 overflow-y-auto px-5 pt-2 md:px-10 [&::-webkit-scrollbar]:hidden"
+            className="min-h-0 flex-1 overflow-y-auto px-5 pt-2 md:px-10"
             onClick={() => editor?.commands.focus()}
           >
             <EditorContent editor={editor} className="text-gray-800" />
