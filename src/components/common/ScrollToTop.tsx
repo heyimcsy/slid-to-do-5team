@@ -20,7 +20,15 @@ export function ScrollToTop() {
   }, []);
 
   const handleClick = () => {
-    sentinelRef.current?.scrollIntoView({ behavior: 'smooth' });
+    let el: HTMLElement | null = sentinelRef.current?.parentElement ?? null;
+    while (el) {
+      if (el.scrollTop > 0) {
+        el.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      el = el.parentElement;
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
