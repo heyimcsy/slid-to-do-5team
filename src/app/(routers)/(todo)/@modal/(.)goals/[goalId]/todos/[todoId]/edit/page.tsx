@@ -25,7 +25,7 @@ export default function EditPage() {
           onCancel={() => setShowCancel(false)} // 돌아가기
         />
       )}
-      <EditForm todo={todo} onCancel={() => setShowCancel(true)} />;
+      <EditForm todo={todo} onCancel={() => setShowCancel(true)} />
     </>
   );
 }

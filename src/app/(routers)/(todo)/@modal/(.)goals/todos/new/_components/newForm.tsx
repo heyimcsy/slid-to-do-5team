@@ -302,13 +302,13 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
               }
             }}
             startAdornment={
-              <button>
+              <button type="button">
                 <Icon name="linkEditor" />
               </button>
             }
             endAdornment={
               link && (
-                <button onClick={() => setValue('link', '')}>
+                <button type="button" onClick={() => setValue('link', '')}>
                   <Icon name="close" color="gray" />
                 </button>
               )
@@ -348,7 +348,11 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
             >
               <DrawerHeader className="mt-0 mb-4 flex flex-row justify-between p-0">
                 <DrawerTitle className="font-xl-semibold">할 일 생성</DrawerTitle>
-                <button className="cursor-pointer border-0" onClick={() => router.back()}>
+                <button
+                  type="button"
+                  className="cursor-pointer border-0"
+                  onClick={() => router.back()}
+                >
                   <Icon name="close" color="gray" />
                 </button>
               </DrawerHeader>

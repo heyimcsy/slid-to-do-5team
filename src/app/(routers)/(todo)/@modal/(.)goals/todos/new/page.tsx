@@ -13,12 +13,9 @@ export default function NewPage() {
   return (
     <>
       {showCancel && (
-        <CancelConfirmModal
-          onConfirm={() => router.back()} // 나가기
-          onCancel={() => setShowCancel(false)} // 돌아가기
-        />
+        <CancelConfirmModal onConfirm={() => router.back()} onCancel={() => setShowCancel(false)} />
       )}
-      <NewForm onCancel={() => setShowCancel(true)} />;
+      <NewForm onCancel={() => setShowCancel(true)} />
     </>
   );
 }
