@@ -55,7 +55,7 @@ export function usePostDraft({ mode, titleValue, editor, setValue }: UsePostDraf
       savedAt: new Date().toISOString(),
     };
     localStorage.setItem(POST_CREATE, JSON.stringify(draft));
-    toast.success('게시글이 임시저장되었습니다.');
+    toast.success('게시글이 임시저장되었습니다.', { id: 'post-create' });
   };
 
   const saveDraftRef = useRef(saveDraft);
