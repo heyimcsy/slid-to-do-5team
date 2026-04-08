@@ -242,13 +242,21 @@ export function EditForm({ todo, onCancel }: EditFormProps) {
           마감기한<span className="text-orange-600">*</span>
         </FieldLabel>
         <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger>
+          <PopoverTrigger
+            tabIndex={-1}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') e.preventDefault();
+            }}
+          >
             <Input
               readOnly
               startAdornment={<Icon name="calendar" />}
               placeholder="날짜를 선택하세요"
               className="cursor-pointer"
               value={date ? formatDate(date.toISOString()) : ''}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') e.preventDefault();
+              }}
             />
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -340,13 +348,13 @@ export function EditForm({ todo, onCancel }: EditFormProps) {
       {isMobile ? (
         <Drawer
           open
-          onOpenChange={(v) => {
-            if (!v) router.back();
+          onOpenChange={(isOpen) => {
+            if (!isOpen) router.back();
           }}
         >
           {/* TODO: DrawerContent 내부 CSS 문제로 mb-[-96vh] pb-[100vh] 임시 추가 */}
           <DrawerContent className="mb-[-96vh] p-6 pb-[100vh]">
-            <form onSubmit={onSubmit}>
+            <form id="edit-todo-modal" onSubmit={onSubmit}>
               <DrawerHeader className="mt-0 mb-4 flex flex-row justify-between p-0">
                 <DrawerTitle className="font-xl-semibold">할 일 수정</DrawerTitle>
                 <button className="cursor-pointer border-0" onClick={() => router.back()}>
@@ -363,7 +371,13 @@ export function EditForm({ todo, onCancel }: EditFormProps) {
                 >
                   취소
                 </Button>
-                <Button type="submit" size="lg" disabled={!isValid} className="flex-1">
+                <Button
+                  form="edit-todo-modal"
+                  type="submit"
+                  size="lg"
+                  disabled={!isValid}
+                  className="flex-1"
+                >
                   수정하기
                 </Button>
               </div>
@@ -373,12 +387,16 @@ export function EditForm({ todo, onCancel }: EditFormProps) {
       ) : (
         <Dialog
           open
-          onOpenChange={(v) => {
-            if (!v) router.back();
+          onOpenChange={(isOpen) => {
+            if (!isOpen) router.back();
           }}
         >
-          <DialogContent className="flex max-h-svh flex-col overflow-hidden [&_.absolute]:hidden">
-            <form onSubmit={onSubmit} className="flex flex-1 flex-col overflow-hidden">
+          <DialogContent className="flex max-h-svh flex-col overflow-hidden [&>button]:hidden">
+            <form
+              id="edit-form-modal"
+              onSubmit={onSubmit}
+              className="flex flex-1 flex-col overflow-hidden"
+            >
               <DialogHeader className="mb-8 shrink-0">
                 <DialogTitle>할 일 수정</DialogTitle>
               </DialogHeader>
@@ -389,7 +407,13 @@ export function EditForm({ todo, onCancel }: EditFormProps) {
                 <Button size="lg" variant="ghost" className="flex-1" onClick={onCancel}>
                   취소
                 </Button>
-                <Button type="submit" size="lg" disabled={!isValid} className="flex-1">
+                <Button
+                  form="edit-form-modal"
+                  type="submit"
+                  size="lg"
+                  disabled={!isValid}
+                  className="flex-1"
+                >
                   수정하기
                 </Button>
               </DialogFooter>

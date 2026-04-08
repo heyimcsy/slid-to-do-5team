@@ -79,17 +79,16 @@ export function CommentSection({
         <span className="font-base-semibold md:font-lg-semibold text-orange-600">{totalCount}</span>
       </div>
 
-      <div className="flex gap-3 md:gap-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex gap-3 md:gap-4">
         <CommentInput register={register('content')} contentLength={contentValue?.length ?? 0} />
         <button
-          type="button"
-          onClick={handleSubmit(onSubmit)}
+          type="submit"
           disabled={!contentValue?.trim() || isBusy || isCreating}
           className="font-sm-semibold md:font-base-semibold w-16 shrink-0 rounded-full bg-orange-500 py-2.5 text-white disabled:cursor-not-allowed disabled:bg-gray-300 md:w-20 md:py-3"
         >
           등록
         </button>
-      </div>
+      </form>
 
       {isError ? (
         <div className="flex flex-col items-center gap-2 py-6 text-center">
