@@ -21,6 +21,7 @@ export const DotsCircleIcon = ({
       dots: 'currentColor',
     },
   };
+  const safeVariant = variant in variantStyles ? variant : 'default';
   return (
     <svg
       width="100%"
@@ -31,14 +32,14 @@ export const DotsCircleIcon = ({
       className={cn(variant === 'ghost' && 'text-orange-600 dark:text-orange-300', className)}
       {...props}
     >
-      <circle cx="12" cy="12" r="12" fill={variantStyles[variant].fill} />
+      <circle cx="12" cy="12" r="12" fill={variantStyles[safeVariant].fill} />
       <circle
         cx="11.942"
         cy="11.9999"
         r="0.525"
         transform="rotate(-90 11.942 11.9999)"
-        fill={variantStyles[variant].dots}
-        stroke={variantStyles[variant].dots}
+        fill={variantStyles[safeVariant].dots}
+        stroke={variantStyles[safeVariant].dots}
         strokeWidth="1.16667"
         strokeLinecap="round"
       />
@@ -47,8 +48,8 @@ export const DotsCircleIcon = ({
         cy="15.9667"
         r="0.525"
         transform="rotate(-90 11.942 15.9667)"
-        fill={variantStyles[variant].dots}
-        stroke={variantStyles[variant].dots}
+        fill={variantStyles[safeVariant].dots}
+        stroke={variantStyles[safeVariant].dots}
         strokeWidth="1.16667"
         strokeLinecap="round"
       />
@@ -57,8 +58,8 @@ export const DotsCircleIcon = ({
         cy="8.03311"
         r="0.525"
         transform="rotate(-90 11.942 8.03311)"
-        fill={variantStyles[variant].dots}
-        stroke={variantStyles[variant].dots}
+        fill={variantStyles[safeVariant].dots}
+        stroke={variantStyles[safeVariant].dots}
         strokeWidth="1.16667"
         strokeLinecap="round"
       />

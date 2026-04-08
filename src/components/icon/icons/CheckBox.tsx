@@ -23,6 +23,8 @@ export const CheckBoxIcon = ({
     },
   };
 
+  const safeVariant = variant in variantStyles ? variant : 'default';
+
   if (!checked) {
     return (
       <svg
@@ -39,8 +41,8 @@ export const CheckBoxIcon = ({
           width="17"
           height="17"
           rx="5.5"
-          fill={variantStyles[variant].fill}
-          stroke={variantStyles[variant].stroke}
+          fill={variantStyles[safeVariant].fill}
+          stroke={variantStyles[safeVariant].stroke}
         />
       </svg>
     );
