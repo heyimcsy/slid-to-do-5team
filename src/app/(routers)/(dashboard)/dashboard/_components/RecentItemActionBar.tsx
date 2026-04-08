@@ -89,8 +89,11 @@ export default function ItemActionBar({
         <Button
           variant="icon"
           size="none"
-          onClick={() => {
-            linkUrl && handleCopyLink(linkUrl);
+          onClick={(e) => {
+            e.stopPropagation();
+            if (linkUrl) {
+              void handleCopyLink(linkUrl);
+            }
           }}
         >
           <Icon name="link" variant="orange" />
@@ -98,7 +101,7 @@ export default function ItemActionBar({
       )}
       <div
         className={cn(
-          'hidden h-fit shrink-1 items-center space-x-[6px] lg:space-x-2',
+          'hidden h-fit shrink items-center space-x-[6px] lg:space-x-2',
           'group-hover:flex',
           selectOpen && 'flex',
         )}
@@ -147,6 +150,7 @@ export default function ItemActionBar({
           e.stopPropagation();
           handleFavorite();
         }}
+        aria-label={favorites ? '찜 취소' : '찜 추가'}
         variant="icon"
         size="none"
       >
