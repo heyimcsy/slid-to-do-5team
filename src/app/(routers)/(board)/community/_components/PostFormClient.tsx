@@ -27,7 +27,7 @@ const postSchema = z.object({
     .string()
     .min(1, '제목을 입력해주세요')
     .max(TITLE_MAX_LENGTH, `제목은 최대 ${TITLE_MAX_LENGTH}자까지 입력할 수 있습니다.`),
-  content: z
+  charCount: z
     .number()
     .min(1, '내용을 입력해주세요')
     .max(CONTENT_MAX_LENGTH, `내용은 최대 ${CONTENT_MAX_LENGTH}자까지 입력할 수 있습니다.`),
@@ -80,14 +80,14 @@ export function PostFormClient({
     formState: { isSubmitting, isDirty, isValid },
   } = useForm<PostFormValues>({
     resolver: zodResolver(postSchema),
-    defaultValues: { title: initialValues?.title ?? '', content: 0 },
+    defaultValues: { title: initialValues?.title ?? '', charCount: 0 },
     mode: 'onChange',
   });
 
   const titleValue = watch('title');
 
   useEffect(() => {
-    setValue('content', charCount, { shouldValidate: true });
+    setValue('charCount', charCount, { shouldValidate: true });
   }, [charCount, setValue]);
 
   const hasChanged = isDirty || hasEditorChanged || hasImagesChanged;
