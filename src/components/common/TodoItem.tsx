@@ -6,8 +6,11 @@ import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDeleteFavorite, usePostFavorite } from '@/api/favorites';
 import { useDeleteTodos, usePatchTodos } from '@/api/todos';
+import { useDebouncedCallback } from '@/hooks/useDebounceCallback';
 import { cn } from '@/lib';
 import { toast } from 'sonner';
+
+import { ROUTES } from '@/constants/routes';
 
 import { Icon } from '@/components/icon/Icon';
 import { Button } from '@/components/ui/button';
@@ -26,10 +29,10 @@ interface TodoItemProps {
 
 export default function TodoItem({ task }: TodoItemProps) {
   const router = useRouter();
-  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // 마우스 호버 상태 관리 (호버 시 수정/삭제 버튼 노출)
+  // 마우스 호버 상태 관리
   const [hovered, setHovered] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // 찜하기 아이콘 Ui 상태 관리
   const [isFavorite, setIsFavorite] = useState(task.favorites);
@@ -55,135 +58,131 @@ export default function TodoItem({ task }: TodoItemProps) {
   };
   // 할 일 수정 페이지로 이동
   const handleEdit = () => {
-    router.push(`/goals/${task.goalId}/todos/${task.id}/edit`);
+    router.push(`${ROUTES.TODO_EDIT(task.goalId, task.id)}`);
   };
-  // 찜하기 토글 (찜 상태면 취소, 아니면 추가)
-  const handleFavorite = () => {
-    //ref에서 최신값 읽기
-    const next = !isFavoriteRef.current;
-    // ref 즉시 업데이트
-    isFavoriteRef.current = next;
-    // 아이콘 즉각 반영
-    setIsFavorite(next);
 
-    // 이전 타이머가 있으면 취소
-    if (debounceTimer.current) clearTimeout(debounceTimer.current);
-
-    // 300ms 후에 실행
-    debounceTimer.current = setTimeout(() => {
-      if (next) {
-        postFavorite(task.id, {
-          onError: () => {
-            isFavoriteRef.current = !next;
-            setIsFavorite(!next);
-          },
-        });
-      } else {
-        deleteFavorite(task.id, {
-          onError: () => {
-            isFavoriteRef.current = !next;
-            setIsFavorite(!next);
-          },
-        });
-      }
-    }, 300);
-  };
+  const handleFavorite = useDebouncedCallback(() => {
+    const next = !isFavoriteRef.current; // ref로 최신값 읽기
+    isFavoriteRef.current = next; // ref 즉시 업데이트
+    setIsFavorite(next); // UI 즉각 반영
+    if (next) {
+      postFavorite(task.id, {
+        onError: () => {
+          isFavoriteRef.current = !next;
+          setIsFavorite(!next); // 실패 시 롤백
+        },
+      });
+    } else {
+      deleteFavorite(task.id, {
+        onError: () => {
+          isFavoriteRef.current = !next;
+          setIsFavorite(!next); // 실패 시 롤백
+        },
+      });
+    }
+  }, 300);
 
   return (
-    <ul>
-      <li
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        className={cn(
-          'flex cursor-pointer items-center justify-between gap-2 rounded-2xl px-2 py-2 transition-colors duration-150 hover:bg-[var(--orange-alpha-20)] md:px-4 md:py-3 lg:px-8',
+    <li
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className={cn(
+        'flex cursor-pointer items-center justify-between gap-2 rounded-2xl px-2 py-2 transition-colors duration-150 md:px-4 md:py-3 lg:px-8',
+        (hovered || isDropdownOpen) && 'bg-orange-alpha-20',
+      )}
+    >
+      {isNavigating && <Spinner text="로딩 중" />}
+      {/* 체크박스 */}
+      <button onClick={handleToggle} className="shrink-0 cursor-pointer">
+        {task.done ? (
+          <Icon name="checkBox" size={18} checked={true} />
+        ) : (
+          <Icon name="checkBox" size={18} />
         )}
-      >
-        {isNavigating && <Spinner text="로딩 중" />}
-        {/* 체크박스 */}
-        <button onClick={handleToggle} className="shrink-0 cursor-pointer">
-          {task.done ? (
-            <Icon name="checkBox" size={18} checked={true} />
-          ) : (
-            <Icon name="checkBox" size={18} />
+      </button>
+
+      {/* 할일 텍스트 */}
+      <div className="flex min-w-0 flex-1 items-center justify-between">
+        <span
+          className={cn(
+            'font-sm-medium md:font-base-medium min-w-0 flex-1 truncate',
+            task.done && 'text-orange-500',
           )}
-        </button>
+        >
+          {task.title}
+        </span>
+        <div className="flex shrink-0 items-center gap-2">
+          {task.noteIds && task.noteIds.length > 0 ? (
+            <Button
+              variant="icon"
+              size="none"
+              onClick={() => {
+                setIsNavigating(true);
+                router.push(`${ROUTES.NOTE_DETAIL(task.goalId, task.noteIds[0])}`);
+              }}
+            >
+              <Icon name="note" variant="orange" />
+            </Button>
+          ) : null}
 
-        {/* 할일 텍스트 */}
-        <div className="flex min-w-0 flex-1 items-center justify-between">
-          <span
-            className={cn(
-              'font-sm-medium md:font-base-medium min-w-0 flex-1 truncate',
-              task.done && 'text-orange-500',
-            )}
-          >
-            {task.title}
-          </span>
-          <div className="flex shrink-0 items-center gap-2">
-            {task.noteIds && task.noteIds.length > 0 ? (
-              <Button
-                variant="icon"
-                size="none"
-                onClick={() => {
-                  setIsNavigating(true);
-                  router.push(`/goals/${task.goalId}/notes/${task.noteIds[0]}`);
-                }}
-              >
-                <Icon name="note" variant="orange" />
-              </Button>
-            ) : null}
+          {task.linkUrl ? (
+            <Button
+              variant="icon"
+              size="none"
+              onClick={() => {
+                if (task.linkUrl) navigator.clipboard.writeText(task.linkUrl);
+                toast.success('링크가 복사되었습니다');
+              }}
+            >
+              <Icon name="link" variant="orange" />
+            </Button>
+          ) : null}
 
-            {task.linkUrl ? (
-              <Button
-                variant="icon"
-                size="none"
-                onClick={() => {
-                  if (task.linkUrl) navigator.clipboard.writeText(task.linkUrl);
-                  toast.success('링크가 복사되었습니다');
-                }}
-              >
-                <Icon name="link" variant="orange" />
-              </Button>
-            ) : null}
-
-            {hovered && (
-              <div className="flex items-center gap-2">
-                <button
-                  className="cursor-pointer"
-                  onClick={() => {
-                    setIsNavigating(true);
-                    if (task.noteIds && task.noteIds.length > 0) {
-                      router.push(`/goals/${task.goalId}/notes/${task.noteIds[0]}/edit`);
-                    } else {
-                      router.push(`/goals/${task.goalId}/notes/new?todoId=${task.id}`);
-                    }
+          <div className="flex items-center gap-2">
+            <div>
+              <DropdownMenu onOpenChange={setIsDropdownOpen}>
+                <DropdownMenuTrigger
+                  className="flex cursor-pointer items-center gap-2"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    console.log(e);
                   }}
                 >
-                  <Icon name="edit" />
-                </button>
-                <div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="flex cursor-pointer items-center gap-2">
-                      <Icon name="dotscircle" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem onClick={handleEdit}>수정하기</DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleDelete}>삭제하기</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-            )}
-
-            <button onClick={handleFavorite} className="cursor-pointer">
-              {isFavorite ? (
-                <Icon name="filledStar" variant="orange" />
-              ) : (
-                <Icon name="outlineStar" />
-              )}
-            </button>
+                  <Icon name="dotscircle" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  {/* 노트 관련 메뉴 추가 */}
+                  {task.noteIds && task.noteIds.length > 0 ? (
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setIsNavigating(true);
+                        router.push(ROUTES.NOTE_EDIT(task.goalId, task.noteIds[0]));
+                      }}
+                    >
+                      노트수정
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setIsNavigating(true);
+                        router.push(ROUTES.NOTE_NEW(task.goalId, task.id));
+                      }}
+                    >
+                      노트작성
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={handleEdit}>수정하기</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleDelete}>삭제하기</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
+
+          <button onClick={handleFavorite} className="cursor-pointer">
+            {isFavorite ? <Icon name="filledStar" variant="orange" /> : <Icon name="outlineStar" />}
+          </button>
         </div>
-      </li>
-    </ul>
+      </div>
+    </li>
   );
 }
