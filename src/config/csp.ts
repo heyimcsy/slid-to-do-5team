@@ -23,5 +23,6 @@ export const csp = [
   "base-uri 'self'",
   "form-action 'self'",
   "object-src 'none'",
-  'upgrade-insecure-requests',
+  // TODO: Kakao CDN 등 https 미지원 출처가 있어서 비활성화(향후 https만 남는 경우 활성화하면 됨)
+  // 'upgrade-insecure-requests',
 ].join('; ');
