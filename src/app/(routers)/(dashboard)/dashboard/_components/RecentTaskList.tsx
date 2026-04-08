@@ -4,6 +4,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useGetTodos } from '@/api/todos';
 
+import { Skeleton } from '@/components/ui/skeleton';
+
+import RecentTodoList from './RecentTodoList';
+
 export function RecentTaskList() {
   /**
    * ////TODO: 최근 등록한 할 일에 필요한 기능
@@ -13,11 +17,12 @@ export function RecentTaskList() {
    * - 만약, 등록한 할 일이 없으면 할 일 없음 UI 처리가 됩니다.
    * @endpoint GET /api/todos/recent
    */
-  const { data: todos, isLoading, error } = useGetTodos({ limit: 4 });
-  if (isLoading) return <div>로딩중...</div>;
-  if (error || !todos) return <div>에러</div>;
+  const { data: todos, isLoading, error, refetch } = useGetTodos({ limit: 4 });
 
-  const recentTodos = todos.todos.slice(0, 4);
+  if (isLoading) return <RecentTaskListSkeleton />;
+  if (error || !todos) return <RecentTaskListError onRetry={refetch} />;
+
+  const recentTodos = todos?.todos.slice(0, 4) ?? [];
 
   return (
     <div className="recent-task-list flex flex-col gap-4">
@@ -52,21 +57,65 @@ export function RecentTaskList() {
           </Link>
         </section>
       </div>
-      <div className="flex min-h-46.5 w-full flex-col justify-center rounded-[1.75rem] bg-orange-500 px-4 py-4.5 text-white md:min-h-46.5 md:rounded-[1.75rem] md:px-4 md:py-4.5 lg:min-h-64 lg:rounded-[2.5rem] lg:px-8 lg:py-7.5 dark:bg-orange-300 dark:text-black">
+      <div className="flex min-h-46.5 w-full flex-col justify-center rounded-[1.75rem] bg-orange-500 px-4 py-4.5 text-white transition-shadow duration-300 hover:shadow-[0_10px_40px_0_oklch(0.7654_0.134_48.24/0.4)] md:min-h-46.5 md:rounded-[1.75rem] md:px-4 md:py-4.5 lg:min-h-64 lg:rounded-[2.5rem] lg:px-8 lg:py-7.5 dark:bg-orange-300 dark:text-black">
         {recentTodos.length === 0 ? (
           <div className="flex items-center justify-center">최근에 등록한 할 일이 없어요</div>
         ) : (
           recentTodos.map((todo) => (
-            <div
+            <RecentTodoList
               key={todo.id}
-              className="flex items-center justify-between px-1 py-1.5 md:px-1 md:py-1.5 lg:px-2 lg:py-2.5"
-            >
-              <p className="lg:font-base-semibold md:font-sm-semibold font-sm-semibold">
-                {todo.title}
-              </p>
-            </div>
+              goalId={todo.goalId}
+              id={todo.id}
+              done={todo.done}
+              title={todo.title}
+              noteIds={todo.noteIds}
+              linkUrl={todo.linkUrl}
+              favorites={todo.favorites}
+            />
           ))
         )}
+      </div>
+    </div>
+  );
+}
+
+function RecentTaskListSkeleton() {
+  return (
+    <div className="recent-task-list flex flex-col gap-4">
+      <div className="recent-task-list-header flex justify-between">
+        <Skeleton variant="gray" className="h-8 w-40 rounded-xl" />
+        <Skeleton variant="gray" className="h-6 w-16 rounded-xl" />
+      </div>
+      <div className="flex min-h-46.5 w-full flex-col justify-center rounded-[1.75rem] bg-orange-500 px-4 py-4.5 md:min-h-46.5 md:rounded-[1.75rem] md:px-4 md:py-4.5 lg:min-h-64 lg:rounded-[2.5rem] lg:px-8 lg:py-7.5 dark:bg-orange-300">
+        <div className="flex flex-col gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <Skeleton variant="gray" className="size-5 shrink-0 rounded-md" />
+              <Skeleton variant="gray" className="h-4 w-full rounded-md" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface RecentTaskListErrorProps {
+  onRetry: () => void;
+}
+
+function RecentTaskListError({ onRetry }: RecentTaskListErrorProps) {
+  return (
+    <div className="recent-task-list flex flex-col gap-4">
+      <div className="recent-task-list-header flex justify-between">
+        <p className="font-3xl-regular mb-4 text-gray-600">데이터를 불러오지 못했어요.</p>
+        <button
+          type="button"
+          onClick={onRetry}
+          className="font-sm-medium rounded-xl bg-orange-500 px-5 py-2.5 text-white"
+        >
+          다시 시도하기
+        </button>
       </div>
     </div>
   );

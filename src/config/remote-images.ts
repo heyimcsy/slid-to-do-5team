@@ -20,6 +20,8 @@ export const REMOTE_IMAGE_SOURCES = [
   'https://placehold.co',
   'https://*.googleusercontent.com',
   'https://*.kakaocdn.net',
+  // TODO: Kakao CDN이 현재 HTTP로 이미지를 제공하므로 유지 필요.
+  // Kakao CDN이 HTTPS로 마이그레이션되면 이 항목을 제거하세요.
   'http://*.kakaocdn.net',
   'https://sprint-fe-project.s3.ap-northeast-2.amazonaws.com/slid-todo/**',
 ] as const;
@@ -34,7 +36,7 @@ export function remoteImageSourceToPattern(source: string): ImageRemotePattern {
   const trimmed = source.trim();
   const protoMatch = /^(https?):\/\//i.exec(trimmed);
   if (!protoMatch) {
-    throw new Error(`Invalid remote image source (expected protocol://…): ${source}`);
+    throw new Error(`원격 이미지 출처에 프로토콜(https:// 또는 http://)이 없습니다: ${source}`);
   }
 
   const protocol = protoMatch[1].toLowerCase() as 'http' | 'https';
@@ -46,6 +48,10 @@ export function remoteImageSourceToPattern(source: string): ImageRemotePattern {
   const rawPathname = slashIdx === -1 ? undefined : withoutHashQuery.slice(slashIdx);
 
   const { hostname, port } = splitHostPort(authority);
+
+  if (!hostname) {
+    throw new Error(`원격 이미지 출처에 호스트명이 없습니다: ${source}`);
+  }
 
   const pattern: ImageRemotePattern = { protocol, hostname, port: port ?? '' };
   if (rawPathname !== undefined && rawPathname !== '' && rawPathname !== '/') {

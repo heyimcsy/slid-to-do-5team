@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 
+import { headers } from 'next/headers';
 import { cn } from '@/lib';
 import { AppProviders } from '@/providers';
 
@@ -27,11 +28,13 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const nonce = (await headers()).get('x-nonce') ?? undefined;
+
   return (
     <html
       lang="ko"
@@ -48,6 +51,7 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
+          nonce={nonce}
         >
           <AppProviders>
             {children}
