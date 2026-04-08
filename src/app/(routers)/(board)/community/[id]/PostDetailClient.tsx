@@ -87,6 +87,7 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
         onConfirm={() => {
           if (!isWriter) {
             toast.error('본인이 작성한 게시물만 삭제할 수 있습니다.');
+            setDeleteDialogOpen(false);
             return;
           }
 
