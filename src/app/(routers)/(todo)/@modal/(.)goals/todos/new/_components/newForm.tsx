@@ -386,6 +386,7 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
           <DialogContent className="flex max-h-svh flex-col overflow-hidden [&>button]:hidden">
             <form
               id="new-todo-form"
+              className="flex flex-1 flex-col overflow-hidden"
               onSubmit={(e) => {
                 e.preventDefault();
                 handleSubmit();
