@@ -14,6 +14,7 @@ import { DeleteIcon } from '@/components/icon/icons/Delete';
 import { Toolbar } from '@/components/Toolbar';
 import { Spinner } from '@/components/ui/spinner';
 
+import { usePostDraft } from '../_hooks/usePostDraft';
 import { usePostEditor } from '../_hooks/usePostEditor';
 import { usePostImages } from '../_hooks/usePostImages';
 import { DesktopPostHeader } from './DesktopPostHeader';
@@ -55,6 +56,7 @@ export function PostFormClient({
   const router = useRouter();
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
+  const [draftDialogOpen, setDraftDialogOpen] = useState(false);
 
   const { editor, hasEditorContent, hasEditorChanged, charCountWithoutSpaces, charCount } =
     usePostEditor({
@@ -86,6 +88,19 @@ export function PostFormClient({
 
   const titleValue = watch('title');
 
+  const { saveDraft, loadDraft, clearDraft, hasDraft } = usePostDraft({
+    mode,
+    titleValue,
+    editor,
+    setValue,
+  });
+
+  useEffect(() => {
+    if (mode === 'create' && hasDraft()) {
+      setDraftDialogOpen(true);
+    }
+  }, [mode]);
+
   useEffect(() => {
     setValue('charCount', charCount, { shouldValidate: true });
   }, [charCount, setValue]);
@@ -115,6 +130,7 @@ export function PostFormClient({
         .map((item) => item.url);
 
       await onSubmit?.({ title, contentJson }, newFiles, existingUrls);
+      clearDraft();
     } catch (error) {
       console.error(error);
       toast.error(error instanceof Error ? error.message : '게시물 저장에 실패했습니다.');
@@ -142,11 +158,21 @@ export function PostFormClient({
       className="flex h-[calc(100dvh-68px)] w-full flex-col overflow-hidden bg-gray-100 md:h-dvh"
     >
       <DeleteDialog
+        open={draftDialogOpen}
+        onOpenChange={setDraftDialogOpen}
+        title="임시저장된 게시물이 있습니다."
+        description="임시저장된 게시물을 불러오시겠습니까?"
+        onConfirm={loadDraft}
+      />
+      <DeleteDialog
         open={cancelDialogOpen}
         onOpenChange={setCancelDialogOpen}
         title="작성을 취소하시겠습니까?"
-        description="작성 중인 내용이 저장되지 않습니다."
-        onConfirm={() => router.back()}
+        description="작성 중인 내용은 임시저장됩니다."
+        onConfirm={() => {
+          if (mode === 'create') saveDraft();
+          router.back();
+        }}
       />
       <DeleteDialog
         open={submitDialogOpen}
