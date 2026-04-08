@@ -14,6 +14,7 @@ export function buildCsp({ nonce, isDev }: BuildCspParams): string {
     : //FIXME: sha256 해시는 next-themes가 FOUC 방지용으로 주입하는 고정 inline script(업데이트 시 꼭 변경 필요)
       `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'sha256-n46vPwSWuMC0W703pBofImv82Z26xo4LXymv0E9caPk=' https://vercel.live;`;
 
+  // FIXME: upgrade-insecure-requests는 Kakao CDN이 http를 더 이상 사용하지 않으면 도입 필요
   const cspHeader = `
     default-src 'self';
     ${scriptSrc}
@@ -25,7 +26,6 @@ export function buildCsp({ nonce, isDev }: BuildCspParams): string {
     base-uri 'self';
     form-action 'self';
     object-src 'none';
-    upgrade-insecure-requests;
   `;
 
   return cspHeader.replace(/\s{2,}/g, ' ').trim();
