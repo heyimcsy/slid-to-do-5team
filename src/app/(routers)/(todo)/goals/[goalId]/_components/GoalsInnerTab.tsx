@@ -9,6 +9,7 @@ import TotalListTab from '@/app/(routers)/(todo)/goals/[goalId]/_components/Tota
 import { useGoalWithTodos } from '@/app/(routers)/(todo)/goals/[goalId]/hooks/useGoalWithTodos';
 
 import { DonutProgress } from '@/components/common/DonutProgress';
+import { ErrorFallback } from '@/components/ErrorFallback';
 import { Icon } from '@/components/icon/Icon';
 
 export default function GoalsInnerTab({ goalId }: { goalId: number }) {
@@ -16,10 +17,19 @@ export default function GoalsInnerTab({ goalId }: { goalId: number }) {
   const parsedUserInfo = userInfo ? JSON.parse(userInfo).state : null;
   const userName: string = parsedUserInfo?.user?.name ? parsedUserInfo.user.name : '';
 
-  const { goalData, todoLists, todoListsDone, progressPercent, isLoading, isSuccess } =
-    useGoalWithTodos(goalId);
+  const {
+    goalData,
+    todoLists,
+    todoListsDone,
+    progressPercent,
+    isLoading,
+    isError,
+    isSuccess,
+    refetch,
+  } = useGoalWithTodos(goalId);
 
   if (isLoading) return <GoalsInnerTabSkeleton userName={userName} />;
+  if (isError) return <ErrorFallback onRetry={refetch} title="목표 상세페이지" />;
   if (isSuccess)
     return (
       <>
