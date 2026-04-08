@@ -9,16 +9,17 @@ import { cn } from '@/lib';
 
 import TodoItem from '@/components/common/TodoItem';
 import { EmptyState } from '@/components/EmptyState';
+import { ErrorFallback } from '@/components/ErrorFallback';
 import {
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/components/ui/select';
 
 import { toTask, useGetFavorites } from '../_api/favoritesQueries';
+import { FavoritesTabSkeleton } from './FavoritesTabSkeleton';
 
 type Tab = 'ALL' | 'TODO' | 'DONE';
 
@@ -30,10 +31,11 @@ const TABS: { label: string; value: Tab }[] = [
 
 export default function FavoritesTab() {
   const [tab, setTab] = useState<Tab>('ALL');
-  const [selectedGoalTitle, setSelectedGoalTitle] = useState<string>('전체 목표');
+  const [selectedGoalId, setSelectedGoalId] = useState<string>('all');
   const [goalSelectOpen, setGoalSelectOpen] = useState(false);
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetFavorites();
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, refetch } =
+    useGetFavorites();
   const favorites: Favorite[] = useMemo(
     () => (data?.pages ?? []).flatMap((page) => page.favorites),
     [data],
@@ -55,9 +57,9 @@ export default function FavoritesTab() {
   ];
 
   const goalFiltered =
-    selectedGoalTitle === '전체 목표'
+    selectedGoalId === 'all'
       ? favorites
-      : favorites.filter((fav) => fav.todo.goal?.title === selectedGoalTitle);
+      : favorites.filter((fav) => String(fav.todo.goal?.id) === selectedGoalId);
 
   const filtered = goalFiltered.filter((fav: Favorite) => {
     if (tab === 'TODO') return !fav.todo.done;
@@ -65,10 +67,13 @@ export default function FavoritesTab() {
     return true;
   });
 
+  if (isLoading) return <FavoritesTabSkeleton />;
+  if (isError) return <ErrorFallback onRetry={refetch} title="찜한 할 일" />;
+
   return (
     <div className="flex h-full flex-col">
       <h1 className="font-xl-bold mb-6 hidden text-gray-800 md:block">
-        찜한 할 일 <span className="text-orange-500">{favorites.length}</span>
+        찜한 할 일 <span className="text-orange-500">{data?.pages[0]?.totalCount ?? 0}</span>
       </h1>
 
       <div className="mb-3 flex gap-1">
@@ -89,8 +94,8 @@ export default function FavoritesTab() {
 
       <div className="flex flex-1 flex-col rounded-[28px] bg-white p-4 shadow-sm md:p-6">
         <Select
-          value={selectedGoalTitle}
-          onValueChange={(val: string | null) => val && setSelectedGoalTitle(val)}
+          value={selectedGoalId}
+          onValueChange={(val: string | null) => val && setSelectedGoalId(val)}
           open={goalSelectOpen}
           onOpenChange={setGoalSelectOpen}
         >
@@ -103,13 +108,13 @@ export default function FavoritesTab() {
                 height={24}
                 className="shrink-0"
               />
-              <SelectValue placeholder="전체 목표" />
+              <span>{goals.find((goal) => goal.id === selectedGoalId)?.title ?? '전체 목표'}</span>
             </div>
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
               {goals.map((goal) => (
-                <SelectItem key={goal.id} value={goal.title}>
+                <SelectItem key={goal.id} value={goal.id}>
                   {goal.title}
                 </SelectItem>
               ))}
@@ -117,7 +122,7 @@ export default function FavoritesTab() {
           </SelectContent>
         </Select>
 
-        <div ref={observerRef} className="flex flex-col">
+        <div className="flex flex-col">
           {filtered.length > 0 ? (
             filtered.map((fav) => <TodoItem key={fav.todo.id} task={toTask(fav)} />)
           ) : (
@@ -131,6 +136,7 @@ export default function FavoritesTab() {
               )}
             </div>
           )}
+          <div ref={observerRef} className="h-4" />
         </div>
       </div>
     </div>

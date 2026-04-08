@@ -14,9 +14,9 @@ import { formatDate } from '@/utils/date';
 
 import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { KebabMenu } from '@/components/common/KebabMenu';
+import { ErrorFallback } from '@/components/ErrorFallback';
 
 import { useDeletePost, useGetComments, useGetPostById } from '../_api/communityQueries';
-import { PostErrorFallback } from '../_components/PostErrorFallback';
 import { WriterAvatar } from '../_components/WriterAvatar';
 import { extractImagesFromContent } from '../_utils/extractImagesFromContent';
 import { CommentSection } from './_components/CommentSection';
@@ -65,9 +65,9 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
     }
   }, [editor, post, contentWithoutImages]);
 
-  if (isError && !post) return <PostErrorFallback onRetry={refetch} />;
+  if (isError && !post) return <ErrorFallback onRetry={refetch} title="소통 게시판" />;
   if (isPostLoading) return <PostDetailSkeleton />;
-  if (!post) return <PostErrorFallback onRetry={refetch} />;
+  if (!post) return <ErrorFallback onRetry={refetch} title="소통 게시판" />;
   if (!contentReady) return <PostDetailSkeleton />;
 
   const { title, viewCount, createdAt, writer, commentCount } = post;
