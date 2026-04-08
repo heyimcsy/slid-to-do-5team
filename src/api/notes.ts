@@ -5,7 +5,13 @@ import type { QueryClient } from '@tanstack/react-query';
 import { GOALS } from '@/api/goals';
 import { TODOS } from '@/api/todos';
 import { apiClient } from '@/lib/apiClient.browser';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 // ── 마크(인라인 스타일) ──────────────────────────
 type BoldMark = { type: 'bold' };
@@ -151,6 +157,21 @@ export const useGetNotes = ({ todoId, goalId, cursor, limit }: GetNotesParams = 
       return await apiClient<NotesGetResponse>(url);
     },
     enabled: !!goalId,
+  });
+};
+
+export const useGetNotesInfinite = ({ goalId, limit = 5 }: { goalId: number; limit?: number }) => {
+  return useInfiniteQuery({
+    queryKey: [NOTES, { goalId, limit }],
+    queryFn: async ({ pageParam }) => {
+      const res = await apiClient<NotesGetResponse>(
+        `${NOTES_URL}?goalId=${goalId}&limit=${limit}${pageParam ? `&cursor=${pageParam}` : ''}`,
+      );
+      return res;
+    },
+    initialPageParam: null as number | null,
+    getNextPageParam: (lastPage) => lastPage?.nextCursor ?? null, // ← ?. 추가
+    placeholderData: keepPreviousData,
   });
 };
 

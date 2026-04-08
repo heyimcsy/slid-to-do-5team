@@ -1,4 +1,5 @@
 import type { Notes } from '@/api/notes';
+import type { Ref } from 'react';
 
 import Image from 'next/image';
 import emptyImage from '@/../public/images/big-zero-done.svg';
@@ -8,9 +9,10 @@ import NoteCard from './NoteCard';
 interface NoteListProps {
   notes: Notes[];
   goalId: number;
+  observerRef: Ref<HTMLDivElement>;
 }
 
-export default function NoteList({ notes, goalId }: NoteListProps) {
+export default function NoteList({ notes, goalId, observerRef }: NoteListProps) {
   if (notes.length === 0) {
     return (
       <div className="flex min-h-[60vh] w-full items-center justify-center">
@@ -40,6 +42,7 @@ export default function NoteList({ notes, goalId }: NoteListProps) {
           createdAt={note.createdAt}
         />
       ))}
+      <div ref={observerRef} className="h-1"></div>
     </div>
   );
 }

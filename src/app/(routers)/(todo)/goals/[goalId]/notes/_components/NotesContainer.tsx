@@ -7,10 +7,11 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import goalImage from '@/../public/images/large-goal.svg';
 import { useGetGoal } from '@/api/goals';
-import { useGetNotes } from '@/api/notes';
+import { useGetNotesInfinite } from '@/api/notes';
 import NotesContainerSkeleton from '@/app/(routers)/(todo)/goals/[goalId]/notes/_components/NoteContainerSkeleton';
 import NoteList from '@/app/(routers)/(todo)/goals/[goalId]/notes/_components/NoteList';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
 import { SearchInput } from '@/components/common/SearchInput';
 import { SortFilter } from '@/components/common/SortFilter';
@@ -18,16 +19,25 @@ import { SortFilter } from '@/components/common/SortFilter';
 export default function NotesContainer() {
   const pathname = usePathname();
   const goalId: number = Number(pathname.split('/')[2]);
-  const { data, isLoading, isSuccess } = useGetNotes({ goalId });
+
   const { data: goalData } = useGetGoal({ id: goalId });
+  const { data, isLoading, isSuccess, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useGetNotesInfinite({ goalId });
+  const allNotes = data?.pages.flatMap((page) => page.notes) ?? [];
 
   const [searchValue, setSearchValue] = useState('');
   const debouncedSearch = useDebouncedValue(searchValue, 300);
 
   // 클라이언트 필터링
-  const filteredNotes = data?.notes.filter((note: Notes) =>
+  const filteredNotes: Notes[] = allNotes.filter((note: Notes) =>
     note.title.toLowerCase().includes(debouncedSearch.toLowerCase()),
   );
+
+  const { observerRef } = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  });
 
   if (isLoading) return <NotesContainerSkeleton />;
   if (isSuccess)
@@ -65,7 +75,7 @@ export default function NotesContainer() {
 
         {/* 노트 리스트 */}
         <div className="mt-4 md:mt-6">
-          <NoteList notes={filteredNotes ?? []} goalId={goalId} />
+          <NoteList notes={filteredNotes ?? []} goalId={goalId} observerRef={observerRef} />
         </div>
       </>
     );
