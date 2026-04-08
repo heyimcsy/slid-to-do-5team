@@ -5,14 +5,12 @@ import { NextResponse } from 'next/server';
 import { oauthUserFlashCookieOptions } from '@/lib/auth/cookies';
 import { completeKakaoBackendLogin } from '@/lib/auth/kakao/completeKakaoBackendLogin';
 import { exchangeKakaoAuthorizationCode } from '@/lib/auth/kakao/kakaoTokenExchange';
+import { verifyOAuthState } from '@/lib/auth/oauth-state';
 import {
-  COOKIE_OAUTH_KAKAO_RETURN_PATH,
-  COOKIE_OAUTH_KAKAO_STATE,
   COOKIE_OAUTH_USER_FLASH,
   OAUTH_SYNC_USER_QUERY,
   resolveKakaoOAuthRedirectUriForServer,
 } from '@/lib/auth/oauth-urls';
-import { getSafeCallbackPath } from '@/lib/navigation/safeCallbackPath';
 
 import {
   BACKEND_LOGIN_FAILED_MESSAGE_KO,
@@ -44,8 +42,8 @@ export async function GET(request: NextRequest) {
     return loginError(MISSING_OAUTH_RESPONSE_MESSAGE_KO);
   }
 
-  const storedState = request.cookies.get(COOKIE_OAUTH_KAKAO_STATE)?.value;
-  if (!storedState || storedState !== state) {
+  const verifiedState = verifyOAuthState('kakao', state);
+  if (!verifiedState.ok) {
     return loginError(SESSION_EXPIRED_OR_INVALID_MESSAGE_KO);
   }
 
@@ -75,16 +73,7 @@ export async function GET(request: NextRequest) {
     return loginError(backend.message);
   }
 
-  const rawReturn = request.cookies.get(COOKIE_OAUTH_KAKAO_RETURN_PATH)?.value;
-  let decodedReturn: string | null = null;
-  if (rawReturn) {
-    try {
-      decodedReturn = decodeURIComponent(rawReturn);
-    } catch {
-      decodedReturn = null;
-    }
-  }
-  const nextPath = getSafeCallbackPath(decodedReturn) ?? '/dashboard';
+  const nextPath = verifiedState.returnPath;
 
   const target = new URL(nextPath, origin);
   if (backend.user) {
@@ -92,8 +81,6 @@ export async function GET(request: NextRequest) {
   }
 
   const res = NextResponse.redirect(target);
-  res.cookies.set(COOKIE_OAUTH_KAKAO_STATE, '', { path: '/', maxAge: 0 });
-  res.cookies.set(COOKIE_OAUTH_KAKAO_RETURN_PATH, '', { path: '/', maxAge: 0 });
 
   if (backend.user) {
     res.cookies.set(
