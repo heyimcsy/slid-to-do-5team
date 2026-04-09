@@ -1,8 +1,8 @@
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
-import { PostHeaderActions } from './PostHeaderActions';
+import { FormHeaderActions } from './FormHeaderActions';
 
-interface MobilePostHeaderProps {
+interface MobileFormHeaderProps {
   isSubmitDisabled: boolean;
   onCancel: () => void;
   onSubmitClick: () => void;
@@ -11,14 +11,14 @@ interface MobilePostHeaderProps {
   toolbar: React.ReactNode;
 }
 
-export function MobilePostHeader({
+export function MobileFormHeader({
   isSubmitDisabled,
   onCancel,
   onSubmitClick,
   headerTitle,
   submitLabel,
   toolbar,
-}: MobilePostHeaderProps) {
+}: MobileFormHeaderProps) {
   return (
     <div className="md:hidden">
       <div className="fixed top-0 right-0 left-0 z-40 flex flex-col">
@@ -27,7 +27,7 @@ export function MobilePostHeader({
             <SidebarTrigger />
             <span className="font-base-semibold text-gray-700">{headerTitle}</span>
           </div>
-          <PostHeaderActions
+          <FormHeaderActions
             variant="mobile"
             isSubmitDisabled={isSubmitDisabled}
             submitLabel={submitLabel}

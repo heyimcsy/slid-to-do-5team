@@ -1,6 +1,6 @@
 import { cn } from '@/lib/shadcn';
 
-interface PostHeaderActionsProps {
+interface FormHeaderActionsProps {
   variant: 'mobile' | 'desktop';
   isSubmitDisabled: boolean;
   submitLabel: string;
@@ -8,13 +8,13 @@ interface PostHeaderActionsProps {
   onSubmitClick: () => void;
 }
 
-export function PostHeaderActions({
+export function FormHeaderActions({
   variant,
   isSubmitDisabled,
   submitLabel,
   onCancel,
   onSubmitClick,
-}: PostHeaderActionsProps) {
+}: FormHeaderActionsProps) {
   const isMobile = variant === 'mobile';
 
   const baseBtn = isMobile ? 'px-[6px] py-[2px]' : 'w-[106px] rounded-full border px-[18px] py-2.5';

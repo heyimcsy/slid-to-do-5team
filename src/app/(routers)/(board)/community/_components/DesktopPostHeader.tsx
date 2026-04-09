@@ -1,4 +1,4 @@
-import { PostHeaderActions } from './PostHeaderActions';
+import { FormHeaderActions } from '@/components/formHeader/FormHeaderActions';
 
 interface DesktopPostHeaderProps {
   isSubmitDisabled: boolean;
@@ -18,7 +18,7 @@ export function DesktopPostHeader({
   return (
     <div className="hidden items-center justify-between md:flex">
       <h1 className="font-xl-semibold lg:font-2xl-semibold text-black">{headerTitle}</h1>
-      <PostHeaderActions
+      <FormHeaderActions
         variant="desktop"
         isSubmitDisabled={isSubmitDisabled}
         submitLabel={submitLabel}

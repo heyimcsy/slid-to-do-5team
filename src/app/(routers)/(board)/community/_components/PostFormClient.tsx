@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { DeleteDialog } from '@/components/common/DeleteDialog';
+import { MobileFormHeader } from '@/components/formHeader/MobileFormHeader';
 import { DeleteIcon } from '@/components/icon/icons/Delete';
 import { Toolbar } from '@/components/Toolbar';
 import { Spinner } from '@/components/ui/spinner';
@@ -18,7 +19,6 @@ import { usePostDraft } from '../_hooks/usePostDraft';
 import { usePostEditor } from '../_hooks/usePostEditor';
 import { usePostImages } from '../_hooks/usePostImages';
 import { DesktopPostHeader } from './DesktopPostHeader';
-import { MobilePostHeader } from './MobilePostHeader';
 
 const TITLE_MAX_LENGTH = 30;
 const CONTENT_MAX_LENGTH = 1000;
@@ -184,7 +184,7 @@ export function PostFormClient({
           handleFormSubmit();
         }}
       />
-      <MobilePostHeader
+      <MobileFormHeader
         isSubmitDisabled={isSubmitDisabled}
         onCancel={() => setCancelDialogOpen(true)}
         onSubmitClick={() => setSubmitDialogOpen(true)}
