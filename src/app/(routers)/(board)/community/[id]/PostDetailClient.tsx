@@ -16,6 +16,7 @@ import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { KebabMenu } from '@/components/common/KebabMenu';
 import { ScrollToTop } from '@/components/common/ScrollToTop';
 import { ErrorFallback } from '@/components/ErrorFallback';
+import { Icon } from '@/components/icon/Icon';
 
 import { useDeletePost, useGetComments, useGetPostById } from '../_api/communityQueries';
 import { WriterAvatar } from '../_components/WriterAvatar';
@@ -103,8 +104,13 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
         <div className="mx-auto w-full md:max-w-[636px] lg:max-w-[768px]">
           <div className="flex flex-col gap-10 rounded-3xl bg-white px-5 py-6 md:gap-14 md:p-10 lg:p-14">
             <div className="w-full">
-              <div className="flex items-start justify-between gap-2">
-                <h1 className="font-base-semibold md:font-xl-semibold text-gray-800">{title}</h1>
+              <div className="flex items-start gap-2">
+                <button className="cursor-pointer pt-0.5" onClick={() => router.push('/community')}>
+                  <Icon name="arrow" direction="left" />
+                </button>
+                <h1 className="font-base-semibold md:font-xl-semibold min-w-0 flex-1 pl-1 text-gray-800">
+                  {title}
+                </h1>
                 {isWriter && <KebabMenu items={kebabItems} disabled={isBusy} />}
               </div>
 
