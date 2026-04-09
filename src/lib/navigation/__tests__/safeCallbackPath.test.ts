@@ -15,6 +15,13 @@ describe('getSafeCallbackPath', () => {
     expect(getSafeCallbackPath('/todos')).toBe('/todos');
     expect(getSafeCallbackPath('/todos?tab=1')).toBe('/todos?tab=1');
     expect(getSafeCallbackPath('%2Fprofile%2Fedit')).toBe('/profile/edit');
+    expect(getSafeCallbackPath('/share?url=https://example.com')).toBe(
+      '/share?url=https://example.com',
+    );
+  });
+
+  it('pathname에만 `://` 차단 (쿼리의 절대 URL은 허용)', () => {
+    expect(getSafeCallbackPath('/http://weird-path')).toBeNull();
   });
 
   it('오픈 리다이렉트 차단', () => {

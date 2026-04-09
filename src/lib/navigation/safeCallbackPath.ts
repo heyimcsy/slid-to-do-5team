@@ -57,7 +57,15 @@ export function getSafeCallbackPath(
   // [7] 오픈 리다이렉트 방지 — 동일 출처 상대 경로만 허용
   if (!decoded.startsWith('/')) return null; // 절대 URL 차단
   if (decoded.startsWith('//')) return null; // protocol-relative URL 차단
-  if (decoded.includes('://')) return null; // 경로 중간의 절대 URL 차단
+
+  /**
+   * `://`는 pathname에만 적용한다.
+   * 전체 문자열 기준이면 `/share?url=https://...` 같은 합법 쿼리까지 막힘.
+   * 스킴이 있는 절대 URL은 보통 `https?...`로 시작해 [7] 첫 줄에서 걸리고,
+   * `//host`는 [7] 둘째 줄에서 걸린다. pathname 안의 `://`는 희귀 이상 경로만 추가 차단.
+   */
+  const pathOnly = decoded.split(/[?#]/, 1)[0] ?? '';
+  if (pathOnly.includes('://')) return null;
 
   return decoded;
 }
