@@ -3,6 +3,8 @@
 import type { ReactNode } from 'react';
 import type { Mutate, StoreApi } from 'zustand';
 
+
+
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { useIsRestoring } from '@tanstack/react-query';
 
@@ -140,7 +142,7 @@ const PersistRehydrationGate = ({
           onRehydratedEvent();
         } catch (error) {
           console.error(
-            `${REHYDRATION_COMPLETED_AFTER_CALLBACK_FAILED_MESSAGE_KO}: ${error ?? UNKNOWN_ERROR_MESSAGE_KO}`,
+            `${REHYDRATION_COMPLETED_AFTER_CALLBACK_FAILED_MESSAGE_KO}: ${error instanceof Error ? error.message : (error ?? UNKNOWN_ERROR_MESSAGE_KO)}`,
           );
         } finally {
           setRehydrationDone(true);
