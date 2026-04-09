@@ -181,3 +181,33 @@ export const useDeleteComment = (postId: number) => {
     },
   });
 };
+
+// 댓글 좋아요
+export const useCreateCommentLike = (postId: number, commentId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () =>
+      apiClient<void>(`/posts/${postId}/comments/${commentId}/like`, {
+        method: 'POST',
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.all });
+    },
+  });
+};
+
+// 댓글 좋아요 취소
+export const useDeleteCommentLike = (postId: number, commentId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () =>
+      apiClient<void>(`/posts/${postId}/comments/${commentId}/like`, {
+        method: 'DELETE',
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.all });
+    },
+  });
+};
