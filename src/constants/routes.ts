@@ -14,7 +14,7 @@ export const ROUTES = {
 
   // Notes
   NOTE_DETAIL: (goalId: number, noteId: number, todoId?: number) =>
-    `/goals/${goalId}/notes/${noteId}${todoId ? `?todoId=${todoId}` : ''}`,
+    `/goals/${goalId}/notes/${noteId}${todoId !== undefined ? `?todoId=${todoId}` : ''}`,
   NOTE_EDIT: (goalId: number, noteId: number) => `/goals/${goalId}/notes/${noteId}/edit`,
   NOTE_NEW: (goalId: number, todoId?: number) =>
     `/goals/${goalId}/notes/new${todoId ? `?todoId=${todoId}` : ''}`,
