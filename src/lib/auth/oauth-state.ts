@@ -1,3 +1,9 @@
+/**
+ * Node.js Runtime 전용.
+ *
+ * OAuth state 서명/검증에 `node:crypto` 등 Node.js 전용 API를 사용합니다.
+ * Edge Runtime 또는 Edge에서 번들되는 경로에서 이 모듈을 import 하지 마세요.
+ */
 import 'server-only';
 
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
