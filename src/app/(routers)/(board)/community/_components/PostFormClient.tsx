@@ -189,6 +189,7 @@ export function PostFormClient({
         onCancel={() => setCancelDialogOpen(true)}
         onSubmitClick={() => setSubmitDialogOpen(true)}
         headerTitle={headerTitle}
+        secondaryLabel="취소"
         submitLabel={submitLabel}
         toolbar={toolbar}
       />
@@ -199,6 +200,7 @@ export function PostFormClient({
             onCancel={() => setCancelDialogOpen(true)}
             onSubmitClick={() => setSubmitDialogOpen(true)}
             headerTitle={headerTitle}
+            secondaryLabel="취소"
             submitLabel={submitLabel}
           />
         </div>

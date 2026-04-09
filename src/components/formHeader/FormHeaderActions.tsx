@@ -3,6 +3,7 @@ import { cn } from '@/lib/shadcn';
 interface FormHeaderActionsProps {
   variant: 'mobile' | 'desktop';
   isSubmitDisabled: boolean;
+  secondaryLabel: string;
   submitLabel: string;
   onCancel: () => void;
   onSubmitClick: () => void;
@@ -11,6 +12,7 @@ interface FormHeaderActionsProps {
 export function FormHeaderActions({
   variant,
   isSubmitDisabled,
+  secondaryLabel,
   submitLabel,
   onCancel,
   onSubmitClick,
@@ -31,7 +33,7 @@ export function FormHeaderActions({
           !isMobile && 'font-sm-semibold border-gray-300 hover:bg-gray-50',
         )}
       >
-        취소
+        {secondaryLabel}
       </button>
       <button
         type="button"

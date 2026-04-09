@@ -7,6 +7,7 @@ interface MobileFormHeaderProps {
   onCancel: () => void;
   onSubmitClick: () => void;
   headerTitle: string;
+  secondaryLabel: string;
   submitLabel: string;
   toolbar: React.ReactNode;
 }
@@ -16,6 +17,7 @@ export function MobileFormHeader({
   onCancel,
   onSubmitClick,
   headerTitle,
+  secondaryLabel,
   submitLabel,
   toolbar,
 }: MobileFormHeaderProps) {
@@ -30,6 +32,7 @@ export function MobileFormHeader({
           <FormHeaderActions
             variant="mobile"
             isSubmitDisabled={isSubmitDisabled}
+            secondaryLabel={secondaryLabel}
             submitLabel={submitLabel}
             onCancel={onCancel}
             onSubmitClick={onSubmitClick}

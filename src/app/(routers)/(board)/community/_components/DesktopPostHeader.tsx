@@ -5,6 +5,7 @@ interface DesktopPostHeaderProps {
   onCancel: () => void;
   onSubmitClick: () => void;
   headerTitle: string;
+  secondaryLabel: string;
   submitLabel: string;
 }
 
@@ -13,6 +14,7 @@ export function DesktopPostHeader({
   onCancel,
   onSubmitClick,
   headerTitle,
+  secondaryLabel,
   submitLabel,
 }: DesktopPostHeaderProps) {
   return (
@@ -21,6 +23,7 @@ export function DesktopPostHeader({
       <FormHeaderActions
         variant="desktop"
         isSubmitDisabled={isSubmitDisabled}
+        secondaryLabel={secondaryLabel}
         submitLabel={submitLabel}
         onCancel={onCancel}
         onSubmitClick={onSubmitClick}
