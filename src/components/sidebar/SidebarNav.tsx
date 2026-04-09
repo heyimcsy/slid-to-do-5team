@@ -5,9 +5,10 @@ import type { IconName } from '../icon/Icon';
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useGetGoals, usePostGoals } from '@/api/goals';
 import { useLogout } from '@/hooks/auth/useLogout';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib';
 import { authUserStore } from '@/stores/authUserStore';
 import { useSettingsModal } from '@/stores/useSettingModal';
@@ -19,6 +20,7 @@ import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from '@/components/ui/sidebar';
 
 import AlertPopover from '../AlertPopover';
@@ -63,8 +65,6 @@ const bottomItems: {
 
 export default function SidebarNav() {
   const { open: openSettings } = useSettingsModal();
-
-  const router = useRouter();
   const { data: goalsData } = useGetGoals();
   const [goalInput, setGoalInput] = React.useState('');
   const { mutate: postGoal } = usePostGoals({
@@ -89,12 +89,15 @@ export default function SidebarNav() {
   const user = authUserStore((s) => s.user);
   const handleNewGoal = (e: React.MouseEvent) => {
     e.preventDefault();
-    setIsGoalsOpen(!isGoalsOpen);
+    setIsGoalsOpen(true);
     setIsInputVisible(true);
     setTimeout(() => {
       inputRef.current?.focus();
     }, 350);
   };
+
+  const { setOpen, setOpenMobile } = useSidebar();
+  const isMobile = useIsMobile();
 
   return (
     <div>
@@ -108,7 +111,11 @@ export default function SidebarNav() {
                   size="lg"
                   isActive={isActive}
                   render={!item.hasArrow ? <Link href={item.href} /> : undefined}
-                  onClick={item.hasArrow ? () => setIsGoalsOpen((prev) => !prev) : undefined}
+                  onClick={
+                    item.hasArrow
+                      ? () => setIsGoalsOpen((prev) => !prev)
+                      : () => (isMobile ? setOpenMobile(false) : setOpen(false))
+                  }
                   className="cursor-pointer px-4 group-data-[collapsible=icon]:hidden active:bg-transparent active:text-inherit [&_svg]:size-6"
                 >
                   <Icon name={item.icon} variant={isActive ? 'orange' : 'default'} />
@@ -139,6 +146,7 @@ export default function SidebarNav() {
                             const isGoalActive = pathname === `/goals/${goal.id}`;
                             return (
                               <Link
+                                onClick={() => (isMobile ? setOpenMobile(false) : setOpen(false))}
                                 key={goal.id}
                                 href={`/goals/${goal.id}`}
                                 className={cn(
@@ -223,7 +231,12 @@ export default function SidebarNav() {
                 onClick={item.label === '새 목표' ? handleNewGoal : undefined}
                 className={`flex flex-row items-center justify-center gap-2 rounded-full border border-orange-500 px-4 py-3 md:flex-col md:rounded-xl md:px-6 md:py-8 ${item.bgClassName}`}
               >
-                <Icon name={item.icon} variant={item.variant} size={38} />
+                <motion.div
+                  whileHover={{ scale: 1.2 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                >
+                  <Icon name={item.icon} variant={item.variant} size={38} />
+                </motion.div>
                 <span className={`font-base-semibold md:font-lg-semibold ${item.textClassName}`}>
                   {item.label}
                 </span>
@@ -232,9 +245,14 @@ export default function SidebarNav() {
           ))}
         </SidebarMenu>
         <div className="mt-4 flex items-center gap-2">
-          <div
+          <Link
+            href="/profile"
             onClick={() => {
-              router.push('/profile');
+              if (isMobile) {
+                setOpenMobile(false);
+              } else {
+                setOpen(false);
+              }
             }}
             className="flex flex-1 cursor-pointer items-center gap-2 rounded-full border border-gray-200 px-3 py-2 group-data-[collapsible=icon]:hidden"
           >
@@ -257,7 +275,7 @@ export default function SidebarNav() {
                 {user?.email}
               </span>
             </div>
-          </div>
+          </Link>
           <div className="relative hidden group-data-[collapsible=icon]:hidden md:block">
             {/* 아이콘 수정 */}
             <AlertPopover />
