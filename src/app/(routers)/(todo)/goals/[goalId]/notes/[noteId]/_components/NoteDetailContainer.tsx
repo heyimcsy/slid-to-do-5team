@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import noteImage from '@/../public/images/img-note.svg';
 import MetaTags from '@/app/(routers)/(todo)/_components/MetaTags';
 import NoteDetailSkeleton from '@/app/(routers)/(todo)/@modal/(.)goals/[goalId]/notes/[noteId]/_components/NoteDetailSkeleton';
+import { NOTE_IMAGE } from '@/app/(routers)/(todo)/constants';
 import { useOgInfo } from '@/app/(routers)/(todo)/goals/[goalId]/notes/new/hooks/useOgInfo';
 import { useNoteDetail } from '@/hooks/useNoteDetail';
 import Link from '@tiptap/extension-link';
@@ -37,9 +38,9 @@ export default function NoteDetailContainer({ noteId }: { noteId: number }) {
           <div className="flex items-center space-x-2 md:space-x-3">
             <Image
               src={noteImage}
-              alt="describe note icon"
-              width={40}
-              height={40}
+              alt={NOTE_IMAGE.ALT}
+              width={NOTE_IMAGE.WIDTH}
+              height={NOTE_IMAGE.HEIGHT}
               className="w-8 md:w-10"
             />
             <p className="font-xl-semibold md:font-2xl-semibold leading-tight text-gray-800">

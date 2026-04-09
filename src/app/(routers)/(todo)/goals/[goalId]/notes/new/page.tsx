@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { usePostNote } from '@/api/notes';
 import { useGetTodo } from '@/api/todos';
+import { NOTES_TEXT } from '@/app/(routers)/(todo)/constants';
 import {
   LinkEmbedOgImage,
   NewNoteSkeleton,
@@ -50,7 +51,7 @@ export default function NewNotePage() {
 
   const { editor, json } = useEditorWithContent({
     variant: 'note',
-    placeholder: '이 곳을 통해 노트 작성을 시작해주세요.',
+    placeholder: NOTES_TEXT.NOTE_EDITOR_PLACEHOLDER,
   });
 
   const { saveCheck, saveDraft, loadDraft, clearDraft, elapsedSeconds } = useNoteDraft({

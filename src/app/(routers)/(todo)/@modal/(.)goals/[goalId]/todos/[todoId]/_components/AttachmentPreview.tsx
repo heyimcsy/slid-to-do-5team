@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { TODO_FILE_IMAGE } from '@/app/(routers)/(todo)/constants';
 
 import { Icon } from '@/components/icon/Icon';
 
@@ -25,9 +26,9 @@ export function AttachmentPreview({ linkUrl, fileUrl }: AttachmentPreviewProps) 
         <div className="relative h-44.5 w-full overflow-hidden rounded-[16px] border-gray-200 md:h-51.5">
           <Image
             src={fileUrl}
-            alt="할일 관련 이미지"
-            width={500}
-            height={350}
+            alt={TODO_FILE_IMAGE.ALT}
+            width={TODO_FILE_IMAGE.WIDTH}
+            height={TODO_FILE_IMAGE.HEIGHT}
             className="h-full w-full object-cover"
           />
         </div>

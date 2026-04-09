@@ -1,7 +1,6 @@
-'use client';
-
 import type { TotalListTabProps } from '@/app/(routers)/(todo)/goals/types';
 
+import { GOALS_TEXT } from '@/app/(routers)/(todo)/constants';
 import { TodoSection } from '@/app/(routers)/(todo)/goals/[goalId]/_components/TodoSection';
 
 export default function TotalListTab({ goalId, todoLists, todoListsDone }: TotalListTabProps) {
@@ -9,20 +8,20 @@ export default function TotalListTab({ goalId, todoLists, todoListsDone }: Total
     <div className="flex flex-col space-y-4 md:space-y-4 lg:flex-row lg:space-x-8">
       <TodoSection
         goalId={goalId}
-        title="TO DO"
+        title={GOALS_TEXT.TODO}
         todos={todoLists}
-        bgColor="bg-orange-100"
+        bgColor="bg-orange-100 dark:bg-orange-500"
         emptyImage="/images/big-zero-todo.svg"
-        emptyText="해야할 일이 아직 없어요"
+        emptyText={GOALS_TEXT.EMPTY.TODO}
         showActions
       />
       <TodoSection
         goalId={goalId}
-        title="DONE"
+        title={GOALS_TEXT.DONE}
         todos={todoListsDone}
         bgColor="bg-white"
         emptyImage="/images/big-zero-done.svg"
-        emptyText="완료한 일이 아직 없어요"
+        emptyText={GOALS_TEXT.EMPTY.DONE}
       />
     </div>
   );
