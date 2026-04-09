@@ -10,6 +10,7 @@ import { useOAuthUserFlashSync } from '@/hooks/auth/useOAuthUserFlashSync';
 import { useTokenRefreshOnMount } from '@/hooks/auth/useTokenRefreshOnMount';
 import { createQueryPersister } from '@/providers/createQueryPersister';
 import { PersistRehydrationProvider } from '@/providers/PersistRehydrationProvider';
+import { reconcileAuthSessionOAuthFromServer } from '@/stores/authUserStore';
 import { HydrationBoundary, QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 
@@ -83,7 +84,11 @@ export function AppProviders({
   const content = (
     <>
       <HydrationBoundary state={dehydratedState}>
-        <PersistRehydrationProvider stores={persistStores} waitForQueryPersistRestore>
+        <PersistRehydrationProvider
+          stores={persistStores}
+          waitForQueryPersistRestore
+          onZustandRehydrated={reconcileAuthSessionOAuthFromServer}
+        >
           {children}
         </PersistRehydrationProvider>
       </HydrationBoundary>

@@ -130,7 +130,7 @@ describe('POST /api/auth/signup', () => {
     expect(json.success).toBe(true);
     expect(json.sessionIssued).toBe(true);
     expect(json.message).toBe('회원가입이 완료되었습니다.');
-    expect(mockSetAuthCookies).toHaveBeenCalledWith('access', 'refresh');
+    expect(mockSetAuthCookies).toHaveBeenCalledWith('access', 'refresh', 'password');
     expect(globalThis.fetch).toHaveBeenCalledWith(
       expect.stringContaining('/auth/signup'),
       expect.objectContaining({

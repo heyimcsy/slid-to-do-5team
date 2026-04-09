@@ -13,3 +13,8 @@ export const kakaoOAuthBodySchema = z.object({
 });
 
 export type KakaoOAuthBody = z.infer<typeof kakaoOAuthBodySchema>;
+
+/** `OAUTH_PROVIDER_COOKIE_KEY` 쿠키 값 — setter는 리터럴만, reader는 safeParse */
+export const oauthProviderCookieSchema = z.enum(['google', 'kakao']);
+
+export type OauthProviderCookieValue = z.infer<typeof oauthProviderCookieSchema>;

@@ -16,6 +16,11 @@ import { render, screen, waitFor } from '@testing-library/react';
  *
  * **PersistQueryClientProvider:** 마운트 후 `persistQueryClientRestore`가 끝나면 `useIsRestoring()`이 `false`가 된다.
  * `queueMicrotask`로 때우지 않고 `waitFor` + `useIsRestoring`으로 복원 완료를 기다린다(React 권장 act 경로).
+ * @note queueMicrotask는 “언젠가 한 번 비동기로 돌아가겠지”에 기대는 시간·틱 가정이기 때문에 테스트 케이스로 부적합하다.
+ * @note waitFor + useIsRestoring은 TanStack Query가 노출하는 “persist 복원 끝” 신호를 그대로 쓰는 방식이라 테스트 케이스로 적합하다.
+ * @note 즉 microtask는 tick 추측에 불과하며, useIsRestoring + waitFor는 Tanstack Query가 정의한 복원 완료 조건과 테스팅 라이브러리에서 권장하는 비동기 대기 방식이다.
+ * @see {@link https://tanstack.com/query/v5/docs/framework/react/guides/testing#waiting-for-query-state-to-change | Tanstack Query — Testing}
+ * @see {@link https://tanstack.com/query/latest/docs/framework/react/plugins/persistQueryClient#useisrestoring | Tanstack Query — PersistQueryClientProvider}
  */
 describe('AppProviders', () => {
   // Arrange - globalThis.fetch 모킹

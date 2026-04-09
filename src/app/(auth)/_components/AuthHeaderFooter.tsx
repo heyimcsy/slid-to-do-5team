@@ -2,8 +2,6 @@
 
 import type { AuthLinkVariantProps } from '../_types/auth';
 
-
-
 import { memo, Suspense, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';

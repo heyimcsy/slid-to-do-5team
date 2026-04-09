@@ -1,3 +1,5 @@
+export const UNKNOWN_ERROR_MESSAGE_KO = '알 수 없는 오류가 발생했습니다.' as const;
+
 /** 백엔드 409(이메일 중복) 시 BFF·OAuth·클라이언트 공통 문구 */
 export const DUPLICATE_ACCOUNT_MESSAGE_KO = '이미 가입된 이메일입니다.' as const;
 export const AUTH_SERVICE_ERROR_MESSAGE_KO =
@@ -67,3 +69,9 @@ export const NO_GOOGLE_CLIENT_SECRET_MESSAGE_KO =
 
 export const NO_KAKAO_CLIENT_SECRET_MESSAGE_KO =
   'KAKAO_CLIENT_SECRET가 설정되지 않았습니다.' as const;
+
+export const OAUTH_PROVIDER_FETCH_FAILED_FROM_USER_MESSAGE_KO =
+  '사용자의 OAuth Provider 정보 확인에 실패했습니다.' as const;
+
+export const REHYDRATION_COMPLETED_AFTER_CALLBACK_FAILED_MESSAGE_KO =
+  'Rehydration 완료 후 onRehydrated callback 실패' as const;
