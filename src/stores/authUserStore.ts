@@ -5,6 +5,10 @@ import { userSchema } from '@/lib/auth/schemas/user';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import {
+  OAUTH_PROVIDER_FETCH_FAILED_FROM_USER_MESSAGE_KO,
+  UNKNOWN_ERROR_MESSAGE_KO,
+} from '@/constants/error-message';
 import { LOCAL_STORAGE_KEYS } from '@/constants/localStorageKeys';
 
 type AuthUserState = {
@@ -46,9 +50,17 @@ export const authUserStore = create<AuthUserState>()(
  */
 export function reconcileAuthSessionOAuthFromServer(): void {
   if (typeof window === 'undefined') return;
-  void fetchAuthSessionMeta().then((meta) => {
-    authUserStore.setState((s) => ({
-      user: s.user ? applyOauthProviderToUser(s.user, meta.oauthProvider) : null,
-    }));
-  });
+  void fetchAuthSessionMeta()
+    .then((meta) => {
+      authUserStore.setState((s) => ({
+        user: s.user ? applyOauthProviderToUser(s.user, meta.oauthProvider) : null,
+      }));
+    })
+    .catch((error) => {
+      if (process.env.NODE_ENV === 'development') {
+        console.error(
+          `${OAUTH_PROVIDER_FETCH_FAILED_FROM_USER_MESSAGE_KO}: ${error?.message ?? UNKNOWN_ERROR_MESSAGE_KO}`,
+        );
+      }
+    });
 }
