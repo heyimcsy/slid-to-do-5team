@@ -4,6 +4,7 @@ import type { Comment } from '../../types';
 import type { CommentForm } from './CommentInput';
 
 import { useState } from 'react';
+import { useDebouncedCallback } from '@/hooks/useDebounceCallback';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -14,7 +15,11 @@ import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { KebabMenu } from '@/components/common/KebabMenu';
 import { HeartIcon } from '@/components/icon/icons/Heart';
 
-import { useUpdateComment } from '../../_api/communityQueries';
+import {
+  useCreateCommentLike,
+  useDeleteCommentLike,
+  useUpdateComment,
+} from '../../_api/communityQueries';
 import { WriterAvatar } from '../../_components/WriterAvatar';
 import { CommentInput, commentSchema } from './CommentInput';
 
@@ -41,6 +46,8 @@ export function CommentItem({ comment, isMyComment, onDelete, isDeleting }: Comm
     comment.postId,
     comment.id,
   );
+  const { mutate: createCommentLike } = useCreateCommentLike(comment.postId, comment.id);
+  const { mutate: deleteCommentLike } = useDeleteCommentLike(comment.postId, comment.id);
 
   const kebabItems = [
     { label: '수정하기', onClick: () => setIsEditing(true) },
@@ -61,6 +68,14 @@ export function CommentItem({ comment, isMyComment, onDelete, isDeleting }: Comm
       onError: () => toast.error('댓글 수정에 실패했습니다.'),
     });
   };
+
+  const handleLikeClick = useDebouncedCallback(() => {
+    if (comment.isLiked) {
+      deleteCommentLike();
+    } else {
+      createCommentLike();
+    }
+  }, 300);
 
   return (
     <li className="flex flex-col gap-3">
@@ -136,6 +151,8 @@ export function CommentItem({ comment, isMyComment, onDelete, isDeleting }: Comm
             </span>
             <button
               type="button"
+              aria-label={comment.isLiked ? '좋아요 취소' : '좋아요'}
+              onClick={handleLikeClick}
               className="flex items-center gap-1 text-gray-400 hover:text-gray-600"
             >
               <HeartIcon filled={comment.isLiked} width={16} height={16} />
