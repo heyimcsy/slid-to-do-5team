@@ -1,3 +1,4 @@
+;
 /**
  * Node.js Runtime 전용.
  *
@@ -6,14 +7,21 @@
  */
 import 'server-only';
 
+
+
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
+
+
 
 import { getSafeCallbackPath } from '@/lib/navigation/safeCallbackPath';
 
-import {
-  NO_GOOGLE_CLIENT_SECRET_MESSAGE_KO,
-  NO_KAKAO_CLIENT_SECRET_MESSAGE_KO,
-} from '@/constants/error-message';
+
+
+import { NO_GOOGLE_CLIENT_SECRET_MESSAGE_KO, NO_KAKAO_CLIENT_SECRET_MESSAGE_KO } from '@/constants/error-message';
+
+
+
+
 
 /**
  * OAuth `state` 유효 시간(10분).
@@ -238,6 +246,12 @@ export function verifyOAuthState(
    * nonce 형식/1회성 소비 검증.
    */
   if (typeof payload.n !== 'string' || payload.n.length < 8) return { ok: false };
+
+  /**
+   * JSON.parse + 단언만으로는 `r`이 string이 아닐 수 있음.
+   * (예: 조작된 state에서 `r`이 number/object면 `getSafeCallbackPath`의 trim에서 예외)
+   */
+  if (typeof payload.r !== 'string') return { ok: false };
   if (!consumeNonce(provider, payload.n, payload.e)) return { ok: false };
 
   /**
