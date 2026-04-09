@@ -39,6 +39,15 @@ export const useGetPosts = (sort: SortOption = '최신순', isSearchMode: boolea
   });
 };
 
+// 게시물 인기순 3개 조회
+export const useGetBestPosts = () => {
+  return useQuery({
+    queryKey: [...communityQueryKeys.posts('best'), { limit: 3 }],
+    queryFn: () => apiClient<PostsResponse>(`/posts?type=best&limit=3`),
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
 // 게시물 상세 조회
 export const useGetPostById = (postId: number) => {
   return useQuery({
