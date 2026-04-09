@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
+import { ScrollToTop } from '@/components/common/ScrollToTop';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorFallback } from '@/components/ErrorFallback';
 import { Icon } from '@/components/icon/Icon';
@@ -89,6 +90,7 @@ export default function CommunityClient() {
   return (
     <div className="relative h-full w-full">
       <div className="h-full overflow-y-auto bg-gray-100 px-4 py-6 pb-24 md:px-8 md:py-12 md:pb-20 lg:pb-16">
+        <ScrollToTop />
         <div className="mx-auto w-full max-w-[1200px]">
           <h1 className="font-xl-semibold md:font-2xl-semibold mb-6 px-2 text-black md:mb-8">
             <Link href="/community" className="cursor-pointer">
@@ -130,7 +132,6 @@ export default function CommunityClient() {
           </div>
         </div>
       </div>
-
       <Link
         href="/community/new"
         aria-label="게시물 작성하기"
