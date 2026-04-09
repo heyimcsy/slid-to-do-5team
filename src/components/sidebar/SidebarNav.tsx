@@ -233,7 +233,12 @@ export default function SidebarNav() {
                 onClick={item.label === '새 목표' ? handleNewGoal : undefined}
                 className={`flex flex-row items-center justify-center gap-2 rounded-full border border-orange-500 px-4 py-3 md:flex-col md:rounded-xl md:px-6 md:py-8 ${item.bgClassName}`}
               >
-                <Icon name={item.icon} variant={item.variant} size={38} />
+                <motion.div
+                  whileHover={{ scale: 1.2 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                >
+                  <Icon name={item.icon} variant={item.variant} size={38} />
+                </motion.div>
                 <span className={`font-base-semibold md:font-lg-semibold ${item.textClassName}`}>
                   {item.label}
                 </span>

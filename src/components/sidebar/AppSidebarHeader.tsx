@@ -37,7 +37,7 @@ export default function AppSidebarHeader() {
           </div>
         )
       ) : (
-        <SidebarTrigger className="absolute top-0 md:right-4 lg:right-6" />
+        <SidebarTrigger className="absolute top-0 cursor-pointer md:right-4 lg:right-6" />
       )}
       {!isMobile && (
         <Link href="/dashboard" className="mt-8" onClick={() => setOpen(false)}>

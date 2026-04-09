@@ -35,7 +35,7 @@ export default function MobileHeader() {
   return (
     <header className="flex items-center justify-between gap-3 px-5 py-1 md:hidden">
       <div className="flex items-center gap-2">
-        <SidebarTrigger />
+        <SidebarTrigger className="cursor-pointer" />
         <span className="font-lg-semibold">{title}</span>
         <span className="font-base-semibold mt-0.5 items-center text-orange-600">
           {' '}
