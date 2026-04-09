@@ -91,7 +91,7 @@ export default function SidebarNav() {
   const user = authUserStore((s) => s.user);
   const handleNewGoal = (e: React.MouseEvent) => {
     e.preventDefault();
-    setIsGoalsOpen(!isGoalsOpen);
+    setIsGoalsOpen(true);
     setIsInputVisible(true);
     setTimeout(() => {
       inputRef.current?.focus();
