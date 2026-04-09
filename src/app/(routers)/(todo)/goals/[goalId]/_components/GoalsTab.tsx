@@ -7,6 +7,9 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import goalImage from '@/../public/images/small-goal.svg';
 import { useDeleteGoals, usePatchGoals } from '@/api/goals';
+import { GOAL_IMAGE, GOALS_TEXT } from '@/app/(routers)/(todo)/constants';
+
+import { DIALOG_VALUE, SELECT_VALUE } from '@/constants/ui-label';
 
 import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { Icon } from '@/components/icon/Icon';
@@ -46,13 +49,13 @@ export default function GoalsTab({ goalId, goalData }: GoalsTabProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const selectValue = [
-    { label: '수정하기', value: 'edit' },
-    { label: '삭제하기', value: 'delete' },
+    { label: SELECT_VALUE.EDIT.LABEL, value: SELECT_VALUE.EDIT.VALUE },
+    { label: SELECT_VALUE.DELETE.LABEL, value: SELECT_VALUE.DELETE.VALUE },
   ];
 
   const handleSelectChange = (value: string | null) => {
     if (value === null) return;
-    if (value === 'delete') {
+    if (value === SELECT_VALUE.DELETE.VALUE) {
       setDeleteDialogOpen(true);
     } else {
       if (goalData?.title) {
@@ -91,9 +94,9 @@ export default function GoalsTab({ goalId, goalData }: GoalsTabProps) {
         <div className="flex min-w-0 items-center space-x-3">
           <Image
             src={goalImage}
-            alt="describe goal icon"
-            width={32}
-            height={32}
+            alt={GOAL_IMAGE.ALT}
+            width={GOAL_IMAGE.WIDTH}
+            height={GOAL_IMAGE.HEIGHT}
             className="object-contain"
           />
           <h2 className="font-base-semibold w-full truncate text-gray-700">{goalData?.title}</h2>
@@ -119,21 +122,21 @@ export default function GoalsTab({ goalId, goalData }: GoalsTabProps) {
           showCloseButton={false}
         >
           <DialogHeader>
-            <DialogTitle>목표를 수정하시겠습니까 ?</DialogTitle>
+            <DialogTitle>{DIALOG_VALUE.TITLE_EDIT(GOALS_TEXT.GOAL)}</DialogTitle>
             <Input
               value={title}
               onChange={onEditChangeHandler}
               onKeyDown={handleKeyDown}
               autoFocus
-              aria-label="목표 제목 입력"
-              placeholder="목표 제목을 입력하세요"
+              aria-label={GOALS_TEXT.EDIT_GOAL_INPUT_PLACEHOLDER}
+              placeholder={GOALS_TEXT.EDIT_GOAL_INPUT_PLACEHOLDER}
             />
           </DialogHeader>
           <DialogFooter>
             <DialogClose
               render={
                 <Button type="button" variant="ghost" className="w-1/2">
-                  취소
+                  {DIALOG_VALUE.BUTTON.CANCEL}
                 </Button>
               }
             />
@@ -146,7 +149,7 @@ export default function GoalsTab({ goalId, goalData }: GoalsTabProps) {
                   className="w-1/2"
                   disabled={!title.trim() || title === goalData?.title}
                 >
-                  확인
+                  {DIALOG_VALUE.BUTTON.CONFIRM}
                 </Button>
               }
             />
@@ -156,8 +159,8 @@ export default function GoalsTab({ goalId, goalData }: GoalsTabProps) {
       <DeleteDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title="정말 삭제하시겠어요?"
-        description="삭제된 목표는 복구할 수 없습니다."
+        title={DIALOG_VALUE.TITLE_DELETE}
+        description={DIALOG_VALUE.DESCRIPTION_DELETE(GOALS_TEXT.GOAL)}
         onConfirm={handleDelete}
       />
     </>

@@ -1,5 +1,7 @@
 import type { OgInfoResponse } from '@/components/common/LinkEmbed';
 
+import { NOTES_TEXT } from '@/app/(routers)/(todo)/constants';
+
 import { Icon } from '@/components/icon/Icon';
 import { Button } from '@/components/ui/button';
 
@@ -28,7 +30,7 @@ export default function LinkEmbedOgImage({
               variant="icon"
               size="none"
               onClick={handleLinkClick}
-              aria-label="링크 미리보기 패널 닫기"
+              aria-label={NOTES_TEXT.LINK_PANEL_CLOSE}
               className="absolute -top-7 right-5 flex h-7 w-11 cursor-pointer items-center justify-center rounded-b-[12px] border border-b-0 border-gray-200 bg-slate-50 md:-top-9 md:h-9 md:w-15"
             >
               <Icon name="arrow" direction="down" size={16} />
@@ -44,13 +46,13 @@ export default function LinkEmbedOgImage({
               variant="icon"
               size="none"
               onClick={handleLinkClick}
-              aria-label="링크 미리보기 패널 닫기"
+              aria-label={NOTES_TEXT.LINK_PANEL_CLOSE}
               className="absolute top-5 -left-9 flex h-15 w-9 cursor-pointer items-center justify-center rounded-r-[12px] border border-r-0 border-gray-200 bg-slate-50"
             >
               <Icon name="arrow" direction="right" size={16} />
             </Button>
             <div className="flex h-full w-140 items-center justify-center overflow-auto border-l border-gray-200 bg-slate-50 p-10">
-              <img src={linkData.image} alt="og image" className="object-cover" />
+              <img src={linkData.image} alt={NOTES_TEXT.OG_IMAGE_ALT} className="object-cover" />
             </div>
           </div>
         </>

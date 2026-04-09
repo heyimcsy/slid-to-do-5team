@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { NOTES_TEXT } from '@/app/(routers)/(todo)/constants';
 
 import { Icon } from '@/components/icon/Icon';
 import { Button } from '@/components/ui/button';
@@ -24,14 +25,16 @@ export function LinkEmbed({ url, data, onDelete }: LinkEmbedProps) {
         variant="icon"
         size="none"
         className="absolute top-[14px] right-4 h-fit w-fit min-w-0"
-        aria-label="링크 삭제"
+        aria-label={NOTES_TEXT.LINK_DELETE_BUTTON}
         onClick={onDelete}
       >
         <Icon name="delete" size={24} />
       </Button>
 
       <div className="flex min-w-0 items-center justify-start space-x-2 pr-4">
-        {data?.favicon && <img src={data.favicon} alt="favicon" className="size-6 shrink-0" />}
+        {data?.favicon && (
+          <img src={data.favicon} alt={NOTES_TEXT.FAVICON_ALT} className="size-6 shrink-0" />
+        )}
         {data?.description && <p className="font-sm-medium truncate">{data.description}</p>}
       </div>
 

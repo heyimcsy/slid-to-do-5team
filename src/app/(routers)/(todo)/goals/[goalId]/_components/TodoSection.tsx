@@ -3,8 +3,12 @@ import type { TodoSectionProps } from '@/app/(routers)/(todo)/goals/types';
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { EMPTY_IMAGE, GOALS_TEXT } from '@/app/(routers)/(todo)/constants';
 import TodoList from '@/app/(routers)/(todo)/goals/[goalId]/_components/TodoList';
 import { cn } from '@/lib';
+
+import { ROUTES } from '@/constants/routes';
+import { BUTTON_LABEL } from '@/constants/ui-label';
 
 import { Icon } from '@/components/icon/Icon';
 import { IconButton } from '@/components/ui/button';
@@ -24,16 +28,16 @@ export function TodoSection({
         <h3 className="font-base-semibold text-gray-800">{title}</h3>
         {showActions && (
           <div className="flex space-x-2">
-            <Link className="h-fit w-fit" href={`/calendar?goalId=${goalId}`}>
+            <Link className="h-fit w-fit" href={ROUTES.CALENDAR(goalId)}>
               <IconButton variant="ghost" className="h-10">
                 <Icon name="schedule" size={20} />
-                <span>캘린더 보기</span>
+                <span>{GOALS_TEXT.CALENDAR}</span>
               </IconButton>
             </Link>
-            <Link className="h-fit w-fit" href="/goals/todos/new">
+            <Link className="h-fit w-fit" href={ROUTES.TODO_NEW}>
               <IconButton variant="default" className="h-10">
                 <Icon name="plus" />
-                <span>할 일 추가</span>
+                <span>{BUTTON_LABEL.NEW_TODO}</span>
               </IconButton>
             </Link>
           </div>
@@ -62,10 +66,10 @@ export function TodoSection({
           ) : (
             <div className="flex flex-col items-center space-y-2.5">
               <Image
-                width={131}
-                height={140}
+                width={EMPTY_IMAGE.WIDTH}
+                height={EMPTY_IMAGE.HEIGHT}
                 src={emptyImage}
-                alt="describe empty situation"
+                alt={EMPTY_IMAGE.ALT}
                 className="h-22.5 w-20 object-contain md:h-35 md:w-32.5"
               />
               <p className="font-sm-regular md:font-base-regular text-gray-500">{emptyText}</p>

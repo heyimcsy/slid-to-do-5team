@@ -5,7 +5,10 @@ import type { NoteDraft } from '@/app/(routers)/(todo)/goals/[goalId]/notes/new/
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import speechBubble from '@/../public/images/speech-bubble.svg';
+import { NOTE_CREATE, NOTES_TEXT, SPEECH_BUBBLE_IMAGE } from '@/app/(routers)/(todo)/constants';
 import { cn } from '@/lib';
+
+import { BUTTON_LABEL, DIALOG_VALUE } from '@/constants/ui-label';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -28,8 +31,6 @@ export default function SpeechComponent({
   clearDraft: () => void;
   className?: string;
 }) {
-  const NOTE_CREATE: string = 'note-create';
-
   const raw = localStorage.getItem(NOTE_CREATE);
 
   const [showDraftBubble, setShowDraftBubble] = useState(() => {
@@ -81,23 +82,29 @@ export default function SpeechComponent({
       {showDraftBubble && (
         <div className={cn('absolute z-1 h-39 w-83', className)}>
           <div className="relative">
-            <Image src={speechBubble} alt="말풍선" height={156} width={332} className="absolute" />
-            <div className="font-sm-medium relative top-8 left-8 z-2 px-5 py-6">
-              <p>임시 저장된 노트가 있어요.</p>
-              <p>저장된 노트를 불러오시겠어요?</p>
+            <Image
+              src={speechBubble}
+              alt={SPEECH_BUBBLE_IMAGE.ALT}
+              height={SPEECH_BUBBLE_IMAGE.HEIGHT}
+              width={SPEECH_BUBBLE_IMAGE.WIDTH}
+              className="absolute"
+            />
+            <div className="font-sm-medium relative top-8 left-8 z-2 px-5 py-6 text-gray-600">
+              <p>{NOTES_TEXT.SAVED_DATA}</p>
+              <p>{NOTES_TEXT.SAVED_DATA_LOAD}</p>
               <div className="flex h-fit w-full space-x-4">
                 <Dialog>
                   <DialogTrigger
                     className="font-sm-semibold mt-2 cursor-pointer text-blue-200"
                     onClick={handleLoadClick}
                   >
-                    불러오기
+                    {NOTES_TEXT.LOAD}
                   </DialogTrigger>
                   <DialogContent className="max-w-[343px] md:max-w-139" showCloseButton={false}>
                     <DialogHeader className="mt-8">
                       <DialogTitle className="text-gray-800">{title}</DialogTitle>
                       <DialogDescription className="font-sm-semibold md:font-xl-semibold text-gray-800">
-                        제목의 노트를 불러오시겠어요?
+                        {NOTES_TEXT.LOAD_DIALOG}
                       </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="mt-10">
@@ -112,7 +119,7 @@ export default function SpeechComponent({
                               setShowDraftBubble(false);
                             }}
                           >
-                            취소
+                            {DIALOG_VALUE.BUTTON.CANCEL}
                           </Button>
                         }
                       />
@@ -127,7 +134,7 @@ export default function SpeechComponent({
                             variant="default"
                             className="w-1/2"
                           >
-                            불러오기
+                            {NOTES_TEXT.LOAD}
                           </Button>
                         }
                       />
@@ -143,7 +150,7 @@ export default function SpeechComponent({
                     setShowDraftBubble(false);
                   }}
                 >
-                  삭제하기
+                  {BUTTON_LABEL.DELETE}
                 </Button>
               </div>
             </div>

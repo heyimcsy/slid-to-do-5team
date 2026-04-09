@@ -8,6 +8,8 @@ import ItemActionBar from '@/app/(routers)/(todo)/goals/[goalId]/_components/Ite
 import { useDebouncedCallback } from '@/hooks/useDebounceCallback';
 import { cn } from '@/lib';
 
+import { ROUTES } from '@/constants/routes';
+
 import { Icon } from '@/components/icon/Icon';
 import { Button } from '@/components/ui/button';
 
@@ -39,7 +41,7 @@ export default function TodoList({
         </Button>
 
         <Link
-          href={`/goals/${goalId}/todos/${id}`}
+          href={ROUTES.TODO_DETAIL(goalId, id)}
           className="flex min-w-0 flex-1 items-center space-x-1 md:space-x-2"
         >
           <p

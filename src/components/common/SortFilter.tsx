@@ -5,16 +5,20 @@ import { cn } from '@/lib';
 
 import { Icon } from '@/components/icon/Icon';
 
-type SortOption = '최신순' | '인기순';
+type DefaultSortOption = '최신순' | '인기순';
+const DEFAULT_OPTIONS = ['최신순', '인기순'] as const;
 
-const OPTIONS: SortOption[] = ['최신순', '인기순'];
-
-interface SortFilterProps {
-  value?: SortOption;
-  onChange?: (value: SortOption) => void;
+interface SortFilterProps<T extends string = DefaultSortOption> {
+  options?: T[];
+  value?: T;
+  onChange?: (value: T) => void;
 }
 
-export function SortFilter({ value = '최신순', onChange }: SortFilterProps) {
+export function SortFilter<T extends string = DefaultSortOption>({
+  options = DEFAULT_OPTIONS as unknown as T[],
+  value = '최신순' as T,
+  onChange,
+}: SortFilterProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const listboxId = useId();
@@ -29,7 +33,7 @@ export function SortFilter({ value = '최신순', onChange }: SortFilterProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSelect = (option: SortOption) => {
+  const handleSelect = (option: T) => {
     onChange?.(option);
     setIsOpen(false);
   };
@@ -57,7 +61,7 @@ export function SortFilter({ value = '최신순', onChange }: SortFilterProps) {
           }}
           className="absolute top-full right-0 z-10 mt-2 w-[120px] overflow-hidden rounded-2xl bg-white shadow-[0px_4px_20px_0px_rgba(0,0,0,0.1)]"
         >
-          {OPTIONS.map((option) => (
+          {options.map((option) => (
             <button
               key={option}
               type="button"
