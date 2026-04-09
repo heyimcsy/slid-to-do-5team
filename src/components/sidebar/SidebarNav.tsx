@@ -5,7 +5,7 @@ import type { IconName } from '../icon/Icon';
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useGetGoals, usePostGoals } from '@/api/goals';
 import { useLogout } from '@/hooks/auth/useLogout';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -65,8 +65,6 @@ const bottomItems: {
 
 export default function SidebarNav() {
   const { open: openSettings } = useSettingsModal();
-
-  const router = useRouter();
   const { data: goalsData } = useGetGoals();
   const [goalInput, setGoalInput] = React.useState('');
   const { mutate: postGoal } = usePostGoals({
