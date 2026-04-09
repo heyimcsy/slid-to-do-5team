@@ -6,6 +6,7 @@ import type {
   PostsResponse,
   SortOption,
 } from '../types';
+import type { InfiniteData } from '@tanstack/react-query';
 
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
@@ -182,17 +183,49 @@ export const useDeleteComment = (postId: number) => {
   });
 };
 
+const updateCommentLikeCache = (
+  queryClient: ReturnType<typeof useQueryClient>,
+  postId: number,
+  commentId: number,
+  liked: boolean,
+) => {
+  queryClient.setQueryData(
+    communityQueryKeys.comments(postId),
+    (old: InfiniteData<CommentsResponse>) => {
+      if (!old) return old;
+      return {
+        ...old,
+        pages: old.pages.map((page) => ({
+          ...page,
+          comments: page.comments.map((c) =>
+            c.id === commentId
+              ? { ...c, isLiked: liked, likeCount: c.likeCount + (liked ? 1 : -1) }
+              : c,
+          ),
+        })),
+      };
+    },
+  );
+};
+
 // 댓글 좋아요
 export const useCreateCommentLike = (postId: number, commentId: number) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: () =>
-      apiClient<void>(`/posts/${postId}/comments/${commentId}/likes`, {
-        method: 'POST',
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: communityQueryKeys.all });
+      apiClient<void>(`/posts/${postId}/comments/${commentId}/likes`, { method: 'POST' }),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: communityQueryKeys.comments(postId) });
+      const previous = queryClient.getQueryData(communityQueryKeys.comments(postId));
+      updateCommentLikeCache(queryClient, postId, commentId, true);
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      queryClient.setQueryData(communityQueryKeys.comments(postId), context?.previous);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.comments(postId) });
     },
   });
 };
@@ -203,11 +236,18 @@ export const useDeleteCommentLike = (postId: number, commentId: number) => {
 
   return useMutation({
     mutationFn: () =>
-      apiClient<void>(`/posts/${postId}/comments/${commentId}/likes`, {
-        method: 'DELETE',
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: communityQueryKeys.all });
+      apiClient<void>(`/posts/${postId}/comments/${commentId}/likes`, { method: 'DELETE' }),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: communityQueryKeys.comments(postId) });
+      const previous = queryClient.getQueryData(communityQueryKeys.comments(postId));
+      updateCommentLikeCache(queryClient, postId, commentId, false);
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      queryClient.setQueryData(communityQueryKeys.comments(postId), context?.previous);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.comments(postId) });
     },
   });
 };
