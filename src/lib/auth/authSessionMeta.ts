@@ -1,5 +1,6 @@
 import type { User } from '@/lib/auth/schemas/user';
 
+import { apiClient, ApiClientError } from '@/lib/apiClient';
 import { oauthProviderCookieSchema } from '@/lib/auth/schemas/oauth';
 
 /** `GET /api/auth/session` 응답 — HttpOnly 쿠키 기반 메타 */
@@ -8,34 +9,52 @@ export type AuthSessionApiResponse = {
   oauthProvider: 'google' | 'kakao' | null;
 };
 
-function parseAuthSessionJson(raw: unknown): AuthSessionApiResponse {
-  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
-    return { hasRefreshToken: false, oauthProvider: null };
-  }
+export type AuthSessionMetaResult =
+  | { ok: true; meta: AuthSessionApiResponse }
+  | {
+      ok: false;
+      error: 'network_error' | 'http_error' | 'invalid_json' | 'invalid_shape';
+    };
+
+function parseAuthSessionJson(raw: unknown): AuthSessionApiResponse | undefined {
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) return undefined;
   const o = raw as Record<string, unknown>;
-  const hasRefreshToken = Boolean(o.hasRefreshToken);
+  if (typeof o.hasRefreshToken !== 'boolean') return undefined;
+
+  const hasRefreshToken = o.hasRefreshToken;
   const p = o.oauthProvider;
-  const parsed =
-    typeof p === 'string' ? oauthProviderCookieSchema.safeParse(p) : { success: false as const };
+  if (p !== null && p !== undefined && typeof p !== 'string') return undefined;
+
+  const parsed = typeof p === 'string' ? oauthProviderCookieSchema.safeParse(p) : undefined;
   return {
     hasRefreshToken,
-    oauthProvider: parsed.success ? parsed.data : null,
+    oauthProvider: typeof p === 'string' ? (parsed?.success ? parsed.data : null) : null,
   };
 }
 
 /**
  * BFF `GET /api/auth/session` — refresh·OAuth provider(HttpOnly)를 클라이언트에 알릴 때 사용.
  * `signal`을 넘기면 상위 호출자에서 요청 취소(AbortController)할 수 있다.
+ * 실패(`ok:false`)와 정상 password 세션(`oauthProvider:null`)을 구분해서 반환한다.
  */
-export async function fetchAuthSessionMeta(signal?: AbortSignal): Promise<AuthSessionApiResponse> {
-  const r = await fetch('/api/auth/session', { credentials: 'include', signal });
-  let raw: unknown;
+export async function fetchAuthSessionMeta(signal?: AbortSignal): Promise<AuthSessionMetaResult> {
   try {
-    raw = await r.json();
-  } catch {
-    return { hasRefreshToken: false, oauthProvider: null };
+    const raw = await apiClient<unknown>('/session', {
+      method: 'GET',
+      clientPublicBase: '/api/auth',
+      signal,
+      retry: false,
+      skipSessionExpiredRedirect: true,
+    });
+    const parsed = parseAuthSessionJson(raw);
+    if (!parsed) return { ok: false, error: 'invalid_shape' };
+    return { ok: true, meta: parsed };
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') throw error;
+    if (error instanceof ApiClientError) return { ok: false, error: 'http_error' };
+    if (error instanceof SyntaxError) return { ok: false, error: 'invalid_json' };
+    return { ok: false, error: 'network_error' };
   }
-  return parseAuthSessionJson(raw);
 }
 
 /**
