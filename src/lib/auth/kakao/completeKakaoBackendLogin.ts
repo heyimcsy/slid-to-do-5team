@@ -44,7 +44,7 @@ export async function completeKakaoBackendLogin(
       };
     }
 
-    await setAuthCookies(at, rt);
+    await setAuthCookies(at, rt, 'kakao');
     return { ok: true, user };
   } catch (error) {
     if (error instanceof ApiClientError) {

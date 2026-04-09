@@ -44,7 +44,7 @@ export async function completeGoogleBackendLogin(
       };
     }
 
-    await setAuthCookies(at, rt);
+    await setAuthCookies(at, rt, 'google');
     return { ok: true, user };
   } catch (error) {
     if (error instanceof ApiClientError) {
