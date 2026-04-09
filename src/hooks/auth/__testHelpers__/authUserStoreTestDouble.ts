@@ -1,9 +1,5 @@
 import type { User } from '@/lib/auth/schemas/user';
 
-
-
-
-
 /** `jest.mock('@/stores/authUserStore')`에서만 사용 — 테스트마다 beforeEach로 덮어쓴다 */
 export const authUserStoreTestConfig: {
   user: User | null;
