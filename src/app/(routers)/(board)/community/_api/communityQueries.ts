@@ -188,7 +188,7 @@ export const useCreateCommentLike = (postId: number, commentId: number) => {
 
   return useMutation({
     mutationFn: () =>
-      apiClient<void>(`/posts/${postId}/comments/${commentId}/like`, {
+      apiClient<void>(`/posts/${postId}/comments/${commentId}/likes`, {
         method: 'POST',
       }),
     onSuccess: () => {
@@ -203,7 +203,7 @@ export const useDeleteCommentLike = (postId: number, commentId: number) => {
 
   return useMutation({
     mutationFn: () =>
-      apiClient<void>(`/posts/${postId}/comments/${commentId}/like`, {
+      apiClient<void>(`/posts/${postId}/comments/${commentId}/likes`, {
         method: 'DELETE',
       }),
     onSuccess: () => {
