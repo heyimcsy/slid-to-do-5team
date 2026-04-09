@@ -19,7 +19,7 @@ const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
 /**
  * 메모리 nonce 저장소 상한.
  * - 비정상 트래픽/공격으로 nonce가 무한 적재되는 상황을 완화하기 위한 안전장치.
- * - 상한 도달 시 가장 오래된 엔트리를 제거해 메모리 폭주를 방지.
+ * - 상한 도달 시 만료 시각이 가장 이른 엔트리를 제거해 메모리 폭주를 방지.
  */
 const NONCE_STORE_MAX_SIZE = 20_000;
 
@@ -62,6 +62,19 @@ function pruneNonceStore(now: number): void {
   }
 }
 
+/** 상한 초과 시 `expiresAt`이 최소인 엔트리(가장 먼저 만료되는 nonce)를 제거 */
+function evictEarliestExpiringNonce(): void {
+  let victimKey: string | undefined;
+  let minExpiresAt = Infinity;
+  for (const [key, expiresAt] of usedNonceStore) {
+    if (expiresAt < minExpiresAt) {
+      minExpiresAt = expiresAt;
+      victimKey = key;
+    }
+  }
+  if (victimKey !== undefined) usedNonceStore.delete(victimKey);
+}
+
 /**
  * nonce를 "1회 소비" 처리한다.
  * - 이미 사용된 nonce면 false (replay 차단)
@@ -79,9 +92,8 @@ function consumeNonce(provider: OAuthProvider, nonce: string, expiresAt: number)
   if (usedNonceStore.has(nonceKey)) return false;
 
   if (usedNonceStore.size >= NONCE_STORE_MAX_SIZE) {
-    // store가 비정상적으로 커졌을 때, 만료된 엔트리 정리 후에도 꽉 차면 가장 오래된 키를 제거
-    const oldestKey = usedNonceStore.keys().next().value;
-    if (oldestKey) usedNonceStore.delete(oldestKey);
+    // prune 후에도 꽉 차면 만료 시각이 가장 이른 엔트리를 제거(Map 삽입 순서와 무관)
+    evictEarliestExpiringNonce();
   }
 
   usedNonceStore.set(nonceKey, expiresAt);
