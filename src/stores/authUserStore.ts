@@ -5,6 +5,8 @@ import { userSchema } from '@/lib/auth/schemas/user';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { LOCAL_STORAGE_KEYS } from '@/constants/localStorageKeys';
+
 type AuthUserState = {
   user: User | null;
   setUser: (user: User | null) => void;
@@ -30,7 +32,7 @@ export const authUserStore = create<AuthUserState>()(
       clearUser: () => set({ user: null }),
     }),
     {
-      name: 'user-info',
+      name: LOCAL_STORAGE_KEYS.USER_INFO,
       skipHydration: true,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ user: state.user }),
