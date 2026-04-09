@@ -3,8 +3,13 @@
 import type { ReactNode } from 'react';
 import type { Mutate, StoreApi } from 'zustand';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { useIsRestoring } from '@tanstack/react-query';
+
+import {
+  REHYDRATION_COMPLETED_AFTER_CALLBACK_FAILED_MESSAGE_KO,
+  UNKNOWN_ERROR_MESSAGE_KO,
+} from '@/constants/error-message';
 
 /**
  * @description `Mutate<StoreApi, [['zustand/persist', …]]>` 결과에서 **`persist` 프로퍼티 타입**만 취한다
@@ -70,11 +75,10 @@ function QueryPersistSyncGate({
 }
 
 /** persist 대상이 없을 때 — 마운트 직후 1회 콜백 (Zustand 게이트와 동등한 “준비됨” 시점) */
-function RunOnceOnMount({ fn }: { fn?: () => void }) {
-  const fnRef = useRef(fn);
-  fnRef.current = fn;
+function RunOnceOnMount({ onMounted }: { onMounted?: () => void }) {
+  const initialOnMountedRef = useRef(onMounted);
   useEffect(() => {
-    fnRef.current?.();
+    initialOnMountedRef.current?.();
   }, []);
   return null;
 }
@@ -109,8 +113,13 @@ const PersistRehydrationGate = ({
 }: PersistRehydrationGateProps) => {
   // rehydration 완료 여부를 확인하기 위한 상태 관리
   const [rehydrationDone, setRehydrationDone] = useState(false);
-  const onRehydratedRef = useRef(onRehydrated);
-  onRehydratedRef.current = onRehydrated;
+  /**
+   * @description onRehydrated callback을 이벤트로 변환하여 비동기 콜백을 동기 콜백으로 변환
+   * @see {@link https://react.dev/reference/react/useEffectEvent | React — useEffectEvent}
+   */
+  const onRehydratedEvent = useEffectEvent(() => {
+    onRehydrated?.();
+  });
 
   useEffect(() => {
     // rehydration 취소 여부 (cleanup 함수에서 사용, 초깃값은 취소되지 않음)
@@ -126,8 +135,16 @@ const PersistRehydrationGate = ({
       );
       // rehydration 취소 여부를 확인하고 취소됨(!cancelled === false)이면 rehydration 완료 표시
       if (!cancelled) {
-        onRehydratedRef.current?.();
-        setRehydrationDone(true);
+        try {
+          // rehydration effect가 끝난 후 onRehydratedEvent 호출
+          onRehydratedEvent();
+        } catch (error) {
+          console.error(
+            `${REHYDRATION_COMPLETED_AFTER_CALLBACK_FAILED_MESSAGE_KO}: ${error ?? UNKNOWN_ERROR_MESSAGE_KO}`,
+          );
+        } finally {
+          setRehydrationDone(true);
+        }
       }
     })();
 
@@ -195,14 +212,14 @@ export function PersistRehydrationProvider({
     if (waitForQueryPersistRestore) {
       return (
         <>
-          <RunOnceOnMount fn={onZustandRehydrated} />
+          <RunOnceOnMount onMounted={onZustandRehydrated} />
           <QueryPersistSyncGate fallback={fallback}>{children}</QueryPersistSyncGate>
         </>
       );
     }
     return (
       <>
-        <RunOnceOnMount fn={onZustandRehydrated} />
+        <RunOnceOnMount onMounted={onZustandRehydrated} />
         {children}
       </>
     );

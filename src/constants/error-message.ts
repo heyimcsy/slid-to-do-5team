@@ -72,3 +72,6 @@ export const NO_KAKAO_CLIENT_SECRET_MESSAGE_KO =
 
 export const OAUTH_PROVIDER_FETCH_FAILED_FROM_USER_MESSAGE_KO =
   '사용자의 OAuth Provider 정보 확인에 실패했습니다.' as const;
+
+export const REHYDRATION_COMPLETED_AFTER_CALLBACK_FAILED_MESSAGE_KO =
+  'Rehydration 완료 후 onRehydrated callback 실패' as const;
