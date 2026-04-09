@@ -43,6 +43,11 @@ export const NOTES_TEXT = {
     `임시 저장이 완료되었습니다 ㆍ${elapsedSeconds}초 전`,
   LINK_PANEL_CLOSE: '링크 미리보기 패널 닫기',
 };
+
+export const NOTES_SORT = {
+  UPDATE: '최신순',
+  OLD: '오래된순',
+};
 export const META_TAGS = {
   GOAL: '목표',
   CREATED_AT: '작성일',

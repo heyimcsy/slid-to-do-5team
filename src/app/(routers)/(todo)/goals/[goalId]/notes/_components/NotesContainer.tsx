@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation';
 import goalImage from '@/../public/images/large-goal.svg';
 import { useGetGoal } from '@/api/goals';
 import { useGetNotesInfinite } from '@/api/notes';
-import { GOAL_IMAGE_BIG, NOTES_TEXT } from '@/app/(routers)/(todo)/constants';
+import { GOAL_IMAGE_BIG, NOTES_SORT, NOTES_TEXT } from '@/app/(routers)/(todo)/constants';
 import NotesContainerSkeleton from '@/app/(routers)/(todo)/goals/[goalId]/notes/_components/NoteContainerSkeleton';
 import NoteList from '@/app/(routers)/(todo)/goals/[goalId]/notes/_components/NoteList';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
@@ -58,7 +58,7 @@ export default function NotesContainer() {
                 onChange={(e) => setSearchValue(e.target.value)}
               />
             </div>
-            <SortFilter options={['최신순', '오래된순']} />
+            <SortFilter options={[NOTES_SORT.UPDATE, NOTES_SORT.OLD]} />
           </div>
         </div>
 
