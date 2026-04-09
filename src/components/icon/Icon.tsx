@@ -105,7 +105,7 @@ type IconProps = {
   size?: number;
   className?: string;
   checked?: boolean;
-  variant?: 'default' | 'orange' | 'white' | 'filled';
+  variant?: 'default' | 'orange' | 'filled' | 'white' | 'ghost';
   direction?: 'left' | 'right' | 'up' | 'down';
   color?: string;
 };

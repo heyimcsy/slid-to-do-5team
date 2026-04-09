@@ -6,13 +6,14 @@
  */
 import 'server-only';
 
+import type { TokenPairBackendResponse } from '@/lib/auth/parseTokenPairFromBackendJson';
 import type { User } from '@/lib/auth/schemas/user';
 
+import { ApiClientError } from '@/lib/apiClient';
+import { apiClientServer } from '@/lib/apiClient.server';
 import { getRefreshToken, setAuthCookies } from '@/lib/auth/cookies';
 import { parseTokenPairFromBackendJson } from '@/lib/auth/parseTokenPairFromBackendJson';
-import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 
-import { API_BASE_URL } from '@/constants/api';
 import { AUTH_CONFIG } from '@/constants/auth-config';
 import {
   REFRESH_SESSION_BACKEND_REJECTED_FALLBACK_MESSAGE_KO,
@@ -115,44 +116,32 @@ function putRefreshSuccessCache(refreshToken: string, result: RefreshBackendSucc
  * @returns 성공 시 파싱된 토큰·user, 실패 시 이유 코드. 쿠키는 건드리지 않음.
  */
 async function fetchRefreshFromBackend(refreshToken: string): Promise<RefreshBackendResult> {
-  const base = API_BASE_URL?.replace(/\/$/, '') ?? '';
   const timeoutMs = AUTH_CONFIG.REFRESH_FETCH_TIMEOUT_MS;
 
-  let response: Response;
+  let data: TokenPairBackendResponse;
   try {
-    response = await fetchWithTimeout(
-      `${base}/auth/refresh`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          [AUTH_CONFIG.REFRESH_TOKEN_JSON_ALTERNATE]: refreshToken,
-        }),
+    data = await apiClientServer<TokenPairBackendResponse>('/auth/refresh', {
+      method: 'POST',
+      body: {
+        [AUTH_CONFIG.REFRESH_TOKEN_JSON_ALTERNATE]: refreshToken,
       },
+      retry: false,
       timeoutMs,
-    );
-  } catch {
-    return { ok: false, reason: REFRESH_SESSION_REASON.NETWORK };
-  }
-
-  if (!response.ok) {
-    const errBody = await response.json().catch(() => ({}));
-    const message =
-      (errBody as { message?: string }).message ??
-      (errBody as { error?: string }).error ??
-      REFRESH_SESSION_BACKEND_REJECTED_FALLBACK_MESSAGE_KO;
-    return {
-      ok: false,
-      reason: REFRESH_SESSION_REASON.BACKEND_REJECTED,
-      status: response.status,
-      message,
-    };
-  }
-
-  let data: Record<string, unknown>;
-  try {
-    data = (await response.json()) as Record<string, unknown>;
-  } catch {
+      skipSessionExpiredRedirect: true,
+    });
+  } catch (error) {
+    if (error instanceof ApiClientError) {
+      return {
+        ok: false,
+        reason: REFRESH_SESSION_REASON.BACKEND_REJECTED,
+        status: error.status,
+        message: error.message || REFRESH_SESSION_BACKEND_REJECTED_FALLBACK_MESSAGE_KO,
+      };
+    }
+    if (isLikelyNetworkError(error)) {
+      return { ok: false, reason: REFRESH_SESSION_REASON.NETWORK };
+    }
+    // apiClient의 2xx JSON 파싱 실패/본문 형식 불일치 등은 본문 계약 위반으로 분류.
     return { ok: false, reason: REFRESH_SESSION_REASON.INVALID_TOKEN_BODY };
   }
 
@@ -167,6 +156,21 @@ async function fetchRefreshFromBackend(refreshToken: string): Promise<RefreshBac
   }
 
   return { ok: true, accessToken: newAccessToken, refreshToken: newRefreshToken, user };
+}
+
+function isLikelyNetworkError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  if (error.name === 'AbortError') return true;
+  const m = (error.message ?? '').toLowerCase();
+  return (
+    m.includes('econn') ||
+    m.includes('enotfound') ||
+    m.includes('etimedout') ||
+    m.includes('network') ||
+    m.includes('fetch failed') ||
+    m.includes('socket') ||
+    m.includes('connect')
+  );
 }
 
 /**

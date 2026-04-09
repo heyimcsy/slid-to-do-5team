@@ -10,6 +10,8 @@ const variantStyles = {
 };
 
 export const DeleteIcon = ({ variant = 'default', ...props }: DeleteIconProps) => {
+  const safeVariant = variant in variantStyles ? variant : 'default';
+
   return (
     <svg
       width="100%"
@@ -21,13 +23,13 @@ export const DeleteIcon = ({ variant = 'default', ...props }: DeleteIconProps) =
     >
       <path
         d="M6 6.5L18 18.5"
-        stroke={variantStyles[variant]}
+        stroke={variantStyles[safeVariant]}
         strokeWidth="1.8"
         strokeLinecap="round"
       />
       <path
         d="M18 6.5L6 18.5"
-        stroke={variantStyles[variant]}
+        stroke={variantStyles[safeVariant]}
         strokeWidth="1.8"
         strokeLinecap="round"
       />

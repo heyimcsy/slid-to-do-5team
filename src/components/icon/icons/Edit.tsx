@@ -1,6 +1,25 @@
 import type { SVGProps } from 'react';
 
-export const EditIcon = (props: SVGProps<SVGSVGElement>) => {
+import { cn } from '@/lib';
+
+type EditIconProps = SVGProps<SVGSVGElement> & {
+  variant?: 'default' | 'ghost';
+};
+
+export const EditIcon = ({ variant = 'default', className, ...props }: EditIconProps) => {
+  const variantStyles = {
+    default: {
+      fill: '#ffffff',
+      icon: '#EF6C00',
+    },
+    ghost: {
+      fill: '#ffffff99',
+      icon: 'currentColor',
+    },
+  };
+
+  const safeVariant = variant in variantStyles ? variant : 'default';
+
   return (
     <svg
       width="100%"
@@ -8,17 +27,18 @@ export const EditIcon = (props: SVGProps<SVGSVGElement>) => {
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      className={cn(variant === 'ghost' && 'text-orange-600 dark:text-orange-300', className)}
       {...props}
     >
-      <circle cx="12" cy="12" r="12" fill="white" />
+      <circle cx="12" cy="12" r="12" fill={variantStyles[safeVariant].fill} />
       <g clipPath="url(#clip0_13460_59414)">
         <path
           d="M9.36981 16.3631C9.52235 16.3215 9.59862 16.3007 9.66974 16.2687C9.73289 16.2404 9.79292 16.2056 9.84887 16.1648C9.91188 16.1189 9.96778 16.063 10.0796 15.9512L15.2419 10.7889C15.3408 10.69 15.3903 10.6405 15.4088 10.5835C15.4251 10.5333 15.4251 10.4793 15.4088 10.4291C15.3903 10.3721 15.3408 10.3226 15.2419 10.2237L13.8088 8.7906C13.7099 8.69168 13.6604 8.64222 13.6034 8.62369C13.5532 8.60739 13.4992 8.60739 13.449 8.62369C13.392 8.64222 13.3425 8.69168 13.2436 8.7906L8.08129 13.9529C7.96949 14.0647 7.91359 14.1206 7.86768 14.1836C7.82692 14.2395 7.79208 14.2996 7.76373 14.3627C7.7318 14.4339 7.711 14.5101 7.66939 14.6627L7.03174 17.0007L9.36981 16.3631Z"
-          fill="#EF6C00"
+          fill={variantStyles[safeVariant].icon}
         />
         <path
           d="M15.0249 7.00928L17.0232 9.00757M7.03174 17.0007L7.66939 14.6627C7.711 14.5101 7.7318 14.4339 7.76373 14.3627C7.79208 14.2996 7.82692 14.2395 7.86768 14.1836C7.91359 14.1206 7.96949 14.0647 8.08129 13.9529L13.2436 8.7906C13.3425 8.69168 13.392 8.64222 13.449 8.62369C13.4992 8.60739 13.5532 8.60739 13.6034 8.62369C13.6604 8.64222 13.7099 8.69168 13.8088 8.7906L15.2419 10.2237C15.3408 10.3226 15.3903 10.3721 15.4088 10.4291C15.4251 10.4793 15.4251 10.5333 15.4088 10.5835C15.3903 10.6405 15.3408 10.69 15.2419 10.7889L10.0796 15.9512C9.96778 16.063 9.91188 16.1189 9.84887 16.1648C9.79292 16.2056 9.73289 16.2404 9.66974 16.2687C9.59862 16.3007 9.52235 16.3215 9.36981 16.3631L7.03174 17.0007Z"
-          stroke="#EF6C00"
+          stroke={variantStyles[safeVariant].icon}
           strokeLinecap="round"
           strokeLinejoin="round"
         />

@@ -33,7 +33,7 @@ describe('parseTokenPairFromBackendJson', () => {
       [AUTH_CONFIG.ACCESS_TOKEN_JSON_ALTERNATE]: 'at',
       [AUTH_CONFIG.REFRESH_TOKEN_JSON_ALTERNATE]: 'rt',
       [AUTH_CONFIG.USER_OBJECT_JSON_ALTERNATE]: {
-        id: 99,
+        id: '99',
         email: 'c@d.com',
         name: 'Lee',
         image: 'https://placehold.co/38x38?text=S',

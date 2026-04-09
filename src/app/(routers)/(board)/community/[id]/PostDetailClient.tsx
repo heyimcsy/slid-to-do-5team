@@ -14,6 +14,7 @@ import { formatDate } from '@/utils/date';
 
 import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { KebabMenu } from '@/components/common/KebabMenu';
+import { ScrollToTop } from '@/components/common/ScrollToTop';
 import { ErrorFallback } from '@/components/ErrorFallback';
 
 import { useDeletePost, useGetComments, useGetPostById } from '../_api/communityQueries';
@@ -85,6 +86,12 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
         title="정말 삭제하시겠어요?"
         description="삭제된 게시물은 복구할 수 없습니다."
         onConfirm={() => {
+          if (!isWriter) {
+            toast.error('본인이 작성한 게시물만 삭제할 수 있습니다.');
+            setDeleteDialogOpen(false);
+            return;
+          }
+
           deletePost(postId, {
             onSuccess: () => router.push('/community'),
             onError: () => toast.error('게시물 삭제에 실패했습니다. 다시 시도해주세요.'),
@@ -92,6 +99,7 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
         }}
       />
       <div className="h-full w-full overflow-y-auto bg-gray-100 px-4 py-4 md:px-8 md:py-10 lg:p-14">
+        <ScrollToTop />
         <div className="mx-auto w-full md:max-w-[636px] lg:max-w-[768px]">
           <div className="flex flex-col gap-10 rounded-3xl bg-white px-5 py-6 md:gap-14 md:p-10 lg:p-14">
             <div className="w-full">

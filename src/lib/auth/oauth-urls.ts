@@ -10,10 +10,6 @@ export const KAKAO_OAUTH_CALLBACK_PATH = '/api/auth/oauth/kakao/callback' as con
 export const STORAGE_OAUTH_KAKAO_STATE = 'oauth_kakao_state' as const;
 export const STORAGE_OAUTH_KAKAO_RETURN_PATH = 'oauth_kakao_return_path' as const;
 
-/** 서버 콜백에서 `state` 검증용 (클라이언트가 authorize 직전에 설정) */
-export const COOKIE_OAUTH_KAKAO_STATE = 'oauth_kakao_state' as const;
-export const COOKIE_OAUTH_KAKAO_RETURN_PATH = 'oauth_kakao_return_path' as const;
-
 /** 카카오 콜백 직후 1회 — 클라이언트가 `authUserStore`에 동기화할 때까지 잠깐 보관 (HttpOnly) */
 export const COOKIE_OAUTH_USER_FLASH = 'oauth_user_flash' as const;
 
@@ -57,9 +53,6 @@ export const GOOGLE_OAUTH_CALLBACK_PATH = '/api/auth/oauth/google/callback' as c
 
 export const STORAGE_OAUTH_GOOGLE_STATE = 'oauth_google_state' as const;
 export const STORAGE_OAUTH_GOOGLE_RETURN_PATH = 'oauth_google_return_path' as const;
-
-export const COOKIE_OAUTH_GOOGLE_STATE = 'oauth_google_state' as const;
-export const COOKIE_OAUTH_GOOGLE_RETURN_PATH = 'oauth_google_return_path' as const;
 
 /** 로그인 시 요청 scope — 토큰 클라이언트·Authorization Code 공통 */
 export const GOOGLE_OAUTH_SCOPES = 'openid email profile' as const;

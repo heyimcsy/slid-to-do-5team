@@ -5,28 +5,12 @@ import type { User } from '@/lib/auth/schemas/user';
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ApiClientError } from '@/lib/apiClient';
-import {
-  COOKIE_OAUTH_GOOGLE_RETURN_PATH,
-  COOKIE_OAUTH_GOOGLE_STATE,
-  GOOGLE_OAUTH_AUTHORIZE_BASE,
-  GOOGLE_OAUTH_SCOPES,
-  resolveGoogleOAuthRedirectUri,
-} from '@/lib/auth/oauth-urls';
 import { getSafeCallbackPath } from '@/lib/navigation/safeCallbackPath';
 
 export type GoogleOAuthSignInResult =
   | { ok: true; redirect: true }
   | { ok: true; user?: User; redirect?: false }
   | { ok: false; error: ApiClientError | Error };
-
-const OAUTH_COOKIE_MAX_AGE_SEC = 600;
-
-function setShortLivedCookie(name: string, value: string) {
-  const safe = encodeURIComponent(value);
-  const secure =
-    typeof window !== 'undefined' && window.location.protocol === 'https:' ? '; Secure' : '';
-  document.cookie = `${name}=${safe}; Path=/; Max-Age=${OAUTH_COOKIE_MAX_AGE_SEC}; SameSite=Lax${secure}`;
-}
 
 function getAppOrigin(): string {
   const fromEnv = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '');
@@ -64,28 +48,10 @@ export function useGoogleOAuthSignIn() {
       };
     }
 
-    const redirectUri = resolveGoogleOAuthRedirectUri(origin);
-    const state = crypto.randomUUID();
     const returnPath = getSafeCallbackPath(searchParams.get('callbackUrl')) ?? '/dashboard';
-
-    try {
-      setShortLivedCookie(COOKIE_OAUTH_GOOGLE_STATE, state);
-      setShortLivedCookie(COOKIE_OAUTH_GOOGLE_RETURN_PATH, returnPath);
-    } catch {
-      return { ok: false, error: new Error('로그인 상태 저장에 실패했습니다.') };
-    }
-
-    const params = new URLSearchParams({
-      response_type: 'code',
-      client_id: googleClientId,
-      redirect_uri: redirectUri,
-      state,
-      scope: GOOGLE_OAUTH_SCOPES,
-      access_type: 'online',
-      include_granted_scopes: 'true',
-    });
-
-    window.location.assign(`${GOOGLE_OAUTH_AUTHORIZE_BASE}?${params.toString()}`);
+    const startUrl = new URL('/api/auth/oauth/google/start', origin);
+    startUrl.searchParams.set('callbackUrl', returnPath);
+    window.location.assign(startUrl.toString());
     return { ok: true, redirect: true };
   }, [googleEnabled, googleClientId, searchParams]);
 
