@@ -12,7 +12,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { ErrorFallback } from '@/components/ErrorFallback';
 import { Icon } from '@/components/icon/Icon';
 
-import { useGetPosts } from './_api/communityQueries';
+import { useGetBestPosts, useGetPosts } from './_api/communityQueries';
 import { FeaturedPostCard } from './_components/FeaturedPostCard';
 import { PostListItem } from './_components/PostListItem';
 import { PostListSkeleton } from './_components/PostListSkeleton';
@@ -37,6 +37,7 @@ export default function CommunityClient() {
     isFetchingNextPage,
     isFetching,
   } = useGetPosts(sort, !!search);
+  const { data: bestPosts } = useGetBestPosts();
 
   const posts: Post[] = useMemo(
     () =>
@@ -52,11 +53,6 @@ export default function CommunityClient() {
     fetchNextPage,
     enabled: !search,
   });
-
-  const featuredPosts = useMemo(
-    () => [...posts].sort((a, b) => b.viewCount - a.viewCount).slice(0, 3),
-    [posts],
-  );
 
   const filteredPosts = useMemo(() => {
     const lowerSearch = search.toLowerCase();
@@ -96,13 +92,19 @@ export default function CommunityClient() {
             <Link href="/community" className="cursor-pointer">
               소통 게시판
             </Link>
+            <hr className="mt-3 border-gray-300" />
           </h1>
 
-          {posts.length > 0 && (
-            <div className="mb-6 flex gap-4 overflow-x-auto pb-2 md:mb-8">
-              {featuredPosts.map((post) => (
-                <FeaturedPostCard key={post.id} post={post} />
-              ))}
+          {bestPosts?.posts && bestPosts.posts.length > 0 && (
+            <div className="mb-6 md:mb-8">
+              <h2 className="font-lg-semibold md:font-xl-semibold mb-4 px-2 text-black">
+                인기 게시물
+              </h2>
+              <div className="flex gap-4 overflow-x-auto pb-2">
+                {bestPosts.posts.map((post) => (
+                  <FeaturedPostCard key={post.id} post={post} />
+                ))}
+              </div>
             </div>
           )}
 
