@@ -199,7 +199,7 @@ const updateCommentLikeCache = (
           ...page,
           comments: page.comments.map((c) =>
             c.id === commentId
-              ? { ...c, isLiked: liked, likeCount: c.likeCount + (liked ? 1 : -1) }
+              ? { ...c, isLiked: liked, likeCount: Math.max(0, c.likeCount + (liked ? 1 : -1)) }
               : c,
           ),
         })),

@@ -3,7 +3,7 @@
 import type { Comment } from '../../types';
 import type { CommentForm } from './CommentInput';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDebouncedCallback } from '@/hooks/useDebounceCallback';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -46,8 +46,14 @@ export function CommentItem({ comment, isMyComment, onDelete, isDeleting }: Comm
     comment.postId,
     comment.id,
   );
-  const { mutate: createCommentLike } = useCreateCommentLike(comment.postId, comment.id);
-  const { mutate: deleteCommentLike } = useDeleteCommentLike(comment.postId, comment.id);
+  const { mutate: createCommentLike, isPending: isLiking } = useCreateCommentLike(comment.postId, comment.id);
+  const { mutate: deleteCommentLike, isPending: isUnliking } = useDeleteCommentLike(comment.postId, comment.id);
+  const isLikePending = isLiking || isUnliking;
+
+  const isLikedRef = useRef(comment.isLiked);
+  useEffect(() => {
+    isLikedRef.current = comment.isLiked;
+  }, [comment.isLiked]);
 
   const kebabItems = [
     { label: '수정하기', onClick: () => setIsEditing(true) },
@@ -70,7 +76,7 @@ export function CommentItem({ comment, isMyComment, onDelete, isDeleting }: Comm
   };
 
   const handleLikeClick = useDebouncedCallback(() => {
-    if (comment.isLiked) {
+    if (isLikedRef.current) {
       deleteCommentLike();
     } else {
       createCommentLike();
@@ -153,9 +159,10 @@ export function CommentItem({ comment, isMyComment, onDelete, isDeleting }: Comm
               type="button"
               aria-label={comment.isLiked ? '좋아요 취소' : '좋아요'}
               onClick={handleLikeClick}
-              className="flex items-center gap-1 text-gray-400 hover:text-gray-600"
+              disabled={isLikePending}
+              className="flex items-center gap-1 text-gray-400 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <HeartIcon filled={comment.isLiked} width={16} height={16} />
+              <HeartIcon aria-hidden filled={comment.isLiked} width={16} height={16} />
               {comment.likeCount > 0 && (
                 <span className="font-xs-regular">{comment.likeCount}</span>
               )}
