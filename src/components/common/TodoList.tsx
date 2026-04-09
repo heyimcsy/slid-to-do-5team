@@ -30,7 +30,11 @@ export default function TodoList({ todolists }: TodoListProps) {
           <p className="mt-4 text-sm text-gray-400">아직 등록한 할 일이 없어요</p>
         </div>
       ) : (
-        todolists.map((todo) => <TodoItem key={todo.id} task={todo} />)
+        <ul>
+          {todolists.map((todo) => (
+            <TodoItem key={todo.id} task={todo} />
+          ))}
+        </ul>
       )}
     </div>
   );
