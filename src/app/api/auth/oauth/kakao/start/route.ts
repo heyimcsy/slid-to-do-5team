@@ -8,14 +8,18 @@ import {
 } from '@/lib/auth/oauth-urls';
 import { getSafeCallbackPath } from '@/lib/navigation/safeCallbackPath';
 
-import { OAUTH_START_FAILED_MESSAGE_KO } from '@/constants/error-message';
+import {
+  KAKAO_CLIENT_ID_UNSET_MESSAGE_KO,
+  OAUTH_START_FAILED_MESSAGE_KO,
+} from '@/constants/error-message';
 
 export async function GET(request: NextRequest) {
+  const BRAND_NAME = 'Kakao';
   const kakaoClientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID?.trim();
   if (!kakaoClientId) {
     return NextResponse.redirect(
       new URL(
-        '/login?error=NEXT_PUBLIC_KAKAO_CLIENT_ID가 설정되지 않았습니다.',
+        `/login?error=${encodeURIComponent(`${BRAND_NAME} ${KAKAO_CLIENT_ID_UNSET_MESSAGE_KO}`)}`,
         request.nextUrl.origin,
       ),
     );
@@ -27,7 +31,7 @@ export async function GET(request: NextRequest) {
   } catch {
     return NextResponse.redirect(
       new URL(
-        `/login?error=${encodeURIComponent(OAUTH_START_FAILED_MESSAGE_KO)}`,
+        `/login?error=${encodeURIComponent(`${BRAND_NAME} ${OAUTH_START_FAILED_MESSAGE_KO}`)}`,
         request.nextUrl.origin,
       ),
     );

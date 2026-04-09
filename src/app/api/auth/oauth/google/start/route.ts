@@ -9,14 +9,18 @@ import {
 } from '@/lib/auth/oauth-urls';
 import { getSafeCallbackPath } from '@/lib/navigation/safeCallbackPath';
 
-import { OAUTH_START_FAILED_MESSAGE_KO } from '@/constants/error-message';
+import {
+  GOOGLE_CLIENT_ID_UNSET_MESSAGE_KO,
+  OAUTH_START_FAILED_MESSAGE_KO,
+} from '@/constants/error-message';
 
 export async function GET(request: NextRequest) {
+  const BRAND_NAME = 'Google';
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.trim();
   if (!googleClientId) {
     return NextResponse.redirect(
       new URL(
-        '/login?error=NEXT_PUBLIC_GOOGLE_CLIENT_ID가 설정되지 않았습니다.',
+        `/login?error=${encodeURIComponent(`${BRAND_NAME} ${GOOGLE_CLIENT_ID_UNSET_MESSAGE_KO}`)}`,
         request.nextUrl.origin,
       ),
     );
@@ -28,7 +32,7 @@ export async function GET(request: NextRequest) {
   } catch {
     return NextResponse.redirect(
       new URL(
-        `/login?error=${encodeURIComponent(OAUTH_START_FAILED_MESSAGE_KO)}`,
+        `/login?error=${encodeURIComponent(`${BRAND_NAME} ${OAUTH_START_FAILED_MESSAGE_KO}`)}`,
         request.nextUrl.origin,
       ),
     );
