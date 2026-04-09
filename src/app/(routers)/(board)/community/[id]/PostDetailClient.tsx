@@ -14,6 +14,7 @@ import { formatDate } from '@/utils/date';
 
 import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { KebabMenu } from '@/components/common/KebabMenu';
+import { ScrollToTop } from '@/components/common/ScrollToTop';
 import { ErrorFallback } from '@/components/ErrorFallback';
 
 import { useDeletePost, useGetComments, useGetPostById } from '../_api/communityQueries';
@@ -98,6 +99,7 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
         }}
       />
       <div className="h-full w-full overflow-y-auto bg-gray-100 px-4 py-4 md:px-8 md:py-10 lg:p-14">
+        <ScrollToTop />
         <div className="mx-auto w-full md:max-w-[636px] lg:max-w-[768px]">
           <div className="flex flex-col gap-10 rounded-3xl bg-white px-5 py-6 md:gap-14 md:p-10 lg:p-14">
             <div className="w-full">

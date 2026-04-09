@@ -4,12 +4,17 @@ import type { NextRequest } from 'next/server';
 
 import { NextResponse } from 'next/server';
 import { buildCsp } from '@/config/csp';
+import { isAbortError } from '@/lib/auth/isAbortError';
+import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 import { isPublicPath } from '@/lib/navigation/publicPaths';
 import { getSafeCallbackPath } from '@/lib/navigation/safeCallbackPath';
 
-import { ALLOWED_ORIGINS, API_BASE_URL } from '@/constants/api';
+import { ALLOWED_ORIGINS, API_BASE_URL, API_PROXY_TIMEOUT_MS } from '@/constants/api';
 import { AUTH_CONFIG, isAuthRouteGuardEnabled } from '@/constants/auth-config';
-import { AUTH_MISSING_REFRESH_TOKEN_MESSAGE_KO } from '@/constants/error-message';
+import {
+  AUTH_MISSING_REFRESH_TOKEN_MESSAGE_KO,
+  AUTH_SERVICE_ERROR_MESSAGE_KO,
+} from '@/constants/error-message';
 
 /** 갱신 실패·액세스 토큰 없음 — 백엔드로 무인증 프록시하지 않음 */
 function proxyAuthRequiredResponse(): Response {
@@ -241,5 +246,16 @@ export async function forwardToBackend(request: Request, path: string): Promise<
     }
   }
 
-  return fetch(url, { method, headers, body });
+  try {
+    return await fetchWithTimeout(url, { method, headers, body }, API_PROXY_TIMEOUT_MS);
+  } catch (error) {
+    const status = isAbortError(error) ? 504 : 502;
+    return new Response(
+      JSON.stringify({ success: false, message: AUTH_SERVICE_ERROR_MESSAGE_KO }),
+      {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
+  }
 }
