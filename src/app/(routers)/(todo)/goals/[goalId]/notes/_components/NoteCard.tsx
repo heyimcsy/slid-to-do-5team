@@ -91,12 +91,26 @@ export function NoteCard({
             e.stopPropagation(); // 부모로 전파 중지
           }}
         >
-          <Select items={selectValue} onValueChange={handleSelectChange}>
+          <Select
+            items={selectValue}
+            onValueChange={handleSelectChange}
+            aria-label={DIALOG_VALUE.DOT_TRIGGER_ALIA_LABEL}
+          >
             <SelectTrigger size="sm" iconTrigger className="size-[20px] dark:hidden">
               <Icon name="dotscircle" size={20} />
             </SelectTrigger>
-            <SelectTrigger size="sm" iconTrigger className="hidden size-[20px] dark:block">
-              <Icon name="dotscircle" size={20} variant="ghost" />
+            <SelectTrigger
+              size="sm"
+              iconTrigger
+              className="hidden size-[20px] dark:block"
+              aria-label={DIALOG_VALUE.DOT_TRIGGER_ALIA_LABEL}
+            >
+              <Icon
+                name="dotscircle"
+                size={20}
+                variant="ghost"
+                aria-label={DIALOG_VALUE.DOT_TRIGGER_ALIA_LABEL}
+              />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>

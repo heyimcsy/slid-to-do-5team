@@ -59,7 +59,7 @@ export default function ItemActionBar({
       router.push(ROUTES.TODO_EDIT(goalId, id));
     } else {
       const route: string =
-        noteIds.length < 0 ? ROUTES.NOTE_EDIT(goalId, noteIds[0]) : ROUTES.NOTE_NEW(goalId, id);
+        noteIds.length > 0 ? ROUTES.NOTE_EDIT(goalId, noteIds[0]) : ROUTES.NOTE_NEW(goalId, id);
       router.push(route);
     }
   };

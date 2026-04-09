@@ -58,7 +58,7 @@ export default function NoteEditor({
             <Input
               value={title}
               onChange={onHandleChange}
-              maxLength={30}
+              maxLength={NOTES_TEXT.TITLE_MAX_LENGTH}
               placeholder={NOTES_TEXT.NOTE_TITLE_INPUT}
               className="font-xl-semibold md:font-2xl-semibold border-0 leading-tight text-gray-800"
             />

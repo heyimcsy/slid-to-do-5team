@@ -42,12 +42,13 @@ export const NOTES_TEXT = {
   TEMPORARY_SAVED_CHECK: (elapsedSeconds: number) =>
     `임시 저장이 완료되었습니다 ㆍ${elapsedSeconds}초 전`,
   LINK_PANEL_CLOSE: '링크 미리보기 패널 닫기',
-};
+} as const;
 
 export const NOTES_SORT = {
   UPDATE: '최신순',
   OLD: '오래된순',
-};
+} as const;
+
 export const META_TAGS = {
   GOAL: '목표',
   CREATED_AT: '작성일',
@@ -56,37 +57,37 @@ export const META_TAGS = {
   ATTACHMENT: '첨부 자료',
   WRITE_NOTE: '작성된 노트',
   DUEDATE: '마감기한',
-};
+} as const;
 
 /** 이미지 관련 */
 export const NOTE_CREATE: string = 'note-create';
 
 export const NOTE_IMAGE_SMALL = {
-  ALT: 'note image for note page route',
+  ALT: '노트 아이콘',
   WIDTH: 32,
   HEIGHT: 32,
 } as const;
 
 export const NOTE_IMAGE = {
-  ALT: 'note image for note page route',
+  ALT: '노트 아이콘',
   WIDTH: 40,
   HEIGHT: 40,
 } as const;
 
 export const NOTE_IMAGE_BIG = {
-  ALT: 'note image for note page route',
+  ALT: '노트 아이콘',
   WIDTH: 122,
   HEIGHT: 122,
 } as const;
 
 export const GOAL_IMAGE = {
-  ALT: 'describe goal icon',
+  ALT: '목표 아이콘',
   WIDTH: 32,
   HEIGHT: 32,
 } as const;
 
 export const GOAL_IMAGE_BIG = {
-  ALT: 'describe goal icon',
+  ALT: '목표 아이콘',
   WIDTH: 40,
   HEIGHT: 40,
 } as const;
