@@ -42,3 +42,6 @@ export const ALLOWED_ORIGINS = (() => {
 
 /** API 호출 타임아웃 시간 (10초 = 10_000ms) */
 export const API_TIMEOUT_MS = 10_000 as const;
+
+/** 프록시 업스트림 fetch 타임아웃 (스트리밍/대용량 여유를 위해 30초) */
+export const API_PROXY_TIMEOUT_MS = 30_000 as const;
