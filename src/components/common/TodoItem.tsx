@@ -118,7 +118,7 @@ export default function TodoItem({ task }: TodoItemProps) {
               size="none"
               onClick={() => {
                 setIsNavigating(true);
-                router.push(`${ROUTES.NOTE_DETAIL(task.goalId, task.noteIds[0])}`);
+                router.push(`${ROUTES.NOTE_DETAIL(task.goalId, task.noteIds[0], task.id)}`);
               }}
             >
               <Icon name="note" variant="orange" />
