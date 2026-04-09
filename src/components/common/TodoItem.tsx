@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 import { Spinner } from '../ui/spinner';
+import { DeleteDialog } from './DeleteDialog';
 
 interface TodoItemProps {
   task: Task;
@@ -52,9 +53,12 @@ export default function TodoItem({ task }: TodoItemProps) {
       done: !task.done,
     });
   };
+
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   // 할 일 삭제 처리
   const handleDelete = () => {
     deleteTodo({ id: task.id });
+    setIsDeleteOpen(false);
   };
   // 할 일 수정 페이지로 이동
   const handleEdit = () => {
@@ -172,7 +176,9 @@ export default function TodoItem({ task }: TodoItemProps) {
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem onClick={handleEdit}>수정하기</DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleDelete}>삭제하기</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsDeleteOpen(true)}>
+                    삭제하기
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -183,6 +189,13 @@ export default function TodoItem({ task }: TodoItemProps) {
           </button>
         </div>
       </div>
+      <DeleteDialog
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        title="할 일을 삭제하시겠어요?"
+        description="삭제된 할 일은 복구할 수 없습니다."
+        onConfirm={handleDelete}
+      />
     </li>
   );
 }
