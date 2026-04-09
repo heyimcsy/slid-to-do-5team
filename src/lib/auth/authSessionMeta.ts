@@ -25,9 +25,10 @@ function parseAuthSessionJson(raw: unknown): AuthSessionApiResponse {
 
 /**
  * BFF `GET /api/auth/session` — refresh·OAuth provider(HttpOnly)를 클라이언트에 알릴 때 사용.
+ * `signal`을 넘기면 상위 호출자에서 요청 취소(AbortController)할 수 있다.
  */
-export async function fetchAuthSessionMeta(): Promise<AuthSessionApiResponse> {
-  const r = await fetch('/api/auth/session', { credentials: 'include' });
+export async function fetchAuthSessionMeta(signal?: AbortSignal): Promise<AuthSessionApiResponse> {
+  const r = await fetch('/api/auth/session', { credentials: 'include', signal });
   let raw: unknown;
   try {
     raw = await r.json();
@@ -46,7 +47,8 @@ export function applyOauthProviderToUser(
 ): User {
   if (oauthProvider === null) {
     if (user.oauthProvider === undefined) return user;
-    const { oauthProvider: _, ...rest } = user;
+    const rest = { ...user };
+    delete rest.oauthProvider;
     return rest as User;
   }
   if (user.oauthProvider === oauthProvider) return user;
