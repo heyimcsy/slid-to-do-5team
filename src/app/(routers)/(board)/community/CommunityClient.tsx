@@ -88,12 +88,12 @@ export default function CommunityClient() {
       <div className="h-full overflow-y-auto bg-gray-100 px-4 py-6 pb-24 md:px-8 md:py-12 md:pb-20 lg:pb-16">
         <ScrollToTop />
         <div className="mx-auto w-full max-w-[1200px]">
-          <h1 className="font-xl-semibold md:font-2xl-semibold mb-6 px-2 text-black md:mb-8">
+          <h1 className="font-xl-semibold md:font-2xl-semibold mb-3 px-2 text-black md:mb-4">
             <Link href="/community" className="cursor-pointer">
               소통 게시판
             </Link>
-            <hr className="mt-3 border-gray-300" />
           </h1>
+          <hr className="mb-6 border-gray-300 md:mb-8" />
 
           {bestPosts?.posts && bestPosts.posts.length > 0 && (
             <div className="mb-6 md:mb-8">
