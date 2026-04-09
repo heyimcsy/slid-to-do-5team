@@ -1,20 +1,22 @@
 import { cn } from '@/lib/shadcn';
 
-interface PostHeaderActionsProps {
+interface FormHeaderActionsProps {
   variant: 'mobile' | 'desktop';
   isSubmitDisabled: boolean;
+  secondaryLabel: string;
   submitLabel: string;
   onCancel: () => void;
   onSubmitClick: () => void;
 }
 
-export function PostHeaderActions({
+export function FormHeaderActions({
   variant,
   isSubmitDisabled,
+  secondaryLabel,
   submitLabel,
   onCancel,
   onSubmitClick,
-}: PostHeaderActionsProps) {
+}: FormHeaderActionsProps) {
   const isMobile = variant === 'mobile';
 
   const baseBtn = isMobile ? 'px-[6px] py-[2px]' : 'w-[106px] rounded-full border px-[18px] py-2.5';
@@ -31,7 +33,7 @@ export function PostHeaderActions({
           !isMobile && 'font-sm-semibold border-gray-300 hover:bg-gray-50',
         )}
       >
-        취소
+        {secondaryLabel}
       </button>
       <button
         type="button"
