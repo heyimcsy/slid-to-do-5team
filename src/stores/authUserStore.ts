@@ -41,7 +41,7 @@ export const authUserStore = create<AuthUserState>()(
           return;
         }
         set({ user: r.data });
-        if (typeof window !== 'undefined') {
+        if ('window' in globalThis) {
           queueMicrotask(() => reconcileAuthSessionOAuthFromServer());
         }
       },
