@@ -247,9 +247,9 @@ export default function SidebarNav() {
           ))}
         </SidebarMenu>
         <div className="mt-4 flex items-center gap-2">
-          <div
+          <Link
+            href="/profile"
             onClick={() => {
-              router.push('/profile');
               if (isMobile) {
                 setOpenMobile(false);
               } else {
@@ -277,7 +277,7 @@ export default function SidebarNav() {
                 {user?.email}
               </span>
             </div>
-          </div>
+          </Link>
           <div className="relative hidden group-data-[collapsible=icon]:hidden md:block">
             {/* 아이콘 수정 */}
             <AlertPopover />
