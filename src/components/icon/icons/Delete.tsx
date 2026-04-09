@@ -6,7 +6,7 @@ type DeleteIconProps = SVGProps<SVGSVGElement> & {
 
 const variantStyles = {
   default: 'var(--color-gray-300)',
-  white: 'white',
+  white: 'var(--color-white)',
 };
 
 export const DeleteIcon = ({ variant = 'default', ...props }: DeleteIconProps) => {

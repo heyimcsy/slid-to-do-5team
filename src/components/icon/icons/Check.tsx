@@ -5,7 +5,7 @@ type CheckIconProps = SVGProps<SVGSVGElement> & {
 };
 
 const variantStyles = {
-  default: 'white',
+  default: 'var(--color-white)',
   orange: 'var(--color-orange-600)',
 };
 
