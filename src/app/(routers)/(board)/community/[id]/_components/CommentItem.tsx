@@ -12,6 +12,7 @@ import { formatRelativeTime } from '@/utils/formatRelativeTime';
 
 import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { KebabMenu } from '@/components/common/KebabMenu';
+import { HeartIcon } from '@/components/icon/icons/Heart';
 
 import { useUpdateComment } from '../../_api/communityQueries';
 import { WriterAvatar } from '../../_components/WriterAvatar';
@@ -129,9 +130,20 @@ export function CommentItem({ comment, isMyComment, onDelete, isDeleting }: Comm
       ) : (
         <div className="flex flex-col gap-2">
           <p className="font-sm-regular md:font-base-regular text-gray-700">{content}</p>
-          <span className="font-xs-regular md:font-sm-regular text-gray-400">
-            {formatRelativeTime(createdAt)}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="font-xs-regular md:font-sm-regular text-gray-400">
+              {formatRelativeTime(createdAt)}
+            </span>
+            <button
+              type="button"
+              className="flex items-center gap-1 text-gray-400 hover:text-gray-600"
+            >
+              <HeartIcon filled={comment.isLiked} width={16} height={16} />
+              {comment.likeCount > 0 && (
+                <span className="font-xs-regular">{comment.likeCount}</span>
+              )}
+            </button>
+          </div>
         </div>
       )}
     </li>
