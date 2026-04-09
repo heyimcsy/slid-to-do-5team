@@ -38,9 +38,19 @@ export function CommentSection({
     isFetchingNextPage,
   } = useGetComments(postId);
 
-  const comments: Comment[] = useMemo(() => {
+  const { rootComments, repliesMap } = useMemo(() => {
     const all = (commentsData?.pages ?? []).flatMap((page) => page.comments);
-    return Array.from(new Map(all.map((c) => [c.id, c])).values());
+    const unique = Array.from(new Map(all.map((c) => [c.id, c])).values());
+    const rootComments = unique.filter((c) => c.parentId === null);
+    const repliesMap = new Map<number, Comment[]>();
+    unique
+      .filter((c) => c.parentId !== null)
+      .forEach((c) => {
+        const parentId = c.parentId!;
+        if (!repliesMap.has(parentId)) repliesMap.set(parentId, []);
+        repliesMap.get(parentId)!.push(c);
+      });
+    return { rootComments, repliesMap };
   }, [commentsData]);
 
   const { mutate: createComment, isPending: isCreating } = useCreateComment(postId);
@@ -104,13 +114,15 @@ export function CommentSection({
       ) : (
         <>
           <ul className="flex flex-col gap-8 md:gap-10">
-            {comments.map((comment) => (
+            {rootComments.map((comment) => (
               <CommentItem
                 key={comment.id}
                 comment={comment}
                 isMyComment={comment.userId === userId}
                 onDelete={deleteComment}
                 isDeleting={isBusy}
+                replies={repliesMap.get(comment.id)}
+                userId={userId}
               />
             ))}
           </ul>
