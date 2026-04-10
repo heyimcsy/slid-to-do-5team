@@ -21,6 +21,7 @@ export interface Favorite {
       id: number;
       title: string;
     };
+    noteIds: number[];
   };
 }
 
@@ -28,7 +29,7 @@ export const toTask = (fav: Favorite) => ({
   id: fav.todo.id,
   teamId: fav.teamId,
   userId: fav.userId,
-  goalId: fav.todo.goal?.id ?? 0,
+  goalId: fav.todo.goal.id,
   title: fav.todo.title,
   done: fav.todo.done,
   fileUrl: null,
@@ -36,8 +37,8 @@ export const toTask = (fav: Favorite) => ({
   dueDate: '',
   createdAt: fav.createdAt,
   updatedAt: fav.createdAt,
-  goal: fav.todo.goal ?? { id: 0, title: '' },
-  noteIds: [],
+  goal: fav.todo.goal,
+  noteIds: fav.todo.noteIds ?? [],
   tags: [],
   favorites: true,
 });
