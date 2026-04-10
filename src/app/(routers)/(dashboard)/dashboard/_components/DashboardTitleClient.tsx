@@ -2,13 +2,7 @@
 
 import type { User } from '@/lib/auth/schemas/user';
 
-
-
 import { useUserInfo } from '@/hooks/auth/useUserInfo';
-
-
-
-
 
 type DashboardTitleClientProps = {
   /** 서버 `getCurrentUser()` — persist에 없거나 서버만 맞을 때 사용 */
