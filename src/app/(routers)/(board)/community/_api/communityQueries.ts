@@ -128,7 +128,7 @@ export const useCreateComment = (postId: number) => {
       apiClient<Comment>(`/posts/${postId}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content, ...(parentId !== undefined && { parentId }) }),
+        body: JSON.stringify({ content: content.trim(), ...(parentId !== undefined && { parentId }) }),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: communityQueryKeys.all });

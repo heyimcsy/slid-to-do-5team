@@ -33,7 +33,7 @@ export function CommentEditForm({
   const { mutate: updateComment, isPending } = useUpdateComment(postId, commentId);
 
   const onSubmit = ({ content }: CommentForm) => {
-    updateComment(content, {
+    updateComment(content.trim(), {
       onSuccess: () => {
         reset();
         onSuccess();
