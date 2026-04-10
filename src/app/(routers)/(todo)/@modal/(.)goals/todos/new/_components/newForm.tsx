@@ -254,6 +254,10 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
               selected={tempDate}
               onSelect={(date) => setTempDate(date)}
               defaultMonth={date}
+              classNames={{
+                day_selected: 'bg-orange-500 text-white rounded-full',
+                day_today: 'bg-transparent',
+              }}
             />
             <div className="flex gap-2 p-3 pt-0">
               <Button variant="ghost" className="flex-1" onClick={() => setOpen(false)}>
