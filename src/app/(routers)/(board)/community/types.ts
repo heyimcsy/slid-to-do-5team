@@ -10,6 +10,7 @@ export interface Comment {
   id: number;
   userId: number;
   postId: number;
+  parentId: number | null;
   content: string;
   createdAt: string;
   updatedAt: string;

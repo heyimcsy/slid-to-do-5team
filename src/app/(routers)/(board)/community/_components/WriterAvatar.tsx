@@ -3,12 +3,20 @@
 import { useState } from 'react';
 import Image from 'next/image';
 
+const sizeMap = {
+  sm: 'size-6',
+  md: 'size-8',
+} as const;
+
+type AvatarSize = keyof typeof sizeMap;
+
 interface WriterAvatarProps {
   name: string;
   image: string | null;
+  size?: AvatarSize;
 }
 
-export function WriterAvatar({ name, image }: WriterAvatarProps) {
+export function WriterAvatar({ name, image, size = 'sm' }: WriterAvatarProps) {
   const [imageError, setImageError] = useState(false);
   const [prevImage, setPrevImage] = useState(image);
 
@@ -18,7 +26,7 @@ export function WriterAvatar({ name, image }: WriterAvatarProps) {
   }
 
   return (
-    <div className="size-5 shrink-0 overflow-hidden rounded-full bg-gray-200">
+    <div className={`${sizeMap[size]} shrink-0 overflow-hidden rounded-full bg-gray-200`}>
       {image && !imageError ? (
         <Image
           src={image}

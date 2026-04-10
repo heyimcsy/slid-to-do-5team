@@ -1,10 +1,11 @@
 'use client';
 
 import type { Notes } from '@/api/notes';
+import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { ReadonlyURLSearchParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import goalImage from '@/../public/images/large-goal.svg';
 import { useGetGoal } from '@/api/goals';
 import { useGetNotesInfinite } from '@/api/notes';
@@ -16,23 +17,35 @@ import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
 import { SearchInput } from '@/components/common/SearchInput';
 import { SortFilter } from '@/components/common/SortFilter';
+import { ErrorFallback } from '@/components/ErrorFallback';
 
 export default function NotesContainer() {
-  const pathname = usePathname();
+  const pathname: string = usePathname();
+  const router: AppRouterInstance = useRouter();
+  const searchParams: ReadonlyURLSearchParams = useSearchParams();
   const goalId: number = Number(pathname.split('/')[2]);
+  const sortFromUrl: string | null = searchParams.get('sort');
 
-  const { data: goalData } = useGetGoal({ id: goalId });
-  const { data, isLoading, isSuccess, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useGetNotesInfinite({ goalId });
-  const allNotes = data?.pages.flatMap((page) => page.notes) ?? [];
+  const [searchValue, setSearchValue] = useState<string>('');
+  const sortValue =
+    sortFromUrl === NOTES_SORT.OLD.LABEL ? NOTES_SORT.OLD.LABEL : NOTES_SORT.UPDATE.LABEL;
+  const sortParam =
+    sortValue === NOTES_SORT.OLD.LABEL ? NOTES_SORT.OLD.VALUE : NOTES_SORT.UPDATE.VALUE;
 
-  const [searchValue, setSearchValue] = useState('');
   const debouncedSearch = useDebouncedValue(searchValue, 300);
+  const { data: goalData } = useGetGoal({ id: goalId });
+  const {
+    data,
+    isLoading,
+    isSuccess,
+    isError,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useGetNotesInfinite({ goalId, sort: sortParam });
 
-  // 클라이언트 필터링
-  const filteredNotes: Notes[] = allNotes.filter((note: Notes) =>
-    note.title.toLowerCase().includes(debouncedSearch.toLowerCase()),
-  );
+  const allNotes = data?.pages.flatMap((page) => page.notes) ?? [];
 
   const { observerRef } = useInfiniteScroll({
     hasNextPage,
@@ -40,7 +53,24 @@ export default function NotesContainer() {
     fetchNextPage,
   });
 
+  const filteredNotes: Notes[] = allNotes.filter((note: Notes) =>
+    note.title.toLowerCase().includes(debouncedSearch.toLowerCase()),
+  );
+
+  const handleSortChange = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (value === NOTES_SORT.OLD.LABEL) {
+      params.set(NOTES_SORT.SORT, NOTES_SORT.OLD.LABEL);
+    } else {
+      params.delete(NOTES_SORT.SORT);
+    }
+
+    router.replace(`${pathname}?${params.toString()}`);
+  };
+
   if (isLoading) return <NotesContainerSkeleton />;
+  if (isError) return <ErrorFallback onRetry={refetch} title={NOTES_TEXT.GET_NOTES} />;
   if (isSuccess)
     return (
       <>
@@ -58,7 +88,11 @@ export default function NotesContainer() {
                 onChange={(e) => setSearchValue(e.target.value)}
               />
             </div>
-            <SortFilter options={[NOTES_SORT.UPDATE, NOTES_SORT.OLD]} />
+            <SortFilter
+              options={[NOTES_SORT.UPDATE.LABEL, NOTES_SORT.OLD.LABEL]}
+              value={sortValue}
+              onChange={handleSortChange}
+            />
           </div>
         </div>
 
