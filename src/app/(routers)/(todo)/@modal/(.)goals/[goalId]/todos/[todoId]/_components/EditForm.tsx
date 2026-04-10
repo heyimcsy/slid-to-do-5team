@@ -55,7 +55,7 @@ interface EditFormProps {
 export function EditForm({ todo, onCancel }: EditFormProps) {
   const { data: goalsData } = useGetGoals();
   const router = useRouter();
-  const isMobile = useIsMobile();
+
   const { mutate: patchTodo, isSuccess } = usePatchTodos();
 
   const initialTags: Tag[] = (todo.tags ?? []).map((tag, index) => ({
@@ -341,6 +341,8 @@ export function EditForm({ todo, onCancel }: EditFormProps) {
       </Field>
     </div>
   );
+  const isMobile = useIsMobile();
+  if (isMobile === undefined) return null;
 
   return (
     <>
@@ -353,21 +355,22 @@ export function EditForm({ todo, onCancel }: EditFormProps) {
           }}
         >
           {/* TODO: DrawerContent 내부 CSS 문제로 mb-[-96vh] pb-[100vh] 임시 추가 */}
-          <DrawerContent className="mb-[-96vh] p-6 pb-[100vh]">
+          <DrawerContent className="overflow-y-auto p-6">
             <form id="edit-todo-modal" onSubmit={onSubmit}>
               <DrawerHeader className="mt-0 mb-4 flex flex-row justify-between p-0">
                 <DrawerTitle className="font-xl-semibold">할 일 수정</DrawerTitle>
-                <button className="cursor-pointer border-0" onClick={() => router.back()}>
+                <button className="cursor-pointer border-0" onClick={() => onCancel()}>
                   <Icon name="close" color="gray" />
                 </button>
               </DrawerHeader>
               {formContent}
               <div className="mt-4 flex gap-2">
                 <Button
+                  type="button"
                   size="lg"
                   variant="ghost"
                   className="flex-1 cursor-pointer"
-                  onClick={() => router.back()}
+                  onClick={() => onCancel()}
                 >
                   취소
                 </Button>

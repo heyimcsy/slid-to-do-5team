@@ -3,8 +3,8 @@
 import type { KeyboardEvent } from 'react';
 
 import React, { useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useGetGoals } from '@/api/goals';
+import { useParams, useRouter } from 'next/navigation';
+import { useGetGoal, useGetGoals } from '@/api/goals';
 import { uploadImage } from '@/api/images';
 import { usePostTodo } from '@/api/todos';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -54,8 +54,8 @@ const schema = z.object({
   link: z
     .string()
     .regex(
-      /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/,
-      '올바른 URL 형식을 입력해주세요 (예: http://www.naver.com)',
+      /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z]{2,24}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/,
+      '올바른 URL 형식을 입력해주세요 (예: http://www.example.com)',
     )
     .optional()
     .or(z.literal('')),
@@ -63,16 +63,27 @@ const schema = z.object({
 
 export default function NewForm({ onCancel }: { onCancel: () => void }) {
   const { data: goalsData } = useGetGoals();
+  const params = useParams();
+  const goalIdFromUrl = params?.goalId ? Number(params.goalId) : null;
+
+  const { data: goalData } = useGetGoal({ id: goalIdFromUrl ?? 0 });
   const [date, setDate] = React.useState<Date>();
   const [tempDate, setTempDate] = React.useState<Date | undefined>(undefined);
   const [open, setOpen] = React.useState(false);
   const [image, setImage] = React.useState<File | null>(null);
   const [selectedGoal, setSelectedGoal] = React.useState<string | null>(null);
+  const [selectedGoalId, setSelectedGoalId] = React.useState<number | null>(null);
   const [tags, setTags] = useState<Tag[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const colorIndexRef = useRef(0);
+
+  React.useEffect(() => {
+    if (!goalData) return;
+    setSelectedGoal(goalData.title);
+    setSelectedGoalId(goalData.id);
+  }, [goalData]);
 
   const {
     register,
@@ -135,7 +146,6 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
   const link = watch('link');
   const title = watch('title');
 
-  const [selectedGoalId, setSelectedGoalId] = React.useState<number | null>(null);
   const isValid = selectedGoalId !== null && date !== undefined;
 
   const { mutate: createTodo } = usePostTodo();
@@ -326,6 +336,7 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
   );
 
   const isMobile = useIsMobile();
+  if (isMobile === undefined) return null;
 
   return (
     <>
@@ -338,7 +349,7 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
           }}
         >
           {/* TODO: DrawerContent 내부 CSS 문제로 mb-[-96vh] pb-[100vh] 임시 추가 */}
-          <DrawerContent className="mb-[-96vh] p-6 pb-[100vh]">
+          <DrawerContent className="overflow-y-auto p-6" viewportClassName="100dvh">
             <form
               id="new-todo-modal"
               onSubmit={(e) => {
@@ -351,7 +362,7 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
                 <button
                   type="button"
                   className="cursor-pointer border-0"
-                  onClick={() => router.back()}
+                  onClick={() => onCancel()}
                 >
                   <Icon name="close" color="gray" />
                 </button>
@@ -363,7 +374,7 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
                   size="lg"
                   variant="ghost"
                   className="flex-1 cursor-pointer"
-                  onClick={() => router.back()}
+                  onClick={() => onCancel()}
                 >
                   취소
                 </Button>

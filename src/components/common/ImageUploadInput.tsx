@@ -32,6 +32,7 @@ export function ImageUploadInput({
 
   const handleImageAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
+
     if (!selected) return;
     onChange(selected);
     e.target.value = '';
