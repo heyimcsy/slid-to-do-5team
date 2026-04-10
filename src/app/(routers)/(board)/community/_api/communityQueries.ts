@@ -26,7 +26,7 @@ export const useGetPosts = (sort: SortOption = '최신순', search?: string) => 
   const type = toApiType(sort);
 
   return useInfiniteQuery({
-    queryKey: [...communityQueryKeys.posts(type, search)],
+    queryKey: [...communityQueryKeys.postsList(type, search)],
     queryFn: ({ pageParam }) =>
       apiClient<PostsResponse>(
         `/posts?type=${type}&limit=5${
@@ -43,7 +43,7 @@ export const useGetPosts = (sort: SortOption = '최신순', search?: string) => 
 // 게시물 인기순 3개 조회
 export const useGetBestPosts = () => {
   return useQuery({
-    queryKey: [...communityQueryKeys.posts('best'), { limit: 3 }],
+    queryKey: [...communityQueryKeys.postsList('best'), { limit: 3 }],
     queryFn: () => apiClient<PostsResponse>(`/posts?type=best&limit=3`),
     staleTime: 1000 * 60 * 5,
   });
@@ -115,7 +115,7 @@ export const useDeletePost = () => {
       }),
     onSuccess: (_data, deletedPostId) => {
       queryClient.removeQueries({ queryKey: communityQueryKeys.post(deletedPostId) });
-      queryClient.invalidateQueries({ queryKey: [...communityQueryKeys.all, 'posts'] });
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.posts() });
     },
   });
 };
