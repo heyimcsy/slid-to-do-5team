@@ -42,11 +42,13 @@ export const NOTES_TEXT = {
   TEMPORARY_SAVED_CHECK: (elapsedSeconds: number) =>
     `임시 저장이 완료되었습니다 ㆍ${elapsedSeconds}초 전`,
   LINK_PANEL_CLOSE: '링크 미리보기 패널 닫기',
+  GET_NOTES: '노트 조회',
 } as const;
 
 export const NOTES_SORT = {
-  UPDATE: '최신순',
-  OLD: '오래된순',
+  SORT: 'sort',
+  UPDATE: { LABEL: '최신순', VALUE: 'latest' },
+  OLD: { LABEL: '오래된순', VALUE: 'oldest' },
 } as const;
 
 export const META_TAGS = {
