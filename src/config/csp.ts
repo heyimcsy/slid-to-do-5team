@@ -19,9 +19,10 @@ export function buildCsp({ nonce, isDev }: BuildCspParams): string {
     default-src 'self';
     ${scriptSrc}
     style-src 'self' 'unsafe-inline';
+    worker-src 'self' blob:;
     img-src 'self' data: blob: https://placehold.co https://*.googleusercontent.com https://*.kakaocdn.net http://*.kakaocdn.net https://sprint-fe-project.s3.ap-northeast-2.amazonaws.com;
     font-src 'self' data:;
-    connect-src 'self' https://vitals.vercel-insights.com https://vercel.live https://*.vercel-insights.com;
+    connect-src 'self' https://vitals.vercel-insights.com https://vercel.live https://*.vercel-insights.com https://sprint-fe-project.s3.ap-northeast-2.amazonaws.com;
     frame-ancestors 'none';
     base-uri 'self';
     form-action 'self';
