@@ -353,7 +353,7 @@ export function EditForm({ todo, onCancel }: EditFormProps) {
           }}
         >
           {/* TODO: DrawerContent 내부 CSS 문제로 mb-[-96vh] pb-[100vh] 임시 추가 */}
-          <DrawerContent className="mb-[-96vh] p-6 pb-[100vh]">
+          <DrawerContent className="overflow-y-auto p-6">
             <form id="edit-todo-modal" onSubmit={onSubmit}>
               <DrawerHeader className="mt-0 mb-4 flex flex-row justify-between p-0">
                 <DrawerTitle className="font-xl-semibold">할 일 수정</DrawerTitle>

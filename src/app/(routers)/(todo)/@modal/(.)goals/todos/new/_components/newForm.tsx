@@ -3,8 +3,8 @@
 import type { KeyboardEvent } from 'react';
 
 import React, { useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useGetGoals } from '@/api/goals';
+import { useParams, useRouter } from 'next/navigation';
+import { useGetGoal, useGetGoals } from '@/api/goals';
 import { uploadImage } from '@/api/images';
 import { usePostTodo } from '@/api/todos';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -63,6 +63,10 @@ const schema = z.object({
 
 export default function NewForm({ onCancel }: { onCancel: () => void }) {
   const { data: goalsData } = useGetGoals();
+  const params = useParams();
+  const goalIdFromUrl = params?.goalId ? Number(params.goalId) : null;
+
+  const { data: goalData } = useGetGoal({ id: goalIdFromUrl ?? 0 });
   const [date, setDate] = React.useState<Date>();
   const [tempDate, setTempDate] = React.useState<Date | undefined>(undefined);
   const [open, setOpen] = React.useState(false);
@@ -73,6 +77,11 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const colorIndexRef = useRef(0);
+
+  React.useEffect(() => {
+    if (!goalData) return;
+    setSelectedGoal(goalData.title);
+  }, [goalData]);
 
   const {
     register,
