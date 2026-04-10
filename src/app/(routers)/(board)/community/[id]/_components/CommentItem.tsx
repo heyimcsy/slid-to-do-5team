@@ -1,13 +1,10 @@
 'use client';
 
 import type { Comment } from '../../types';
-import type { CommentForm } from './CommentInput';
 
 import { useEffect, useRef, useState } from 'react';
 import { useDebouncedCallback } from '@/hooks/useDebounceCallback';
 import { cn } from '@/lib';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { formatRelativeTime } from '@/utils/formatRelativeTime';
@@ -17,13 +14,10 @@ import { KebabMenu } from '@/components/common/KebabMenu';
 import { Icon } from '@/components/icon/Icon';
 import { HeartIcon } from '@/components/icon/icons/Heart';
 
-import {
-  useCreateCommentLike,
-  useDeleteCommentLike,
-  useUpdateComment,
-} from '../../_api/communityQueries';
+import { useToggleCommentLike } from '../../_api/communityQueries';
 import { WriterAvatar } from '../../_components/WriterAvatar';
-import { CommentInput, commentSchema } from './CommentInput';
+import { CommentEditForm } from './CommentEditForm';
+import { ReplyForm } from './ReplyForm';
 
 interface CommentItemProps {
   comment: Comment;
@@ -47,28 +41,13 @@ export function CommentItem({
   const { content, createdAt, writer } = comment;
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [showReplies, setShowReplies] = useState(true);
+  const [showReplies, setShowReplies] = useState(false);
+  const [isReplying, setIsReplying] = useState(false);
 
-  const { register, handleSubmit, reset, watch } = useForm<CommentForm>({
-    resolver: zodResolver(commentSchema),
-    defaultValues: { content },
-  });
-
-  const contentValue = watch('content');
-
-  const { mutate: updateComment, isPending: isUpdating } = useUpdateComment(
+  const { mutate: toggleLike, isPending: isLikePending } = useToggleCommentLike(
     comment.postId,
     comment.id,
   );
-  const { mutate: createCommentLike, isPending: isLiking } = useCreateCommentLike(
-    comment.postId,
-    comment.id,
-  );
-  const { mutate: deleteCommentLike, isPending: isUnliking } = useDeleteCommentLike(
-    comment.postId,
-    comment.id,
-  );
-  const isLikePending = isLiking || isUnliking;
 
   const isLikedRef = useRef(comment.isLiked);
   useEffect(() => {
@@ -80,27 +59,8 @@ export function CommentItem({
     { label: '삭제하기', onClick: () => setDeleteDialogOpen(true), variant: 'danger' as const },
   ];
 
-  const onSubmit = ({ content }: CommentForm) => {
-    if (!isMyComment) {
-      toast.error('본인이 작성한 댓글만 수정할 수 있습니다.');
-      return;
-    }
-
-    updateComment(content, {
-      onSuccess: () => {
-        reset();
-        setIsEditing(false);
-      },
-      onError: () => toast.error('댓글 수정에 실패했습니다.'),
-    });
-  };
-
   const handleLikeClick = useDebouncedCallback(() => {
-    if (isLikedRef.current) {
-      deleteCommentLike();
-    } else {
-      createCommentLike();
-    }
+    toggleLike(isLikedRef.current);
   }, 300);
 
   return (
@@ -116,7 +76,6 @@ export function CommentItem({
             setDeleteDialogOpen(false);
             return;
           }
-
           onDelete(comment.id, {
             onError: () => toast.error('댓글 삭제에 실패했습니다. 다시 시도해주세요.'),
           });
@@ -139,40 +98,15 @@ export function CommentItem({
         </div>
 
         {isEditing ? (
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2">
-            <CommentInput
-              register={register('content')}
-              contentLength={contentValue?.length ?? 0}
-              variant="edit"
-            />
-            <div className="flex items-center justify-between">
-              <span className="font-xs-regular md:font-sm-regular text-gray-400">
-                {formatRelativeTime(createdAt)}
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsEditing(false);
-                    reset();
-                  }}
-                  disabled={isUpdating}
-                  className="font-sm-semibold w-16 rounded-full border border-gray-300 px-[18px] py-[10px] text-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  취소
-                </button>
-                <button
-                  type="submit"
-                  disabled={!contentValue?.trim() || contentValue === content || isUpdating}
-                  className="font-sm-semibold w-16 rounded-full bg-orange-500 px-[18px] py-[10px] text-white disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  수정
-                </button>
-              </div>
-            </div>
-          </form>
+          <CommentEditForm
+            postId={comment.postId}
+            commentId={comment.id}
+            initialContent={content}
+            onSuccess={() => setIsEditing(false)}
+            onCancel={() => setIsEditing(false)}
+          />
         ) : (
-          <div className="flex flex-col gap-2 pt-1 pl-8">
+          <div className="flex flex-col gap-2 pt-1 pl-9">
             <p
               className={cn(
                 'text-gray-700',
@@ -200,7 +134,11 @@ export function CommentItem({
                 )}
               </button>
               {!isReply && (
-                <button type="button" className="font-xs-regular text-gray-400">
+                <button
+                  type="button"
+                  onClick={() => setIsReplying((prev) => !prev)}
+                  className="font-xs-regular text-gray-400 hover:text-gray-600"
+                >
                   답글
                 </button>
               )}
@@ -208,6 +146,18 @@ export function CommentItem({
           </div>
         )}
       </div>
+
+      {!isReply && isReplying && (
+        <ReplyForm
+          postId={comment.postId}
+          parentId={comment.id}
+          onSuccess={() => {
+            setIsReplying(false);
+            setShowReplies(true);
+          }}
+          onCancel={() => setIsReplying(false)}
+        />
+      )}
 
       {!isReply && replies && replies.length > 0 && (
         <>
