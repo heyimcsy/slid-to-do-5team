@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation';
 import goalImage from '@/../public/images/large-goal.svg';
 import { useGetGoal } from '@/api/goals';
 import { useGetNotesInfinite } from '@/api/notes';
+import { GOAL_IMAGE_BIG, NOTES_SORT, NOTES_TEXT } from '@/app/(routers)/(todo)/constants';
 import NotesContainerSkeleton from '@/app/(routers)/(todo)/goals/[goalId]/notes/_components/NoteContainerSkeleton';
 import NoteList from '@/app/(routers)/(todo)/goals/[goalId]/notes/_components/NoteList';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
@@ -45,17 +46,19 @@ export default function NotesContainer() {
       <>
         {/* 헤더 */}
         <div className="flex w-full items-center justify-between">
-          <h1 className="font-xl-semibold lg:font-2xl-semibold hidden md:flex">노트 모아보기</h1>
+          <h1 className="font-xl-semibold lg:font-2xl-semibold hidden md:flex">
+            {NOTES_TEXT.NOTE_ALL}
+          </h1>
           <div className="flex w-[343px] items-center justify-between md:w-[369px] lg:w-[409px]">
             <div className="w-62 md:w-70 lg:w-80">
               <SearchInput
                 className="overflow-hidden bg-white"
-                placeholder="노트를 검색해주세요"
+                placeholder={NOTES_TEXT.NOTE_SEARCH_INPUT}
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
               />
             </div>
-            <SortFilter />
+            <SortFilter options={[NOTES_SORT.UPDATE, NOTES_SORT.OLD]} />
           </div>
         </div>
 
@@ -63,9 +66,9 @@ export default function NotesContainer() {
         <div className="lg:h=30 mt-6 flex h-16 w-full min-w-0 items-center justify-start space-x-3 rounded-[16px] bg-orange-100 p-4 md:mt-8 md:h-20 md:p-6 lg:mt-12 lg:space-x-6 lg:p-10">
           <Image
             src={goalImage}
-            alt="describe goal icon"
-            width={40}
-            height={40}
+            alt={GOAL_IMAGE_BIG.ALT}
+            width={GOAL_IMAGE_BIG.WIDTH}
+            height={GOAL_IMAGE_BIG.HEIGHT}
             className="w-8 object-contain lg:w-10"
           />
           <h2 className="lg:font-2xl-semibold font-base-semibold md:font-xl-semibold truncate text-gray-700">

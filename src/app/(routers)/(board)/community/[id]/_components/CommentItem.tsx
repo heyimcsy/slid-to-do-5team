@@ -3,7 +3,8 @@
 import type { Comment } from '../../types';
 import type { CommentForm } from './CommentInput';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useDebouncedCallback } from '@/hooks/useDebounceCallback';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -12,8 +13,13 @@ import { formatRelativeTime } from '@/utils/formatRelativeTime';
 
 import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { KebabMenu } from '@/components/common/KebabMenu';
+import { HeartIcon } from '@/components/icon/icons/Heart';
 
-import { useUpdateComment } from '../../_api/communityQueries';
+import {
+  useCreateCommentLike,
+  useDeleteCommentLike,
+  useUpdateComment,
+} from '../../_api/communityQueries';
 import { WriterAvatar } from '../../_components/WriterAvatar';
 import { CommentInput, commentSchema } from './CommentInput';
 
@@ -40,6 +46,14 @@ export function CommentItem({ comment, isMyComment, onDelete, isDeleting }: Comm
     comment.postId,
     comment.id,
   );
+  const { mutate: createCommentLike, isPending: isLiking } = useCreateCommentLike(comment.postId, comment.id);
+  const { mutate: deleteCommentLike, isPending: isUnliking } = useDeleteCommentLike(comment.postId, comment.id);
+  const isLikePending = isLiking || isUnliking;
+
+  const isLikedRef = useRef(comment.isLiked);
+  useEffect(() => {
+    isLikedRef.current = comment.isLiked;
+  }, [comment.isLiked]);
 
   const kebabItems = [
     { label: '수정하기', onClick: () => setIsEditing(true) },
@@ -60,6 +74,14 @@ export function CommentItem({ comment, isMyComment, onDelete, isDeleting }: Comm
       onError: () => toast.error('댓글 수정에 실패했습니다.'),
     });
   };
+
+  const handleLikeClick = useDebouncedCallback(() => {
+    if (isLikedRef.current) {
+      deleteCommentLike();
+    } else {
+      createCommentLike();
+    }
+  }, 300);
 
   return (
     <li className="flex flex-col gap-3">
@@ -129,9 +151,23 @@ export function CommentItem({ comment, isMyComment, onDelete, isDeleting }: Comm
       ) : (
         <div className="flex flex-col gap-2">
           <p className="font-sm-regular md:font-base-regular text-gray-700">{content}</p>
-          <span className="font-xs-regular md:font-sm-regular text-gray-400">
-            {formatRelativeTime(createdAt)}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="font-xs-regular md:font-sm-regular text-gray-400">
+              {formatRelativeTime(createdAt)}
+            </span>
+            <button
+              type="button"
+              aria-label={comment.isLiked ? '좋아요 취소' : '좋아요'}
+              onClick={handleLikeClick}
+              disabled={isLikePending}
+              className="flex items-center gap-1 text-gray-400 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <HeartIcon aria-hidden filled={comment.isLiked} width={16} height={16} />
+              {comment.likeCount > 0 && (
+                <span className="font-xs-regular">{comment.likeCount}</span>
+              )}
+            </button>
+          </div>
         </div>
       )}
     </li>

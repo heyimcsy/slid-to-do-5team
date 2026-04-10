@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  await setAuthCookies(accessToken, refreshToken);
+  await setAuthCookies(accessToken, refreshToken, 'password');
 
   return NextResponse.json(
     {

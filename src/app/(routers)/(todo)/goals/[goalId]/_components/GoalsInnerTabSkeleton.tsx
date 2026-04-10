@@ -1,10 +1,12 @@
+import { GOALS_TEXT } from '@/app/(routers)/(todo)/constants';
 import { TodoSectionSkeleton } from '@/app/(routers)/(todo)/goals/[goalId]/_components/TodoSectionSkeleton';
 
 export default function GoalsInnerTabSkeleton({ userName }: { userName: string }) {
   return (
     <>
       <h1 className="font-xl-semibold lg:text-2xl-semibold hidden pt-12 pb-7 text-black md:block md:pt-20 md:pb-10">
-        {userName}님의 목표
+        {userName}
+        {GOALS_TEXT.PAGE_TITLE_SUFFIX}
       </h1>
       <div className="w-full space-y-4 md:space-y-6 lg:flex lg:space-x-8">
         {/* 흰색 목표 표기 skeleton */}

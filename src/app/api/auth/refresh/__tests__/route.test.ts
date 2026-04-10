@@ -122,6 +122,12 @@ describe('POST /api/auth/refresh', () => {
       }),
     );
     expect(mockCookies.set).toHaveBeenCalled();
+    expect(mockCookies.set).toHaveBeenCalledTimes(2);
+    expect(mockCookies.set).not.toHaveBeenCalledWith(
+      AUTH_CONFIG.OAUTH_PROVIDER_COOKIE_KEY,
+      expect.anything(),
+      expect.anything(),
+    );
   });
 
   it('백엔드 응답에 user 포함 시 JSON에 user 반환', async () => {
@@ -150,6 +156,12 @@ describe('POST /api/auth/refresh', () => {
       email: 'u@example.com',
       name: 'User',
     });
+    expect(mockCookies.set).toHaveBeenCalledTimes(2);
+    expect(mockCookies.set).not.toHaveBeenCalledWith(
+      AUTH_CONFIG.OAUTH_PROVIDER_COOKIE_KEY,
+      expect.anything(),
+      expect.anything(),
+    );
   });
 
   it('백엔드 401 → 401 응답', async () => {

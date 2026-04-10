@@ -1,4 +1,3 @@
-;
 /**
  * Node.js Runtime 전용.
  *
@@ -7,21 +6,14 @@
  */
 import 'server-only';
 
-
-
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
-
-
 
 import { getSafeCallbackPath } from '@/lib/navigation/safeCallbackPath';
 
-
-
-import { NO_GOOGLE_CLIENT_SECRET_MESSAGE_KO, NO_KAKAO_CLIENT_SECRET_MESSAGE_KO } from '@/constants/error-message';
-
-
-
-
+import {
+  NO_GOOGLE_CLIENT_SECRET_MESSAGE_KO,
+  NO_KAKAO_CLIENT_SECRET_MESSAGE_KO,
+} from '@/constants/error-message';
 
 /**
  * OAuth `state` 유효 시간(10분).

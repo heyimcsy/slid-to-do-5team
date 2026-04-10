@@ -6,7 +6,7 @@ type FilledStarIconProps = SVGProps<SVGSVGElement> & {
 
 const variantStyles = {
   default: 'var(--color-gray-300)',
-  orange: 'var(--color-orange-600)',
+  orange: '#ef6c00',
   white: '#ffffffcc',
 };
 

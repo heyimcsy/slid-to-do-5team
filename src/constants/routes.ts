@@ -13,6 +13,7 @@ export const ROUTES = {
   TODO_NEW: '/goals/todos/new',
 
   // Notes
+  NOTES: (goalId: number) => `/goals/${goalId}/notes`,
   NOTE_DETAIL: (goalId: number, noteId: number, todoId?: number) =>
     `/goals/${goalId}/notes/${noteId}${todoId !== undefined ? `?todoId=${todoId}` : ''}`,
   NOTE_EDIT: (goalId: number, noteId: number) => `/goals/${goalId}/notes/${noteId}/edit`,

@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import { AUTH_CONFIG } from '@/constants/auth-config';
 
+import { oauthProviderCookieSchema } from './oauth';
+
 /**
  * 앱 전역에서 쓰는 사용자 모델 (camelCase). 비밀번호 등 민감 필드는 포함하지 않는다.
  * 백엔드 JSON은 `parseUserFromBackendUnknown` / `normalizeBackendUserRecord`로 정규화 후 검증한다.
@@ -25,6 +27,11 @@ export const userSchema = z.object({
     .optional(),
   createdAt: z.iso.datetime().optional(),
   updatedAt: z.iso.datetime().optional(),
+  /**
+   * OAuth 세션 구분 — 백엔드 user JSON에는 없을 수 있음.
+   * `GET /api/auth/session`·`fetchAuthSessionMeta`로 HttpOnly `oauth_provider` 쿠키와 맞춘다.
+   */
+  oauthProvider: oauthProviderCookieSchema.optional(),
 });
 
 export type User = z.infer<typeof userSchema>;

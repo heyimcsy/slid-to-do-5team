@@ -241,7 +241,7 @@ export async function refreshSessionWithMutex(): Promise<RefreshSessionResult> {
     return backend;
   }
 
-  await setAuthCookies(backend.accessToken, backend.refreshToken);
+  await setAuthCookies(backend.accessToken, backend.refreshToken, 'unchanged');
   return { ok: true, user: backend.user };
 }
 

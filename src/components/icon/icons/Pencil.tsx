@@ -6,7 +6,7 @@ type PencilIconProps = SVGProps<SVGSVGElement> & {
 
 const variantStyles = {
   default: 'var(--color-gray-900)',
-  white: '#fff',
+  white: 'var(--color-white)',
 };
 
 export const PencilIcon = ({ variant = 'default', ...props }: PencilIconProps) => {

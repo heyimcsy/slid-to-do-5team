@@ -4,6 +4,7 @@ import { useGetNote } from '@/api/notes';
 import { useGetTodo } from '@/api/todos';
 import { TodoDetailContent } from '@/app/(routers)/(todo)/@modal/(.)goals/[goalId]/todos/[todoId]/_components/TodoDetailContent';
 import { TodoDetailSkeleton } from '@/app/(routers)/(todo)/@modal/(.)goals/[goalId]/todos/[todoId]/_components/TodoDetailSkeleton';
+import { GOALS_TEXT } from '@/app/(routers)/(todo)/constants';
 
 export default function TodoDetailContainer({ todoId }: { todoId: number }) {
   const { data, isLoading, isSuccess } = useGetTodo({ id: todoId });
@@ -16,7 +17,7 @@ export default function TodoDetailContainer({ todoId }: { todoId: number }) {
       <div className="h-fit w-fit rounded-[28px] bg-white p-6">
         <TodoDetailContent
           title={data.title}
-          done={data.done ? 'DONE' : 'TO DO'}
+          done={data.done ? GOALS_TEXT.DONE : GOALS_TEXT.TODO}
           goalTitle={data.goal.title}
           goalId={data.goalId}
           dueDate={data.dueDate}

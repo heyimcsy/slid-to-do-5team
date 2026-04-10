@@ -13,7 +13,7 @@ export const DotsCircleIcon = ({
 }: DotsCircleIconProps) => {
   const variantStyles = {
     default: {
-      fill: '#ffffff',
+      fill: 'var(--color-white)',
       dots: 'var(--color-orange-600)',
     },
     ghost: {

@@ -3,8 +3,15 @@
 import type { ReactNode } from 'react';
 import type { Mutate, StoreApi } from 'zustand';
 
-import { useEffect, useMemo, useState } from 'react';
+
+
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { useIsRestoring } from '@tanstack/react-query';
+
+import {
+  REHYDRATION_COMPLETED_AFTER_CALLBACK_FAILED_MESSAGE_KO,
+  UNKNOWN_ERROR_MESSAGE_KO,
+} from '@/constants/error-message';
 
 /**
  * @description `Mutate<StoreApi, [['zustand/persist', …]]>` 결과에서 **`persist` 프로퍼티 타입**만 취한다
@@ -69,6 +76,15 @@ function QueryPersistSyncGate({
   return <>{children}</>;
 }
 
+/** persist 대상이 없을 때 — 마운트 직후 1회 콜백 (Zustand 게이트와 동등한 “준비됨” 시점) */
+function RunOnceOnMount({ onMounted }: { onMounted?: () => void }) {
+  const initialOnMountedRef = useRef(onMounted);
+  useEffect(() => {
+    initialOnMountedRef.current?.();
+  }, []);
+  return null;
+}
+
 /**
  * @description `PersistRehydrationGate` 컴포넌트 props
  * @property toRehydrate - `getStoresToRehydrate` 결과 — 비어 있지 않음
@@ -80,6 +96,8 @@ type PersistRehydrationGateProps = {
   toRehydrate: PersistStoreRehydratable[];
   fallback: ReactNode;
   waitForQueryPersistRestore: boolean;
+  /** 각 persist `rehydrate()`가 끝난 뒤 1회 (예: `reconcileAuthSessionOAuthFromServer`) */
+  onRehydrated?: () => void;
   children: ReactNode;
 };
 
@@ -92,10 +110,18 @@ const PersistRehydrationGate = ({
   toRehydrate,
   fallback,
   waitForQueryPersistRestore,
+  onRehydrated,
   children,
 }: PersistRehydrationGateProps) => {
   // rehydration 완료 여부를 확인하기 위한 상태 관리
   const [rehydrationDone, setRehydrationDone] = useState(false);
+  /**
+   * @description onRehydrated callback을 이벤트로 변환하여 비동기 콜백을 동기 콜백으로 변환
+   * @see {@link https://react.dev/reference/react/useEffectEvent | React — useEffectEvent}
+   */
+  const onRehydratedEvent = useEffectEvent(() => {
+    onRehydrated?.();
+  });
 
   useEffect(() => {
     // rehydration 취소 여부 (cleanup 함수에서 사용, 초깃값은 취소되지 않음)
@@ -111,7 +137,16 @@ const PersistRehydrationGate = ({
       );
       // rehydration 취소 여부를 확인하고 취소됨(!cancelled === false)이면 rehydration 완료 표시
       if (!cancelled) {
-        setRehydrationDone(true);
+        try {
+          // rehydration effect가 끝난 후 onRehydratedEvent 호출
+          onRehydratedEvent();
+        } catch (error) {
+          console.error(
+            `${REHYDRATION_COMPLETED_AFTER_CALLBACK_FAILED_MESSAGE_KO}: ${error instanceof Error ? error.message : (error ?? UNKNOWN_ERROR_MESSAGE_KO)}`,
+          );
+        } finally {
+          setRehydrationDone(true);
+        }
       }
     })();
 
@@ -150,6 +185,11 @@ export type PersistRehydrationProviderProps = {
    * @default true
    */
   waitForQueryPersistRestore?: boolean;
+  /**
+   * Zustand persist `rehydrate()`가 모두 끝난 뒤 1회.
+   * 대상 스토어가 없으면 마운트 직후 1회 호출한다.
+   */
+  onZustandRehydrated?: () => void;
 };
 
 /**
@@ -166,14 +206,25 @@ export function PersistRehydrationProvider({
   stores = [],
   fallback = null,
   waitForQueryPersistRestore = true,
+  onZustandRehydrated,
 }: PersistRehydrationProviderProps) {
   const toRehydrate = useMemo(() => getStoresToRehydrate(stores), [stores]);
 
   if (toRehydrate.length === 0) {
     if (waitForQueryPersistRestore) {
-      return <QueryPersistSyncGate fallback={fallback}>{children}</QueryPersistSyncGate>;
+      return (
+        <>
+          <RunOnceOnMount onMounted={onZustandRehydrated} />
+          <QueryPersistSyncGate fallback={fallback}>{children}</QueryPersistSyncGate>
+        </>
+      );
     }
-    return <>{children}</>;
+    return (
+      <>
+        <RunOnceOnMount onMounted={onZustandRehydrated} />
+        {children}
+      </>
+    );
   }
 
   return (
@@ -182,6 +233,7 @@ export function PersistRehydrationProvider({
       toRehydrate={toRehydrate}
       fallback={fallback}
       waitForQueryPersistRestore={waitForQueryPersistRestore}
+      onRehydrated={onZustandRehydrated}
     >
       {children}
     </PersistRehydrationGate>

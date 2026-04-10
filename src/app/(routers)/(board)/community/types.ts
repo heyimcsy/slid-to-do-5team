@@ -14,6 +14,8 @@ export interface Comment {
   createdAt: string;
   updatedAt: string;
   writer: Writer;
+  likeCount: number;
+  isLiked: boolean;
 }
 
 export interface Post {

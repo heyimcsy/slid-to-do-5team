@@ -3,8 +3,9 @@ import type { Ref } from 'react';
 
 import Image from 'next/image';
 import emptyImage from '@/../public/images/big-zero-done.svg';
+import { EMPTY_IMAGE_NOTE, NOTES_TEXT } from '@/app/(routers)/(todo)/constants';
 
-import NoteCard from './NoteCard';
+import { NoteCard } from './NoteCard';
 
 interface NoteListProps {
   notes: Notes[];
@@ -20,13 +21,13 @@ export default function NoteList({ notes, goalId, observerRef, hasNextPage }: No
         <div className="flex min-h-[60vh] w-full items-center justify-center">
           <div className="flex h-fit w-fit flex-col items-center space-y-4">
             <Image
-              width={131}
-              height={140}
+              width={EMPTY_IMAGE_NOTE.WIDTH}
+              height={EMPTY_IMAGE_NOTE.HEIGHT}
               src={emptyImage}
-              alt="describe empty note situation"
+              alt={EMPTY_IMAGE_NOTE.ALT}
               className="h-22.5 w-20 object-contain md:h-35 md:w-32.5"
             />
-            <p className="font-base-regular text-gray-400">아직 등록된 노트가 없어요</p>
+            <p className="font-base-regular text-gray-400">{NOTES_TEXT.EMPTY_NOTE_LABEL}</p>
           </div>
         </div>
       ) : (
