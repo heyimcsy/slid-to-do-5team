@@ -357,7 +357,7 @@ export function EditForm({ todo, onCancel }: EditFormProps) {
             <form id="edit-todo-modal" onSubmit={onSubmit}>
               <DrawerHeader className="mt-0 mb-4 flex flex-row justify-between p-0">
                 <DrawerTitle className="font-xl-semibold">할 일 수정</DrawerTitle>
-                <button className="cursor-pointer border-0" onClick={() => router.back()}>
+                <button className="cursor-pointer border-0" onClick={() => onCancel()}>
                   <Icon name="close" color="gray" />
                 </button>
               </DrawerHeader>
@@ -367,7 +367,7 @@ export function EditForm({ todo, onCancel }: EditFormProps) {
                   size="lg"
                   variant="ghost"
                   className="flex-1 cursor-pointer"
-                  onClick={() => router.back()}
+                  onClick={() => onCancel()}
                 >
                   취소
                 </Button>
