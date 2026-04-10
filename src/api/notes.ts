@@ -4,6 +4,7 @@ import type { InfiniteData, QueryClient } from '@tanstack/react-query';
 
 import { GOALS } from '@/api/goals';
 import { TODOS } from '@/api/todos';
+import { favoritesQueryKeys } from '@/app/(routers)/favorites/_api/favoritesQueries';
 import { apiClient } from '@/lib/apiClient.browser';
 import {
   keepPreviousData,
@@ -235,6 +236,7 @@ export const usePostNote = (options: { onSuccess?: () => void }) => {
       queryClient.invalidateQueries({ queryKey: [NOTES] });
       queryClient.invalidateQueries({ queryKey: [GOALS] });
       queryClient.invalidateQueries({ queryKey: [TODOS] });
+      queryClient.invalidateQueries({ queryKey: favoritesQueryKeys.all });
     },
   });
 };
@@ -292,6 +294,7 @@ export const useDeleteNote = () => {
       queryClient.invalidateQueries({ queryKey: [GOALS] });
       queryClient.invalidateQueries({ queryKey: [TODOS] });
       queryClient.invalidateQueries({ queryKey: [NOTE, payload.id] });
+      queryClient.invalidateQueries({ queryKey: favoritesQueryKeys.all });
     },
   });
 };

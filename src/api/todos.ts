@@ -309,6 +309,7 @@ export const usePostTodo = () => {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [TODOS] });
+      queryClient.invalidateQueries({ queryKey: favoritesQueryKeys.all });
     },
   });
 };
