@@ -1,6 +1,7 @@
 import type { PaginatedResponse } from '@/api/response';
 import type { QueryClient } from '@tanstack/react-query';
 
+import { favoritesQueryKeys } from '@/app/(routers)/favorites/_api/favoritesQueries';
 import { apiClient } from '@/lib/apiClient.browser';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -127,6 +128,7 @@ export const useDeleteGoals = (options: { onSuccess?: () => void }) => {
       const id = payload.id;
       queryClient.invalidateQueries({ queryKey: [GOALS] });
       queryClient.invalidateQueries({ queryKey: [GOAL, id] });
+      queryClient.invalidateQueries({ queryKey: favoritesQueryKeys.all });
       options?.onSuccess?.();
     },
   });
@@ -164,6 +166,7 @@ export const usePatchGoals = () => {
     onSettled: (_, __, payload) => {
       queryClient.invalidateQueries({ queryKey: [GOALS] });
       queryClient.invalidateQueries({ queryKey: [GOAL, payload.id] });
+      queryClient.invalidateQueries({ queryKey: favoritesQueryKeys.all });
     },
   });
 };
