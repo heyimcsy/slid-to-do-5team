@@ -72,7 +72,7 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
   if (!post) return <ErrorFallback onRetry={refetch} title="소통 게시판" />;
   if (!contentReady) return <PostDetailSkeleton />;
 
-  const { title, viewCount, createdAt, writer, commentCount } = post;
+  const { title, viewCount, createdAt, writer } = post;
 
   const kebabItems = [
     { label: '수정하기', onClick: () => router.push(`/community/${postId}/edit`) },
@@ -105,7 +105,11 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
           <div className="flex flex-col gap-10 rounded-3xl bg-white px-5 py-6 md:gap-14 md:p-10 lg:p-14">
             <div className="w-full">
               <div className="flex items-start gap-2">
-                <button className="cursor-pointer pt-0.5" aria-label="목록으로 이동" onClick={() => router.push('/community')}>
+                <button
+                  className="cursor-pointer pt-0.5"
+                  aria-label="목록으로 이동"
+                  onClick={() => router.push('/community')}
+                >
                   <Icon name="arrow" direction="left" />
                 </button>
                 <h1 className="font-base-semibold md:font-xl-semibold min-w-0 flex-1 pl-1 text-gray-800">
@@ -151,7 +155,6 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
 
             <CommentSection
               postId={postId}
-              totalCount={commentCount}
               userId={userId}
               isPostDeleting={isPostDeleting}
               onPendingChange={setIsCommentBusy}
