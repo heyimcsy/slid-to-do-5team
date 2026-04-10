@@ -36,7 +36,7 @@ export default function CommunityClient() {
     hasNextPage,
     isFetchingNextPage,
     isFetching,
-  } = useGetPosts(sort, !!search);
+  } = useGetPosts(sort, search);
   const { data: bestPosts } = useGetBestPosts();
 
   const posts: Post[] = useMemo(
@@ -51,18 +51,7 @@ export default function CommunityClient() {
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
-    enabled: !search,
   });
-
-  const filteredPosts = useMemo(() => {
-    const lowerSearch = search.toLowerCase();
-
-    return posts.filter(
-      (post) =>
-        post.title.toLowerCase().includes(lowerSearch) ||
-        post.content.toLowerCase().includes(lowerSearch),
-    );
-  }, [posts, search]);
 
   const handleSortChange = (value: SortOption) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -117,18 +106,20 @@ export default function CommunityClient() {
                 onSearchChange={handleSearchChange}
               />
               <div className="flex flex-col items-start self-stretch">
-                {posts.length === 0 ? (
-                  <EmptyState />
-                ) : filteredPosts.length === 0 && !isFetching ? (
-                  <EmptyState message="검색 결과가 없어요." />
+                {posts.length === 0 && !isFetching ? (
+                  search ? (
+                    <EmptyState message="검색 결과가 없어요." />
+                  ) : (
+                    <EmptyState />
+                  )
                 ) : (
-                  filteredPosts.map((post) => <PostListItem key={post.id} post={post} />)
+                  posts.map((post) => <PostListItem key={post.id} post={post} />)
                 )}
               </div>
             </div>
 
             <div ref={observerRef} className="h-4" />
-            {!search && !hasNextPage && posts.length > 0 && (
+            {!hasNextPage && posts.length > 0 && (
               <p className="py-6 text-center text-sm text-gray-400">모든 게시물을 불러왔습니다.</p>
             )}
           </div>
