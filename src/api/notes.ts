@@ -135,12 +135,20 @@ type CreateNotePayload = Pick<Notes, 'todoId' | 'title'> &
 
 type PatchNotePayload = Pick<Notes, 'id'> & Partial<Pick<Notes, 'title' | 'content' | 'linkUrl'>>;
 
-export const useGetNotesInfinite = ({ goalId, limit = 5 }: { goalId: number; limit?: number }) => {
+export const useGetNotesInfinite = ({
+  goalId,
+  limit = 5,
+  sort,
+}: {
+  goalId: number;
+  limit?: number;
+  sort?: string;
+}) => {
   return useInfiniteQuery({
-    queryKey: [NOTES, { goalId, limit }],
+    queryKey: [NOTES, { goalId, limit, sort }],
     queryFn: async ({ pageParam }) =>
       await apiClient<NotesGetResponse>(
-        `${NOTES_URL}?goalId=${goalId}&limit=${limit}${pageParam ? `&cursor=${pageParam}` : ''}`,
+        `${NOTES_URL}?goalId=${goalId}&limit=${limit}${sort ? `&sort=${sort}` : ''}${pageParam ? `&cursor=${pageParam}` : ''}`,
       ),
     initialPageParam: null as number | null,
     getNextPageParam: (lastPage) => lastPage?.nextCursor ?? null,
