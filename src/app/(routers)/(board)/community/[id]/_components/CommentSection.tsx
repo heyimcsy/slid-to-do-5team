@@ -3,8 +3,7 @@
 import type { Comment } from '../../types';
 import type { CommentForm } from './CommentInput';
 
-import { useEffect, useMemo } from 'react';
-import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -13,9 +12,10 @@ import { useCreateComment, useDeleteComment, useGetComments } from '../../_api/c
 import { CommentInput, commentSchema } from './CommentInput';
 import { CommentItem } from './CommentItem';
 
+const VISIBLE_STEP = 5;
+
 interface CommentSectionProps {
   postId: number;
-  totalCount: number;
   userId: number | undefined;
   isPostDeleting?: boolean;
   onPendingChange?: (isPending: boolean) => void;
@@ -23,27 +23,17 @@ interface CommentSectionProps {
 
 export function CommentSection({
   postId,
-  totalCount,
   userId,
   isPostDeleting = false,
   onPendingChange,
 }: CommentSectionProps) {
-  const {
-    data: commentsData,
-    isError,
-    isFetching,
-    refetch,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useGetComments(postId);
+  const { data: commentsData, isError, isFetching, refetch } = useGetComments(postId);
 
   const { rootComments, repliesMap } = useMemo(() => {
-    const all = (commentsData?.pages ?? []).flatMap((page) => page.comments);
-    const unique = Array.from(new Map(all.map((c) => [c.id, c])).values());
-    const rootComments = unique.filter((c) => c.parentId === null);
+    const all = commentsData?.comments ?? [];
+    const rootComments = all.filter((c) => c.parentId === null);
     const repliesMap = new Map<number, Comment[]>();
-    unique
+    all
       .filter((c) => c.parentId !== null)
       .forEach((c) => {
         const parentId = c.parentId!;
@@ -52,6 +42,23 @@ export function CommentSection({
       });
     return { rootComments, repliesMap };
   }, [commentsData]);
+
+  const [visibleCount, setVisibleCount] = useState(VISIBLE_STEP);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setVisibleCount((prev) => (prev < rootComments.length ? prev + VISIBLE_STEP : prev));
+      }
+    });
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [rootComments.length]);
 
   const { mutate: createComment, isPending: isCreating } = useCreateComment(postId);
   const { mutate: deleteComment, isPending: isDeleting } = useDeleteComment(postId);
@@ -69,24 +76,26 @@ export function CommentSection({
     onPendingChange?.(isCreating || isDeleting);
   }, [isCreating, isDeleting, onPendingChange]);
 
-  const { observerRef } = useInfiniteScroll({
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-  });
-
   const onSubmit = ({ content }: CommentForm) => {
-    createComment(content, {
-      onSuccess: () => reset(),
-      onError: () => toast.error('댓글 등록에 실패했습니다.'),
-    });
+    createComment(
+      { content },
+      {
+        onSuccess: () => reset(),
+        onError: () => toast.error('댓글 등록에 실패했습니다.'),
+      },
+    );
   };
+
+  const visibleComments = rootComments.slice(0, visibleCount);
+  const hasMore = visibleCount < rootComments.length;
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-0.5">
         <span className="font-base-semibold md:font-lg-semibold text-gray-800">댓글</span>
-        <span className="font-base-semibold md:font-lg-semibold text-orange-600">{totalCount}</span>
+        <span className="font-base-semibold md:font-lg-semibold text-orange-600">
+          {rootComments.length}
+        </span>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex gap-3 md:gap-4">
@@ -114,7 +123,7 @@ export function CommentSection({
       ) : (
         <>
           <ul className="flex flex-col gap-8 md:gap-10">
-            {rootComments.map((comment) => (
+            {visibleComments.map((comment) => (
               <CommentItem
                 key={comment.id}
                 comment={comment}
@@ -126,7 +135,7 @@ export function CommentSection({
               />
             ))}
           </ul>
-          <div ref={observerRef} className="h-4" />
+          {hasMore && <div ref={sentinelRef} className="h-4" />}
         </>
       )}
     </div>

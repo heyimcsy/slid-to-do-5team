@@ -6,7 +6,6 @@ import type {
   PostsResponse,
   SortOption,
 } from '../types';
-import type { InfiniteData } from '@tanstack/react-query';
 
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
@@ -74,8 +73,9 @@ export const useCreatePost = () => {
     onSuccess: (data) => {
       queryClient.setQueryData(communityQueryKeys.post(data.id), data);
       queryClient.setQueryData(communityQueryKeys.comments(data.id), {
-        pages: [{ comments: [], totalCount: 0, nextCursor: null }],
-        pageParams: [undefined],
+        comments: [],
+        totalCount: 0,
+        nextCursor: null,
       });
       queryClient.invalidateQueries({ queryKey: communityQueryKeys.posts() });
       router.replace(`/community/${data.id}`);
@@ -124,11 +124,11 @@ export const useCreateComment = (postId: number) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (content: string) =>
+    mutationFn: ({ content, parentId }: { content: string; parentId?: number }) =>
       apiClient<Comment>(`/posts/${postId}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ content, ...(parentId !== undefined && { parentId }) }),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: communityQueryKeys.all });
@@ -138,16 +138,11 @@ export const useCreateComment = (postId: number) => {
 
 // 댓글 목록 조회
 export const useGetComments = (postId: number) => {
-  return useInfiniteQuery({
+  return useQuery({
     queryKey: communityQueryKeys.comments(postId),
-    queryFn: ({ pageParam }) =>
-      apiClient<CommentsResponse>(
-        `/posts/${postId}/comments?limit=5${pageParam ? `&cursor=${pageParam}` : ''}`,
-      ),
+    queryFn: () => apiClient<CommentsResponse>(`/posts/${postId}/comments`),
     staleTime: 1000 * 60 * 5,
     enabled: Number.isInteger(postId) && postId > 0,
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => lastPage?.nextCursor ?? undefined,
   });
 };
 
@@ -183,71 +178,37 @@ export const useDeleteComment = (postId: number) => {
   });
 };
 
-const updateCommentLikeCache = (
-  queryClient: ReturnType<typeof useQueryClient>,
-  postId: number,
-  commentId: number,
-  liked: boolean,
-) => {
-  queryClient.setQueryData(
-    communityQueryKeys.comments(postId),
-    (old: InfiniteData<CommentsResponse>) => {
-      if (!old) return old;
-      return {
-        ...old,
-        pages: old.pages.map((page) => ({
-          ...page,
-          comments: page.comments.map((c) =>
+// 댓글 좋아요 토글
+export const useToggleCommentLike = (postId: number, commentId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (isLiked: boolean) =>
+      apiClient<void>(`/posts/${postId}/comments/${commentId}/likes`, {
+        method: isLiked ? 'DELETE' : 'POST',
+      }),
+    onMutate: async (isLiked) => {
+      await queryClient.cancelQueries({ queryKey: communityQueryKeys.comments(postId) });
+      const previous = queryClient.getQueryData(communityQueryKeys.comments(postId));
+      queryClient.setQueryData(communityQueryKeys.comments(postId), (old: CommentsResponse) => {
+        if (!old) return old;
+        return {
+          ...old,
+          comments: old.comments.map((c) =>
             c.id === commentId
-              ? { ...c, isLiked: liked, likeCount: Math.max(0, c.likeCount + (liked ? 1 : -1)) }
+              ? {
+                  ...c,
+                  isLiked: !isLiked,
+                  likeCount: Math.max(0, c.likeCount + (isLiked ? -1 : 1)),
+                }
               : c,
           ),
-        })),
-      };
-    },
-  );
-};
-
-// 댓글 좋아요
-export const useCreateCommentLike = (postId: number, commentId: number) => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: () =>
-      apiClient<void>(`/posts/${postId}/comments/${commentId}/likes`, { method: 'POST' }),
-    onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: communityQueryKeys.comments(postId) });
-      const previous = queryClient.getQueryData(communityQueryKeys.comments(postId));
-      updateCommentLikeCache(queryClient, postId, commentId, true);
+        };
+      });
       return { previous };
     },
     onError: (_err, _vars, context) => {
       queryClient.setQueryData(communityQueryKeys.comments(postId), context?.previous);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: communityQueryKeys.comments(postId) });
-    },
-  });
-};
-
-// 댓글 좋아요 취소
-export const useDeleteCommentLike = (postId: number, commentId: number) => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: () =>
-      apiClient<void>(`/posts/${postId}/comments/${commentId}/likes`, { method: 'DELETE' }),
-    onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: communityQueryKeys.comments(postId) });
-      const previous = queryClient.getQueryData(communityQueryKeys.comments(postId));
-      updateCommentLikeCache(queryClient, postId, commentId, false);
-      return { previous };
-    },
-    onError: (_err, _vars, context) => {
-      queryClient.setQueryData(communityQueryKeys.comments(postId), context?.previous);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: communityQueryKeys.comments(postId) });
     },
   });
 };

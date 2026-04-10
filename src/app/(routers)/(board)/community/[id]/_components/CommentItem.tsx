@@ -2,8 +2,7 @@
 
 import type { Comment } from '../../types';
 
-import { useEffect, useRef, useState } from 'react';
-import { useDebouncedCallback } from '@/hooks/useDebounceCallback';
+import { useState } from 'react';
 import { cn } from '@/lib';
 import { toast } from 'sonner';
 
@@ -43,25 +42,19 @@ export function CommentItem({
   const [isEditing, setIsEditing] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
-
   const { mutate: toggleLike, isPending: isLikePending } = useToggleCommentLike(
     comment.postId,
     comment.id,
   );
-
-  const isLikedRef = useRef(comment.isLiked);
-  useEffect(() => {
-    isLikedRef.current = comment.isLiked;
-  }, [comment.isLiked]);
 
   const kebabItems = [
     { label: '수정하기', onClick: () => setIsEditing(true) },
     { label: '삭제하기', onClick: () => setDeleteDialogOpen(true), variant: 'danger' as const },
   ];
 
-  const handleLikeClick = useDebouncedCallback(() => {
-    toggleLike(isLikedRef.current);
-  }, 300);
+  const handleLikeClick = () => {
+    toggleLike(comment.isLiked);
+  };
 
   return (
     <li className={cn('flex flex-col gap-4', isReply && 'pl-10')}>
