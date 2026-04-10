@@ -55,7 +55,7 @@ interface EditFormProps {
 export function EditForm({ todo, onCancel }: EditFormProps) {
   const { data: goalsData } = useGetGoals();
   const router = useRouter();
-  const isMobile = useIsMobile();
+
   const { mutate: patchTodo, isSuccess } = usePatchTodos();
 
   const initialTags: Tag[] = (todo.tags ?? []).map((tag, index) => ({
@@ -341,6 +341,8 @@ export function EditForm({ todo, onCancel }: EditFormProps) {
       </Field>
     </div>
   );
+  const isMobile = useIsMobile();
+  if (isMobile === undefined) return null;
 
   return (
     <>
@@ -364,6 +366,7 @@ export function EditForm({ todo, onCancel }: EditFormProps) {
               {formContent}
               <div className="mt-4 flex gap-2">
                 <Button
+                  type="button"
                   size="lg"
                   variant="ghost"
                   className="flex-1 cursor-pointer"

@@ -54,7 +54,7 @@ const schema = z.object({
   link: z
     .string()
     .regex(
-      /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z]{2,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/,
+      /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/,
       '올바른 URL 형식을 입력해주세요 (예: http://www.example.com)',
     )
     .optional()
@@ -72,6 +72,7 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
   const [open, setOpen] = React.useState(false);
   const [image, setImage] = React.useState<File | null>(null);
   const [selectedGoal, setSelectedGoal] = React.useState<string | null>(null);
+  const [selectedGoalId, setSelectedGoalId] = React.useState<number | null>(null);
   const [tags, setTags] = useState<Tag[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,6 +82,7 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
   React.useEffect(() => {
     if (!goalData) return;
     setSelectedGoal(goalData.title);
+    setSelectedGoalId(goalData.id);
   }, [goalData]);
 
   const {
@@ -144,7 +146,6 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
   const link = watch('link');
   const title = watch('title');
 
-  const [selectedGoalId, setSelectedGoalId] = React.useState<number | null>(null);
   const isValid = selectedGoalId !== null && date !== undefined;
 
   const { mutate: createTodo } = usePostTodo();
@@ -254,10 +255,6 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
               selected={tempDate}
               onSelect={(date) => setTempDate(date)}
               defaultMonth={date}
-              classNames={{
-                day_selected: 'bg-orange-500 text-white rounded-full',
-                day_today: 'bg-transparent',
-              }}
             />
             <div className="flex gap-2 p-3 pt-0">
               <Button variant="ghost" className="flex-1" onClick={() => setOpen(false)}>
@@ -339,6 +336,7 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
   );
 
   const isMobile = useIsMobile();
+  if (isMobile === undefined) return null;
 
   return (
     <>
