@@ -50,3 +50,8 @@ export interface CommentsResponse {
   nextCursor: string | null;
   totalCount: number;
 }
+
+export interface CommentLikeResponse {
+  isLiked: boolean;
+  likeCount: number;
+}

@@ -1,5 +1,6 @@
 import type {
   Comment,
+  CommentLikeResponse,
   CommentsResponse,
   Post,
   PostInput,
@@ -128,7 +129,10 @@ export const useCreateComment = (postId: number) => {
       apiClient<Comment>(`/posts/${postId}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: content.trim(), ...(parentId !== undefined && { parentId }) }),
+        body: JSON.stringify({
+          content: content.trim(),
+          ...(parentId !== undefined && { parentId }),
+        }),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: communityQueryKeys.all });
@@ -184,7 +188,7 @@ export const useToggleCommentLike = (postId: number, commentId: number) => {
 
   return useMutation({
     mutationFn: (isLiked: boolean) =>
-      apiClient<void>(`/posts/${postId}/comments/${commentId}/likes`, {
+      apiClient<CommentLikeResponse>(`/posts/${postId}/comments/${commentId}/likes`, {
         method: isLiked ? 'DELETE' : 'POST',
       }),
     onMutate: async (isLiked) => {
@@ -206,6 +210,17 @@ export const useToggleCommentLike = (postId: number, commentId: number) => {
         };
       });
       return { previous };
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(communityQueryKeys.comments(postId), (old: CommentsResponse) => {
+        if (!old) return old;
+        return {
+          ...old,
+          comments: old.comments.map((c) =>
+            c.id === commentId ? { ...c, isLiked: data.isLiked, likeCount: data.likeCount } : c,
+          ),
+        };
+      });
     },
     onError: (_err, _vars, context) => {
       queryClient.setQueryData(communityQueryKeys.comments(postId), context?.previous);
