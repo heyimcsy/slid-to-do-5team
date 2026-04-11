@@ -24,13 +24,14 @@ const toApiType = (sort: SortOption): 'all' | 'best' => (sort === '인기순' ? 
 // 게시물 목록 조회
 export const useGetPosts = (sort: SortOption = '최신순', search?: string) => {
   const type = toApiType(sort);
+  const normalizedSearch = search?.trim() || undefined;
 
   return useInfiniteQuery({
-    queryKey: [...communityQueryKeys.postsList(type, search)],
+    queryKey: [...communityQueryKeys.postsList(type, normalizedSearch)],
     queryFn: ({ pageParam }) =>
       apiClient<PostsResponse>(
         `/posts?type=${type}&limit=5${
-          search ? `&search=${encodeURIComponent(search)}` : ''
+          normalizedSearch ? `&search=${encodeURIComponent(normalizedSearch)}` : ''
         }${pageParam ? `&cursor=${pageParam}` : ''}`,
       ),
     initialPageParam: undefined as string | undefined,
