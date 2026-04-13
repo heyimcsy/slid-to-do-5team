@@ -21,7 +21,7 @@ import { usePostImages } from '../_hooks/usePostImages';
 import { DesktopPostHeader } from './DesktopPostHeader';
 
 const TITLE_MAX_LENGTH = 30;
-const CONTENT_MAX_LENGTH = 1000;
+const CONTENT_MAX_LENGTH = 500;
 
 const postSchema = z.object({
   title: z
