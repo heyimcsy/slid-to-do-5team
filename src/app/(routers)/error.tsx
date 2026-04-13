@@ -14,5 +14,5 @@ export default function Error({ reset }: { reset: () => void }) {
 
   const title = getPageTitle(pathname, name) || '오류 발생';
 
-  return <ErrorFallback onRetry={reset} title={title} variant="full" />;
+  return <ErrorFallback onRetry={reset} title={title} />;
 }
