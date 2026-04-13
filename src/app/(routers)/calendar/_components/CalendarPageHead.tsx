@@ -1,5 +1,3 @@
-'use client';
-
 import type { User } from '@/lib/auth/schemas/user';
 
 import { CALENDAR_TEXT } from '@/app/(routers)/calendar/constants';
