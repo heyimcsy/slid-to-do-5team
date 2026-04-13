@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { useGetCheckNickname, useGetMe, usePatchProfile } from '../api/users';
 
 const profileSchema = z.object({
-  name: z.string().min(1, PROFILE_TEXT.NICKNAME_PLACEHOLDER).max(20, PROFILE_TEXT.NICKNAME_LENGTH),
+  name: z.string().min(1, PROFILE_TEXT.NAME_PLACEHOLDER).max(20, PROFILE_TEXT.NICKNAME_LENGTH),
 });
 
 export type ProfileFormValues = z.infer<typeof profileSchema>;

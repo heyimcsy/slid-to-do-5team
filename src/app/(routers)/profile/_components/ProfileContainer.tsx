@@ -55,10 +55,9 @@ export default function ProfileContainer() {
       await Promise.all([submitProfile(), submitPassword()]);
       queryClient.removeQueries({ queryKey: [CHECK_NICKNAME] });
       resetNickNameCheck();
-      toast.success(PROFILE_TEXT.SUCCESS_MESSAGE);
     } catch (e) {
       console.error(e);
-      toast.error(PROFILE_TEXT.ERROR_MESSAGE);
+      toast.error(PROFILE_TEXT.ERROR_MESSAGE(PROFILE_TEXT.USER_INFO));
     }
   };
   return (

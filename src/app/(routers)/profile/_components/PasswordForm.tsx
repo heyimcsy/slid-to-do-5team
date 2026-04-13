@@ -11,7 +11,7 @@ import { PasswordFieldWithToggle } from '@/components/common/PasswordFieldWithTo
 
 export default function PasswordForm({ control, errors }: PasswordFormProps) {
   return (
-    <form className="w-full space-y-2">
+    <div className="w-full space-y-2">
       <p className="font-sm-semibold text-gray-700">{PROFILE_TEXT.CHANGE_PASSWORD}</p>
       <div className="flex flex-col space-y-1">
         <PasswordFieldWithToggle
@@ -42,6 +42,6 @@ export default function PasswordForm({ control, errors }: PasswordFormProps) {
         />
         <p className="font-xs-regular h-4 text-red-500">{errors.confirmPassword?.message ?? ''}</p>
       </div>
-    </form>
+    </div>
   );
 }

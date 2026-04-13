@@ -6,7 +6,6 @@ import {
 } from '@/app/(routers)/profile/constants';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { usePatchPassword } from '../api/users';
@@ -43,9 +42,7 @@ export function usePasswordForm() {
   });
 
   const { mutateAsync: patchPassword } = usePatchPassword({
-    onSuccess: (data) => toast.success(data.message),
     onError: (error) => {
-      toast.error(error.message);
       if (error.code === 'INVALID_CREDENTIALS') {
         setError(CURRENT_PASSWORD, {
           message: PROFILE_TEXT.CURRENT_PASSWORD_UNSAME,

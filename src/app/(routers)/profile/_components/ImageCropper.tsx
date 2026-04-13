@@ -2,7 +2,7 @@
 
 import type { Crop } from 'react-image-crop';
 
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 
 import 'react-image-crop/dist/ReactCrop.css';
@@ -25,14 +25,25 @@ export default function ImageCropper({ onCropComplete }: ImageCropperProps) {
   const [crop, setCrop] = useState<Crop>();
   const [open, setOpen] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
+  const objectUrlRef = useRef<string | null>(null);
   const originalFileRef = useRef<File | null>(null);
+
+  const cleanupObjectUrl = () => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+    setSrc(null);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     originalFileRef.current = file;
+    cleanupObjectUrl();
     const url = URL.createObjectURL(file);
+    objectUrlRef.current = url;
     setSrc(url);
     setOpen(true);
 
@@ -85,13 +96,14 @@ export default function ImageCropper({ onCropComplete }: ImageCropperProps) {
         const file = new File([blob], 'profile.webp', { type: 'image/webp' });
         onCropComplete(file);
         setOpen(false);
-        setSrc(null);
+        cleanupObjectUrl();
       },
       'image/webp',
       COMPRESS_QUALITY,
     );
   };
 
+  useEffect(() => cleanupObjectUrl, []);
   return (
     <>
       <label htmlFor="profile" className="cursor-pointer">
@@ -105,7 +117,13 @@ export default function ImageCropper({ onCropComplete }: ImageCropperProps) {
         onChange={handleFileChange}
       />
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog
+        open={open}
+        onOpenChange={(nextOpen) => {
+          setOpen(nextOpen);
+          if (!nextOpen) cleanupObjectUrl();
+        }}
+      >
         <DialogContent className="w-86 md:w-114" aria-label={PROFILE_TEXT.IMAGE_EDIT}>
           <p className="font-base-semibold pb-2 text-gray-800">{PROFILE_TEXT.IMAGE_EDIT}</p>
           {src && (
@@ -125,7 +143,14 @@ export default function ImageCropper({ onCropComplete }: ImageCropperProps) {
             </ReactCrop>
           )}
           <DialogFooter className="pt-4">
-            <Button variant="ghost" className="w-1/2" onClick={() => setOpen(false)}>
+            <Button
+              variant="ghost"
+              className="w-1/2"
+              onClick={() => {
+                setOpen(false);
+                cleanupObjectUrl();
+              }}
+            >
               {DIALOG_VALUE.BUTTON.CANCEL}
             </Button>
             <Button variant="default" className="w-1/2" onClick={handleCropConfirm}>
