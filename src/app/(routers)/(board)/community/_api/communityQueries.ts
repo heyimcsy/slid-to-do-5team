@@ -22,15 +22,17 @@ import { communityQueryKeys } from './communityQueryKeys';
 const toApiType = (sort: SortOption): 'all' | 'best' => (sort === '인기순' ? 'best' : 'all');
 
 // 게시물 목록 조회
-export const useGetPosts = (sort: SortOption = '최신순', isSearchMode: boolean = false) => {
+export const useGetPosts = (sort: SortOption = '최신순', search?: string) => {
   const type = toApiType(sort);
-  const limit = isSearchMode ? 100 : 5;
+  const normalizedSearch = search?.trim() || undefined;
 
   return useInfiniteQuery({
-    queryKey: [...communityQueryKeys.posts(type), { isSearchMode }],
+    queryKey: [...communityQueryKeys.postsList(type, normalizedSearch)],
     queryFn: ({ pageParam }) =>
       apiClient<PostsResponse>(
-        `/posts?type=${type}&limit=${limit}${pageParam ? `&cursor=${pageParam}` : ''}`,
+        `/posts?type=${type}&limit=5${
+          normalizedSearch ? `&search=${encodeURIComponent(normalizedSearch)}` : ''
+        }${pageParam ? `&cursor=${pageParam}` : ''}`,
       ),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
@@ -42,7 +44,7 @@ export const useGetPosts = (sort: SortOption = '최신순', isSearchMode: boolea
 // 게시물 인기순 3개 조회
 export const useGetBestPosts = () => {
   return useQuery({
-    queryKey: [...communityQueryKeys.posts('best'), { limit: 3 }],
+    queryKey: [...communityQueryKeys.postsList('best'), { limit: 3 }],
     queryFn: () => apiClient<PostsResponse>(`/posts?type=best&limit=3`),
     staleTime: 1000 * 60 * 5,
   });
@@ -114,7 +116,7 @@ export const useDeletePost = () => {
       }),
     onSuccess: (_data, deletedPostId) => {
       queryClient.removeQueries({ queryKey: communityQueryKeys.post(deletedPostId) });
-      queryClient.invalidateQueries({ queryKey: [...communityQueryKeys.all, 'posts'] });
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.posts() });
     },
   });
 };
@@ -128,7 +130,10 @@ export const useCreateComment = (postId: number) => {
       apiClient<Comment>(`/posts/${postId}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: content.trim(), ...(parentId !== undefined && { parentId }) }),
+        body: JSON.stringify({
+          content: content.trim(),
+          ...(parentId !== undefined && { parentId }),
+        }),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: communityQueryKeys.all });
