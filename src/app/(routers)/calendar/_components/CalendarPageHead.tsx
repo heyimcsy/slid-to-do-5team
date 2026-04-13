@@ -1,29 +1,17 @@
 'use client';
 
-import Link from 'next/link';
+import type { User } from '@/lib/auth/schemas/user';
 
-import { Icon } from '@/components/icon/Icon';
-import { IconButton } from '@/components/ui/button';
+import { CALENDAR_TEXT } from '@/app/(routers)/calendar/constants';
 
-export default function CalendarPageHead() {
-  const userInfo: string | null = localStorage.getItem('user-info');
-  let userName: string = '';
-  try {
-    const parsed = userInfo
-      ? (JSON.parse(userInfo) as { state?: { user?: { name?: string } } })
-      : null;
-    userName = parsed?.state?.user?.name ?? '';
-  } catch {
-    userName = '';
-  }
+import NewTodoButton from './NewTodoButton';
+
+export default function CalendarPageHead({ userInfo }: { userInfo: User | null }) {
+  const userName: string = userInfo?.name ? userInfo?.name : '';
   return (
     <div className="hidden w-full items-center justify-between md:flex">
-      <h1 className="font-xl-semibold lg:font-2xl-semibold">{userName}님의 캘린더</h1>
-      <Link href="/goals/todos/new" className="flex h-fit w-fit">
-        <IconButton variant="outline">
-          <Icon name="plus" variant="orange" />할 일 추가
-        </IconButton>
-      </Link>
+      <h1 className="font-xl-semibold lg:font-2xl-semibold">{CALENDAR_TEXT.USER(userName)}</h1>
+      <NewTodoButton width="w-fit" />
     </div>
   );
 }
