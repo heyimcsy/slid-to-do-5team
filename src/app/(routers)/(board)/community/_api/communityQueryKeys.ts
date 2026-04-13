@@ -1,3 +1,6 @@
+export const POSTS_PAGE_LIMIT = 5;
+export const BEST_POSTS_LIMIT = 3;
+
 export const communityQueryKeys = {
   all: ['community'] as const,
   posts: () => [...communityQueryKeys.all, 'posts'] as const,
