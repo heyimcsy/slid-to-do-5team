@@ -3,16 +3,14 @@ import type { FavoritesResponse } from '../types';
 import { apiClient } from '@/lib/apiClient.browser';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 
-import { favoritesQueryKeys } from './favoritesQueryKeys';
+import { FAVORITES_PAGE_LIMIT, favoritesQueryKeys } from './favoritesQueryKeys';
 
 export const useGetFavorites = () => {
-  const limit = 20;
-
-  return useInfiniteQuery({
+  return useInfiniteQuery<FavoritesResponse>({
     queryKey: favoritesQueryKeys.list(),
     queryFn: ({ pageParam }) =>
       apiClient<FavoritesResponse>(
-        `/todos/favorites?limit=${limit}${pageParam ? `&cursor=${pageParam}` : ''}`,
+        `/todos/favorites?limit=${FAVORITES_PAGE_LIMIT}${pageParam ? `&cursor=${pageParam}` : ''}`,
       ),
     initialPageParam: undefined as number | undefined,
     getNextPageParam: (lastPage) => lastPage?.nextCursor ?? undefined,
