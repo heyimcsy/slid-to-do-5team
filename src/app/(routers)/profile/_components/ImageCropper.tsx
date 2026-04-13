@@ -25,20 +25,12 @@ export default function ImageCropper({ onCropComplete }: ImageCropperProps) {
   const [crop, setCrop] = useState<Crop>();
   const [open, setOpen] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
-  const isGifRef = useRef(false);
   const originalFileRef = useRef<File | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // GIF는 크롭 없이 바로 전달
-    if (file.type === 'image/gif') {
-      onCropComplete(file);
-      return;
-    }
-
-    isGifRef.current = false;
     originalFileRef.current = file;
     const url = URL.createObjectURL(file);
     setSrc(url);
