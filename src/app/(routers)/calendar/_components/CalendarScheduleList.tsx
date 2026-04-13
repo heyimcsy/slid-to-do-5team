@@ -1,20 +1,20 @@
-import type { Todo } from '@/api/todos';
+import type {
+  CalendarScheduleListProps,
+  CalendarTodoForSchedule,
+} from '@/app/(routers)/calendar/types';
 
+import { CALENDAR_TEXT } from '@/app/(routers)/calendar/constants';
 import { cn } from '@/lib';
-
-type CalendarTodo = Pick<Todo, 'id' | 'title' | 'dueDate' | 'done'>;
-
-interface CalendarScheduleListProps {
-  date: string;
-  todos: CalendarTodo[];
-}
 
 export default function CalendarScheduleList({ date, todos }: CalendarScheduleListProps) {
   return (
-    <div className="flex h-fit flex-col gap-4 px-4 py-5 md:h-69 lg:hidden">
+    <div className="flex h-fit flex-col gap-4 px-4 py-5 md:h-fit md:max-h-69 lg:hidden">
       <h2 className="font-sm-semibold shrink-0">{date}</h2>
-      <div className="flex min-h-0 flex-1 flex-col space-y-[6px] overflow-y-scroll">
-        {todos.map((todo) => (
+      <div className="flex min-h-0 flex-1 flex-col space-y-[6px] overflow-y-scroll pb-6">
+        {todos.length === 0 && (
+          <p className="font-xs-medium text-gray-400">{CALENDAR_TEXT.EMPTY_TODO}</p>
+        )}
+        {todos.map((todo: CalendarTodoForSchedule) => (
           <div
             key={todo.id}
             className={cn(
@@ -24,7 +24,7 @@ export default function CalendarScheduleList({ date, todos }: CalendarScheduleLi
                 : 'border-orange-300 bg-orange-100 text-orange-600',
             )}
           >
-            {todo.done ? '✓ ' : ''}
+            {todo.done ? CALENDAR_TEXT.CHECK : ''}
             {todo.title}
           </div>
         ))}
