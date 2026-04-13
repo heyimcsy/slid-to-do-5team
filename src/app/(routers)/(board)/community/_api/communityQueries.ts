@@ -43,7 +43,7 @@ export const useGetPosts = (sort: SortOption = '최신순', search?: string) => 
 // 게시물 인기순 3개 조회
 export const useGetBestPosts = () => {
   return useQuery({
-    queryKey: [...communityQueryKeys.postsList('best'), { limit: 3 }],
+    queryKey: [...communityQueryKeys.postsList('best'), { limit: BEST_POSTS_LIMIT }],
     queryFn: () => apiClient<PostsResponse>(`/posts?type=best&limit=${BEST_POSTS_LIMIT}`),
     staleTime: 1000 * 60 * 5,
   });
