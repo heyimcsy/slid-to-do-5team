@@ -15,6 +15,7 @@ export const CALENDAR_TEXT = {
   PLUS: '+',
   CHECK: '✓ ',
   EMPTY_TODO: '해당 날짜의 할일이 없습니다.',
+  ERROR_TITLE: '캘린더 할일조회',
 };
 
 export const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];

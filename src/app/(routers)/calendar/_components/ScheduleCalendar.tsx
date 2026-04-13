@@ -13,6 +13,8 @@ import { CALENDAR_TEXT } from '@/app/(routers)/calendar/constants';
 import { useGetAllTodos } from '@/app/(routers)/calendar/hooks/useGetAllTodos';
 import { useScheduleCalendar } from '@/app/(routers)/calendar/hooks/useScheduleCalendar';
 
+import { ErrorFallback } from '@/components/ErrorFallback';
+
 export default function ScheduleCalendar() {
   const searchParams = useSearchParams();
   const goalId = Number(searchParams.get('goalId'));
@@ -20,9 +22,18 @@ export default function ScheduleCalendar() {
 
   const [selectedGoalId, setSelectedGoalId] = useState<number>(safeGoalId);
 
-  const { data: goalsData, isLoading: goalsLoading } = useGetGoals({});
+  const {
+    data: goalsData,
+    isLoading: goalsLoading,
+    isError: goalsError,
+    refetch: refetchGoals,
+  } = useGetGoals({});
   const needMore = goalsData && goalsData.goals.length < goalsData.totalCount;
-  const { data: allGoalsData } = useGetGoals({
+  const {
+    data: allGoalsData,
+    isLoading: allGoalsLoading,
+    isError: allGoalsError,
+  } = useGetGoals({
     limit: goalsData?.totalCount,
     enabled: !!needMore,
   });
@@ -33,10 +44,16 @@ export default function ScheduleCalendar() {
     oldestDueDate,
     newestDueDate,
     isLoading: todosLoading,
+    isError: todosError,
+    refetch: refetchTodo,
   } = useGetAllTodos({ goalId: selectedGoalId });
 
-  const isLoading = goalsLoading || todosLoading || (needMore && !allGoalsData);
-
+  const isLoading = goalsLoading || allGoalsLoading || todosLoading || (needMore && !allGoalsData);
+  const isError = todosError || goalsError || allGoalsError;
+  const refetch = () => {
+    if (goalsError || allGoalsError) refetchGoals();
+    if (todosError) refetchTodo();
+  };
   const allGoals = useMemo(() => {
     const source = needMore ? allGoalsData?.goals : goalsData?.goals;
     if (!source) return [{ label: CALENDAR_TEXT.ALL_GOALS, value: 0 }];
@@ -67,6 +84,7 @@ export default function ScheduleCalendar() {
   };
 
   if (isLoading) return <ScheduleCalendarSkeleton />;
+  if (isError) return <ErrorFallback onRetry={refetch} title={CALENDAR_TEXT.ERROR_TITLE} />;
   return (
     <div className="h-full w-full bg-white md:h-fit md:rounded-[24px] lg:h-228">
       <CalendarHead

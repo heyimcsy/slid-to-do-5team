@@ -4,10 +4,11 @@ import { useEffect, useMemo } from 'react';
 import { useInfiniteTodos } from '@/api/todos';
 
 export const useGetAllTodos = ({ goalId }: { goalId: number | undefined }) => {
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteTodos({
-    goalId: goalId === 0 ? undefined : goalId,
-    limit: 100,
-  });
+  const { data, refetch, isLoading, isError, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useInfiniteTodos({
+      goalId: goalId === 0 ? undefined : goalId,
+      limit: 100,
+    });
 
   useEffect(() => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -47,5 +48,7 @@ export const useGetAllTodos = ({ goalId }: { goalId: number | undefined }) => {
     oldestDueDate,
     newestDueDate,
     isLoading: isLoading || !isFetchDone,
+    isError,
+    refetch,
   };
 };
