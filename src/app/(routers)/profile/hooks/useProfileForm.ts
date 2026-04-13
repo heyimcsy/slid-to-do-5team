@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { uploadImage } from '@/api/images';
+import { CHECK_NICKNAME, NAME, PROFILE_TEXT } from '@/app/(routers)/profile/constants';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -7,7 +9,7 @@ import { z } from 'zod';
 import { useGetCheckNickname, useGetMe, usePatchProfile } from '../api/users';
 
 const profileSchema = z.object({
-  name: z.string().min(1, '닉네임을 입력해주세요').max(20, '20자 이하로 입력해주세요'),
+  name: z.string().min(1, PROFILE_TEXT.NICKNAME_PLACEHOLDER).max(20, PROFILE_TEXT.NICKNAME_LENGTH),
 });
 
 export type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -30,14 +32,21 @@ export function useProfileForm() {
 
   useEffect(() => {
     if (userData) {
-      setValue('name', userData.name);
+      setValue(NAME, userData.name);
       originalName.current = userData.name;
     }
   }, [userData, setValue]);
 
-  const firstImageUrl = useRef<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const isImageChanged = imageUrl !== firstImageUrl.current;
+  const firstImageUrl = useRef<string | null>(null);
+
+  const handleImageSelect = (file: File) => {
+    setImageFile(file);
+    const previewUrl = URL.createObjectURL(file);
+    setImageUrl(previewUrl);
+  };
+  const isImageChanged = imageFile !== null;
 
   useEffect(() => {
     if (userData?.image) {
@@ -46,7 +55,7 @@ export function useProfileForm() {
     }
   }, [userData?.image]);
 
-  const nameValue = watch('name');
+  const nameValue = watch(NAME);
   const isNameChanged = nameValue !== originalName.current;
 
   const [nickNameCheck, setNickNameCheck] = useState(false);
@@ -61,7 +70,7 @@ export function useProfileForm() {
 
   useEffect(() => {
     setNickNameCheck(false);
-    queryClient.removeQueries({ queryKey: ['check-nickname', nameValue] });
+    queryClient.removeQueries({ queryKey: [CHECK_NICKNAME, nameValue] });
   }, [nameValue, queryClient]);
 
   const submitProfile = async () => {
@@ -69,11 +78,18 @@ export function useProfileForm() {
 
     const payload: { name?: string; image?: string } = {};
     if (isNameChanged) payload.name = nameValue;
-    if (isImageChanged) payload.image = imageUrl ?? undefined;
+
+    // 저장 시점에 S3 업로드
+    if (isImageChanged && imageFile) {
+      const uploadedUrl = await uploadImage(imageFile);
+      payload.image = uploadedUrl;
+      firstImageUrl.current = uploadedUrl;
+      setImageUrl(uploadedUrl);
+      setImageFile(null);
+    }
 
     await patchProfile(payload);
     originalName.current = nameValue;
-    firstImageUrl.current = imageUrl; // ← 저장 후 기준값 업데이트
   };
 
   return {
@@ -87,7 +103,7 @@ export function useProfileForm() {
     refetch,
     imageUrl,
     isImageChanged,
-    setImageUrl,
+    handleImageSelect,
     submitProfile,
     resetNickNameCheck: () => setNickNameCheck(false),
   };
