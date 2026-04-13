@@ -1,5 +1,6 @@
 import type {
   Comment,
+  CommentLikeResponse,
   CommentsResponse,
   Post,
   PostInput,
@@ -189,7 +190,7 @@ export const useToggleCommentLike = (postId: number, commentId: number) => {
 
   return useMutation({
     mutationFn: (isLiked: boolean) =>
-      apiClient<void>(`/posts/${postId}/comments/${commentId}/likes`, {
+      apiClient<CommentLikeResponse>(`/posts/${postId}/comments/${commentId}/likes`, {
         method: isLiked ? 'DELETE' : 'POST',
       }),
     onMutate: async (isLiked) => {
@@ -211,6 +212,17 @@ export const useToggleCommentLike = (postId: number, commentId: number) => {
         };
       });
       return { previous };
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(communityQueryKeys.comments(postId), (old: CommentsResponse) => {
+        if (!old) return old;
+        return {
+          ...old,
+          comments: old.comments.map((c) =>
+            c.id === commentId ? { ...c, isLiked: data.isLiked, likeCount: data.likeCount } : c,
+          ),
+        };
+      });
     },
     onError: (_err, _vars, context) => {
       queryClient.setQueryData(communityQueryKeys.comments(postId), context?.previous);
