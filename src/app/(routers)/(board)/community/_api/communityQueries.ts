@@ -18,7 +18,12 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 
-import { BEST_POSTS_LIMIT, communityQueryKeys, POSTS_PAGE_LIMIT } from './communityQueryKeys';
+import {
+  BEST_POSTS_LIMIT,
+  COMMENTS_PAGE_LIMIT,
+  communityQueryKeys,
+  POSTS_PAGE_LIMIT,
+} from './communityQueryKeys';
 
 const toApiType = (sort: SortOption): 'all' | 'best' => (sort === '인기순' ? 'best' : 'all');
 
@@ -142,11 +147,33 @@ export const useCreateComment = (postId: number) => {
 
 // 댓글 목록 조회
 export const useGetComments = (postId: number) => {
-  return useQuery({
+  return useInfiniteQuery<CommentsResponse>({
     queryKey: communityQueryKeys.comments(postId),
-    queryFn: () => apiClient<CommentsResponse>(`/posts/${postId}/comments`),
-    staleTime: 1000 * 60 * 5,
+    queryFn: ({ pageParam }) =>
+      apiClient<CommentsResponse>(
+        `/posts/${postId}/comments?limit=${COMMENTS_PAGE_LIMIT}&parentId=null${pageParam ? `&cursor=${pageParam}` : ''}`,
+      ),
     enabled: Number.isInteger(postId) && postId > 0,
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    staleTime: 1000 * 60 * 5,
+    placeholderData: keepPreviousData,
+  });
+};
+
+// 대댓글 목록 조회
+export const useGetCommentsByParentId = (postId: number, parentId: number) => {
+  return useInfiniteQuery<CommentsResponse>({
+    queryKey: communityQueryKeys.replyComments(postId, parentId),
+    queryFn: ({ pageParam }) =>
+      apiClient<CommentsResponse>(
+        `/posts/${postId}/comments?limit=${COMMENTS_PAGE_LIMIT}&parentId=${parentId}${pageParam ? `&cursor=${pageParam}` : ''}`,
+      ),
+    enabled: Number.isInteger(postId) && postId > 0 && Number.isInteger(parentId) && parentId > 0,
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    staleTime: 1000 * 60 * 5,
+    placeholderData: keepPreviousData,
   });
 };
 
