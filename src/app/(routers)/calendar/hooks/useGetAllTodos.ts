@@ -11,10 +11,11 @@ export const useGetAllTodos = ({ goalId }: { goalId: number | undefined }) => {
     });
 
   useEffect(() => {
+    if (isError) return;
     if (hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, isError]);
 
   const allTodos = useMemo<CalendarTodo[]>(
     () =>

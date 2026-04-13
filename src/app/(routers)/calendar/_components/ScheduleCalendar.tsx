@@ -15,6 +15,8 @@ import { useScheduleCalendar } from '@/app/(routers)/calendar/hooks/useScheduleC
 
 import { ErrorFallback } from '@/components/ErrorFallback';
 
+const goalsLimit = 20;
+
 export default function ScheduleCalendar() {
   const searchParams = useSearchParams();
   const goalId = Number(searchParams.get('goalId'));
@@ -27,12 +29,13 @@ export default function ScheduleCalendar() {
     isLoading: goalsLoading,
     isError: goalsError,
     refetch: refetchGoals,
-  } = useGetGoals({});
-  const needMore = goalsData && goalsData.goals.length < goalsData.totalCount;
+  } = useGetGoals({ limit: goalsLimit });
+  const needMore = goalsData && goalsLimit < goalsData.totalCount;
   const {
     data: allGoalsData,
     isLoading: allGoalsLoading,
     isError: allGoalsError,
+    refetch: allGoalsRefetch,
   } = useGetGoals({
     limit: goalsData?.totalCount,
     enabled: !!needMore,
@@ -52,6 +55,7 @@ export default function ScheduleCalendar() {
   const isError = todosError || goalsError || allGoalsError;
   const refetch = () => {
     if (goalsError || allGoalsError) refetchGoals();
+    if (allGoalsError) allGoalsRefetch();
     if (todosError) refetchTodo();
   };
   const allGoals = useMemo(() => {
@@ -83,8 +87,8 @@ export default function ScheduleCalendar() {
     findToday();
   };
 
-  if (isLoading) return <ScheduleCalendarSkeleton />;
   if (isError) return <ErrorFallback onRetry={refetch} title={CALENDAR_TEXT.ERROR_TITLE} />;
+  if (isLoading) return <ScheduleCalendarSkeleton />;
   return (
     <div className="h-full w-full bg-white md:h-fit md:rounded-[24px] lg:h-228">
       <CalendarHead
