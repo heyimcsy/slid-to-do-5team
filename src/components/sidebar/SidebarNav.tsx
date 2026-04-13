@@ -7,10 +7,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useGetGoals } from '@/api/goals';
+import { useGetMe } from '@/app/(routers)/profile/api/users';
 import { useLogout } from '@/hooks/auth/useLogout';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib';
-import { authUserStore } from '@/stores/authUserStore';
 import { useSettingsModal } from '@/stores/useSettingModal';
 import { AnimatePresence, motion } from 'motion/react';
 import { toast } from 'sonner';
@@ -72,7 +72,7 @@ export default function SidebarNav() {
   const [isGoalsOpen, setIsGoalsOpen] = React.useState(false);
   const [isGoalModalOpen, setIsGoalModalOpen] = React.useState(false);
   const logout = useLogout();
-  const user = authUserStore((s) => s.user);
+  const { data: user } = useGetMe();
 
   const handleNewGoal = (e: React.MouseEvent) => {
     e.preventDefault();
