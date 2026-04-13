@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation';
+import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
 
+import { prefetchPostDetail } from '../_api/communityApis';
 import { PostDetailClient } from './PostDetailClient';
 
 interface PostDetailPageProps {
@@ -12,5 +14,12 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
 
   if (!Number.isInteger(numId) || numId <= 0) notFound();
 
-  return <PostDetailClient postId={numId} />;
+  const queryClient = new QueryClient();
+  await prefetchPostDetail(queryClient, numId);
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <PostDetailClient postId={numId} />
+    </HydrationBoundary>
+  );
 }
