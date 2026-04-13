@@ -18,7 +18,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 
-import { communityQueryKeys } from './communityQueryKeys';
+import { BEST_POSTS_LIMIT, communityQueryKeys, POSTS_PAGE_LIMIT } from './communityQueryKeys';
 
 const toApiType = (sort: SortOption): 'all' | 'best' => (sort === '인기순' ? 'best' : 'all');
 
@@ -27,13 +27,11 @@ export const useGetPosts = (sort: SortOption = '최신순', search?: string) => 
   const type = toApiType(sort);
   const normalizedSearch = search?.trim() || undefined;
 
-  return useInfiniteQuery({
-    queryKey: [...communityQueryKeys.postsList(type, normalizedSearch)],
+  return useInfiniteQuery<PostsResponse>({
+    queryKey: communityQueryKeys.postsList(type, normalizedSearch),
     queryFn: ({ pageParam }) =>
       apiClient<PostsResponse>(
-        `/posts?type=${type}&limit=5${
-          normalizedSearch ? `&search=${encodeURIComponent(normalizedSearch)}` : ''
-        }${pageParam ? `&cursor=${pageParam}` : ''}`,
+        `/posts?type=${type}&limit=${POSTS_PAGE_LIMIT}${normalizedSearch ? `&search=${encodeURIComponent(normalizedSearch)}` : ''}${pageParam ? `&cursor=${pageParam}` : ''}`,
       ),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
@@ -45,8 +43,8 @@ export const useGetPosts = (sort: SortOption = '최신순', search?: string) => 
 // 게시물 인기순 3개 조회
 export const useGetBestPosts = () => {
   return useQuery({
-    queryKey: [...communityQueryKeys.postsList('best'), { limit: 3 }],
-    queryFn: () => apiClient<PostsResponse>(`/posts?type=best&limit=3`),
+    queryKey: [...communityQueryKeys.postsList('best'), { limit: BEST_POSTS_LIMIT }],
+    queryFn: () => apiClient<PostsResponse>(`/posts?type=best&limit=${BEST_POSTS_LIMIT}`),
     staleTime: 1000 * 60 * 5,
   });
 };
