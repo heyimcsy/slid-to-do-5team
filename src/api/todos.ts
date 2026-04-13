@@ -3,7 +3,7 @@ import type { PaginatedResponse } from '@/api/response';
 import type { TagColor } from '@/utils/tag';
 
 import { NOTIFICATIONS } from '@/api/notifications';
-import { favoritesQueryKeys } from '@/app/(routers)/favorites/_api/favoritesQueries';
+import { favoritesQueryKeys } from '@/app/(routers)/favorites/_api/favoritesQueryKeys';
 import { apiClient } from '@/lib/apiClient.browser';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
