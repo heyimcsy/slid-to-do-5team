@@ -1,28 +1,9 @@
-import type { Todo } from '@/api/todos';
+import type { CalendarGridProps } from '@/app/(routers)/calendar/types';
 
+import { CALENDAR_TEXT, DAY_LABELS } from '@/app/(routers)/calendar/constants';
 import { cn } from '@/lib';
 
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
-
-const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
-
-type CalendarTodo = Pick<Todo, 'id' | 'title' | 'dueDate' | 'done'>;
-
-interface Cell {
-  day: number;
-  dateStr: string;
-  isOther: boolean;
-  isToday: boolean;
-  dow: number;
-  dayTodos: CalendarTodo[];
-}
-
-interface CalendarGridProps {
-  cells: Cell[];
-  totalCells: number;
-  selectedDate: string;
-  onSelectDate: (date: string) => void;
-}
 
 export default function CalendarGrid({
   cells,
@@ -31,7 +12,7 @@ export default function CalendarGrid({
   onSelectDate,
 }: CalendarGridProps) {
   return (
-    <div className="flex h-[530px] flex-col lg:h-206">
+    <div className="flex h-[530px] flex-col lg:h-202">
       <div className="grid h-8 shrink-0 grid-cols-7">
         {DAY_LABELS.map((label, i) => (
           <div
@@ -89,7 +70,10 @@ export default function CalendarGrid({
                   ))}
                 </div>
                 {dayTodos.length > 3 && (
-                  <span className="font-xs-semibold text-gray-400">+{dayTodos.length - 3}개</span>
+                  <span className="font-xs-semibold text-gray-400">
+                    +{dayTodos.length - 3}
+                    {CALENDAR_TEXT.COUNT}
+                  </span>
                 )}
               </div>
               {/* desktop - 할일 목록 */}
@@ -104,7 +88,7 @@ export default function CalendarGrid({
                         : 'border-orange-300 bg-orange-100 text-orange-600',
                     )}
                   >
-                    {todo.done ? '✓ ' : ''}
+                    {todo.done ? CALENDAR_TEXT.CHECK : ''}
                     {todo.title}
                   </div>
                 ))}
@@ -112,7 +96,9 @@ export default function CalendarGrid({
                   <HoverCard>
                     <HoverCardTrigger>
                       <span className="font-xs-semibold cursor-pointer px-1 text-left text-gray-400 hover:text-gray-600">
-                        +{dayTodos.length - 3}개
+                        {CALENDAR_TEXT.PLUS}
+                        {dayTodos.length - 3}
+                        {CALENDAR_TEXT.COUNT}
                       </span>
                     </HoverCardTrigger>
                     <HoverCardContent className="w-60 p-2">
@@ -127,7 +113,7 @@ export default function CalendarGrid({
                                 : 'border-orange-300 bg-orange-100 text-orange-600',
                             )}
                           >
-                            {todo.done ? '✓ ' : ''}
+                            {todo.done ? CALENDAR_TEXT.CHECK : ''}
                             {todo.title}
                           </div>
                         ))}
