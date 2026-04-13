@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useGetGoals } from '@/api/goals';
 import {
   CalendarGrid,
@@ -13,12 +13,15 @@ import { CALENDAR_TEXT } from '@/app/(routers)/calendar/constants';
 import { useGetAllTodos } from '@/app/(routers)/calendar/hooks/useGetAllTodos';
 import { useScheduleCalendar } from '@/app/(routers)/calendar/hooks/useScheduleCalendar';
 
+import { ROUTES } from '@/constants/routes';
+
 import { ErrorFallback } from '@/components/ErrorFallback';
 
 const goalsLimit = 20;
 
 export default function ScheduleCalendar() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const goalId = Number(searchParams.get('goalId'));
   const safeGoalId = isNaN(goalId) || goalId === 0 ? 0 : goalId;
 
@@ -83,6 +86,7 @@ export default function ScheduleCalendar() {
   } = useScheduleCalendar(todos);
 
   const onGoalChange = (value: number) => {
+    router.replace(ROUTES.CALENDAR(value));
     setSelectedGoalId(value);
     findToday();
   };
