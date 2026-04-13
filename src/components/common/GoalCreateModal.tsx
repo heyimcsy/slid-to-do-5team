@@ -66,7 +66,7 @@ export function GoalCreateModal({ isOpen, onClose, onSuccess }: GoalCreateModalP
           onClick={handleSubmit}
           disabled={!goalInput.trim() || isPending}
         >
-          {isPending ? '생성 중...' : '만들기'}
+          {isPending ? '생성 중...' : '확인'}
         </Button>
       </div>
     </div>
@@ -76,7 +76,7 @@ export function GoalCreateModal({ isOpen, onClose, onSuccess }: GoalCreateModalP
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DrawerContent className="p-6 [&>button]:hidden">
         <DrawerHeader className="mb-4 p-0">
-          <DrawerTitle className="font-xl-semibold">새 목표 만들기</DrawerTitle>
+          <DrawerTitle className="font-xl-semibold">새 목표 생성</DrawerTitle>
         </DrawerHeader>
         {content}
       </DrawerContent>
@@ -85,7 +85,7 @@ export function GoalCreateModal({ isOpen, onClose, onSuccess }: GoalCreateModalP
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="[&>button]:hidden">
         <DialogHeader className="mb-4">
-          <DialogTitle>새 목표 만들기</DialogTitle>
+          <DialogTitle>새 목표 생성</DialogTitle>
         </DialogHeader>
         {content}
       </DialogContent>
