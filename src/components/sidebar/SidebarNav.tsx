@@ -67,7 +67,7 @@ const bottomItems: {
 
 export default function SidebarNav() {
   const { open: openSettings } = useSettingsModal();
-  const { data: goalsData } = useGetGoals();
+  const { data: goalsData, isLoading: isGoalsLoading, refetch: refetchGoals } = useGetGoals();
   const pathname = usePathname();
   const [isGoalsOpen, setIsGoalsOpen] = React.useState(false);
   const [isGoalModalOpen, setIsGoalModalOpen] = React.useState(false);
@@ -204,7 +204,7 @@ export default function SidebarNav() {
                       ? handleNewGoal
                       : item.label === '새 할일'
                         ? (e) => {
-                            if (!goalsData?.goals.length) {
+                            if (!isGoalsLoading && !goalsData?.goals.length) {
                               e.preventDefault();
                               toast.warning('목표를 먼저 생성해주세요');
                             }
@@ -270,10 +270,9 @@ export default function SidebarNav() {
       <GoalCreateModal
         isOpen={isGoalModalOpen}
         onClose={() => setIsGoalModalOpen(false)}
-        onSuccess={() => {
-          setTimeout(() => {
-            setIsGoalsOpen(true);
-          }, 1500);
+        onSuccess={async () => {
+          await refetchGoals();
+          setIsGoalsOpen(true);
         }}
       />
     </>

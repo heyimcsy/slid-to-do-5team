@@ -36,9 +36,9 @@ export function GoalCreateModal({ isOpen, onClose, onSuccess }: GoalCreateModalP
   }, [isOpen]);
 
   const handleSubmit = () => {
-    if (goalInput.trim()) {
-      postGoal({ title: goalInput.trim() });
-    }
+    const title = goalInput.trim();
+    if (!title || isPending) return;
+    postGoal({ title });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -51,6 +51,7 @@ export function GoalCreateModal({ isOpen, onClose, onSuccess }: GoalCreateModalP
       <Input
         ref={inputRef}
         type="text"
+        disabled={isPending}
         value={goalInput}
         onChange={(e) => setGoalInput(e.target.value)}
         onKeyDown={handleKeyDown}
