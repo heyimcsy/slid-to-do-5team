@@ -4,6 +4,7 @@ import type { Comment } from '../../types';
 
 import { useMemo, useState } from 'react';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { useOptimisticToggle } from '@/hooks/useOptimisticToggle';
 import { cn } from '@/lib';
 import { toast } from 'sonner';
 
@@ -34,18 +35,22 @@ export function CommentItem({
   isDeleting,
   userId,
 }: CommentItemProps) {
-  const { content, createdAt, writer, likeCount, replyCount, isLiked, parentId } = comment;
+  const { content, createdAt, writer, replyCount, parentId } = comment;
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
+
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isLoading, isError, refetch } =
     useGetCommentsByParentId(comment.postId, comment.id, showReplies && parentId === null);
-  const { mutate: toggleLike, isPending: isLikePending } = useToggleCommentLike(
+
+  const { mutate: toggleLike } = useToggleCommentLike(
     comment.postId,
     comment.id,
+    comment.parentId ?? undefined,
   );
-  const isReply = parentId !== null; // 대댓글 여부: 부모 댓글 ID가 있으면 대댓글
+
+  const isReply = parentId !== null;
 
   const replyComments: Comment[] = useMemo(
     () => (data?.pages ?? []).flatMap((page) => page.comments),
@@ -59,9 +64,15 @@ export function CommentItem({
     { label: '삭제하기', onClick: () => setDeleteDialogOpen(true), variant: 'danger' as const },
   ];
 
-  const handleLikeClick = () => {
-    toggleLike(isLiked);
-  };
+  const {
+    value: isLiked,
+    count: likeCount,
+    toggle: handleLikeClick,
+  } = useOptimisticToggle({
+    serverValue: comment.isLiked,
+    serverCount: comment.likeCount,
+    onToggle: (serverIsLiked, { onError }) => toggleLike(serverIsLiked, { onError }),
+  });
 
   return (
     <li className={cn('flex flex-col gap-4', isReply && 'pl-10')}>
@@ -125,11 +136,12 @@ export function CommentItem({
                 type="button"
                 aria-label={isLiked ? '좋아요 취소' : '좋아요'}
                 onClick={handleLikeClick}
-                disabled={isLikePending}
                 className="flex items-center gap-1 text-gray-400 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <HeartIcon aria-hidden filled={isLiked} width={16} height={16} />
-                {likeCount > 0 && <span className="font-xs-regular">{likeCount}</span>}
+                {likeCount !== undefined && likeCount > 0 && (
+                  <span className="font-xs-regular">{likeCount}</span>
+                )}
               </button>
               {!isReply && (
                 <button
@@ -176,6 +188,7 @@ export function CommentItem({
               )}
               {isError && (
                 <button
+                  type="button"
                   onClick={() => void refetch()}
                   className="font-sm-regular items-center pl-10 text-gray-500 underline"
                 >
