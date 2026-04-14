@@ -31,6 +31,7 @@ export const NOTES_TEXT = {
   EMPTY_NOTE_LABEL: '아직 등록된 노트가 없어요',
   NOTE_EDITOR_PLACEHOLDER: '이 곳을 통해 노트 작성을 시작해주세요.',
   NOTE_CREATE: '노트 작성하기',
+  NOTE_EDIT: '노트 수정하기',
   SAVED_DATA: '임시 저장된 노트가 있어요.',
   SAVED_DATA_LOAD: '저장된 노트를 불러오시겠어요?',
   LOAD: '불러오기',
@@ -44,6 +45,9 @@ export const NOTES_TEXT = {
     `임시 저장이 완료되었습니다 ㆍ${elapsedSeconds}초 전`,
   LINK_PANEL_CLOSE: '링크 미리보기 패널 닫기',
   GET_NOTES: '노트 조회',
+  NO_MORE_NOTES: '노트를 더 작성해주세요',
+  NOTE_EDIT_SUCCESS: '노트 수정을 완료했습니다.',
+  NOTE_EDIT_ERROR: '노트 수정을 실패했습니다.',
 } as const;
 
 export const NOTES_SORT = {

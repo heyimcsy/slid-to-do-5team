@@ -1,17 +1,9 @@
-import type { OgInfoResponse } from '@/components/common/LinkEmbed';
+import type { LinkEmbedOgImageProps } from '@/app/(routers)/(todo)/goals/[goalId]/notes/types';
 
 import { NOTES_TEXT } from '@/app/(routers)/(todo)/constants';
 
 import { Icon } from '@/components/icon/Icon';
 import { Button } from '@/components/ui/button';
-
-interface LinkEmbedOgImageProps {
-  showEmbed: boolean;
-  linkUrl: string | null;
-  linkData: OgInfoResponse | undefined;
-  linkSuccess: boolean;
-  handleLinkClick: () => void;
-}
 
 export default function LinkEmbedOgImage({
   showEmbed,

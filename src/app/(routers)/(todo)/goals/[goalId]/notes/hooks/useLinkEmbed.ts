@@ -1,17 +1,8 @@
-import type { OgInfoResponse } from '@/components/common/LinkEmbed';
-import type { Editor } from '@tiptap/react';
+import type { useLinkEmbedProps } from '@/app/(routers)/(todo)/goals/[goalId]/notes/types';
 
 import React, { useState } from 'react';
 
-export const useLinkEmbed = ({
-  editor,
-  linkData,
-  setLinkUrl,
-}: {
-  editor: Editor | null;
-  linkData: OgInfoResponse | undefined;
-  setLinkUrl: React.Dispatch<React.SetStateAction<string | null>>;
-}) => {
+export const useLinkEmbed = ({ editor, linkData, setLinkUrl }: useLinkEmbedProps) => {
   const [showEmbed, setShowEmbed] = useState(false);
 
   const handleLinkDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
