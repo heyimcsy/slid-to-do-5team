@@ -78,7 +78,7 @@ export default function ItemActionBar({
     } else {
       postFavorite(id);
     }
-  }, 500);
+  }, 300);
 
   return (
     <div className="flex h-fit shrink-0 space-x-[6px] lg:space-x-2">
@@ -108,11 +108,20 @@ export default function ItemActionBar({
         </Button>
       )}
       <Select items={selectValue} onValueChange={handleSelectChange}>
-        <SelectTrigger size="sm" iconTrigger className="size-[20px] dark:hidden">
-          <Icon name="dotscircle" size={20} />
-        </SelectTrigger>
-        <SelectTrigger size="sm" iconTrigger className="hidden size-[20px] dark:block">
-          <Icon name="dotscircle" size={20} variant="ghost" />
+        <SelectTrigger size="sm" iconTrigger className="size-[20px]">
+          <Icon
+            name="dotscircle"
+            size={20}
+            className="dark:hidden"
+            aria-label={DIALOG_VALUE.DOT_TRIGGER_ALIA_LABEL}
+          />
+          <Icon
+            name="dotscircle"
+            size={20}
+            variant="ghost"
+            className="hidden dark:block"
+            aria-label={DIALOG_VALUE.DOT_TRIGGER_ALIA_LABEL}
+          />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>

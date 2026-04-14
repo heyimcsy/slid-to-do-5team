@@ -4,7 +4,7 @@ import type { TodoListProps } from '@/app/(routers)/(todo)/goals/types';
 
 import Link from 'next/link';
 import { usePatchTodos } from '@/api/todos';
-import ItemActionBar from '@/app/(routers)/(todo)/goals/[goalId]/_components/ItemActionBar';
+import { ItemActionBar } from '@/app/(routers)/(todo)/goals/[goalId]/_components/index';
 import { useDebouncedCallback } from '@/hooks/useDebounceCallback';
 import { cn } from '@/lib';
 
@@ -26,7 +26,7 @@ export default function TodoList({
 
   const checkButton = useDebouncedCallback(() => {
     checkTodo({ id: id, done: !done });
-  }, 1000);
+  }, 300);
 
   return (
     <div
