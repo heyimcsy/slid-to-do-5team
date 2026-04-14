@@ -162,14 +162,14 @@ export const useGetComments = (postId: number) => {
 };
 
 // 대댓글 목록 조회
-export const useGetCommentsByParentId = (postId: number, parentId: number) => {
+export const useGetCommentsByParentId = (postId: number, parentId: number, enabled: boolean) => {
   return useInfiniteQuery<CommentsResponse>({
     queryKey: communityQueryKeys.replyComments(postId, parentId),
     queryFn: ({ pageParam }) =>
       apiClient<CommentsResponse>(
         `/posts/${postId}/comments?limit=${COMMENTS_PAGE_LIMIT}&parentId=${parentId}${pageParam ? `&cursor=${pageParam}` : ''}`,
       ),
-    enabled: Number.isInteger(postId) && postId > 0 && Number.isInteger(parentId) && parentId > 0,
+    enabled,
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     staleTime: 1000 * 60 * 5,
