@@ -5,30 +5,25 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { usePostNote } from '@/api/notes';
 import { useGetTodo } from '@/api/todos';
 import { NOTES_TEXT } from '@/app/(routers)/(todo)/constants';
+import SpeechComponent from '@/app/(routers)/(todo)/goals/[goalId]/notes/_components/SpeechComponent';
+import { useLinkEmbed } from '@/app/(routers)/(todo)/goals/[goalId]/notes/hooks/useLinkEmbed';
+import {
+  NOTE_CREATE,
+  useNoteDraft,
+} from '@/app/(routers)/(todo)/goals/[goalId]/notes/hooks/useNoteDraft';
+import { useOgInfo } from '@/app/(routers)/(todo)/goals/[goalId]/notes/hooks/useOgInfo';
+import { useEditorWithContent } from '@/hooks/editor';
+import { cn } from '@/lib';
+
 import {
   LinkEmbedOgImage,
   NewNoteSkeleton,
   NoteEditor,
   NoteFormHeader,
   SaveCheckToast,
-  SpeechComponent,
-} from '@/app/(routers)/(todo)/goals/[goalId]/notes/new/_components';
-import { useLinkEmbed } from '@/app/(routers)/(todo)/goals/[goalId]/notes/new/hooks/useLinkEmbed';
-import { useNoteDraft } from '@/app/(routers)/(todo)/goals/[goalId]/notes/new/hooks/useNoteDraft';
-import { useOgInfo } from '@/app/(routers)/(todo)/goals/[goalId]/notes/new/hooks/useOgInfo';
-import { useEditorWithContent } from '@/hooks/editor';
-import { cn } from '@/lib';
-
-export interface NoteDraft {
-  title: string;
-  content: string;
-  linkUrl: string;
-  savedAt: string;
-}
+} from '../_components';
 
 export default function NewNotePage() {
-  const NOTE_CREATE: string = 'note-create';
-
   const router = useRouter();
   const searchParams = useSearchParams();
   const todoId: number = Number(searchParams.get('todoId'));
@@ -55,6 +50,7 @@ export default function NewNotePage() {
   });
 
   const { saveCheck, saveDraft, loadDraft, clearDraft, elapsedSeconds } = useNoteDraft({
+    type: 'note-create',
     title,
     linkUrl,
     editor,
