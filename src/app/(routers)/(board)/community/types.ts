@@ -10,11 +10,13 @@ export interface Comment {
   id: number;
   userId: number;
   postId: number;
+  parentId: number | null;
   content: string;
   createdAt: string;
   updatedAt: string;
   writer: Writer;
   likeCount: number;
+  replyCount: number;
   isLiked: boolean;
 }
 
@@ -48,4 +50,9 @@ export interface CommentsResponse {
   comments: Comment[];
   nextCursor: string | null;
   totalCount: number;
+}
+
+export interface CommentLikeResponse {
+  isLiked: boolean;
+  likeCount: number;
 }

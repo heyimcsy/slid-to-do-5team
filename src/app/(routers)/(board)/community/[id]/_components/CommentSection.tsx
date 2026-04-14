@@ -15,7 +15,6 @@ import { CommentItem } from './CommentItem';
 
 interface CommentSectionProps {
   postId: number;
-  totalCount: number;
   userId: number | undefined;
   isPostDeleting?: boolean;
   onPendingChange?: (isPending: boolean) => void;
@@ -23,25 +22,19 @@ interface CommentSectionProps {
 
 export function CommentSection({
   postId,
-  totalCount,
   userId,
   isPostDeleting = false,
   onPendingChange,
 }: CommentSectionProps) {
-  const {
-    data: commentsData,
-    isError,
-    isFetching,
-    refetch,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useGetComments(postId);
+  const { data, isError, refetch, fetchNextPage, hasNextPage, isFetchingNextPage, isFetching } =
+    useGetComments(postId);
 
-  const comments: Comment[] = useMemo(() => {
-    const all = (commentsData?.pages ?? []).flatMap((page) => page.comments);
-    return Array.from(new Map(all.map((c) => [c.id, c])).values());
-  }, [commentsData]);
+  const comments: Comment[] = useMemo(
+    () => (data?.pages ?? []).flatMap((page) => page.comments),
+    [data],
+  );
+
+  const { observerRef } = useInfiniteScroll({ hasNextPage, isFetchingNextPage, fetchNextPage });
 
   const { mutate: createComment, isPending: isCreating } = useCreateComment(postId);
   const { mutate: deleteComment, isPending: isDeleting } = useDeleteComment(postId);
@@ -59,24 +52,23 @@ export function CommentSection({
     onPendingChange?.(isCreating || isDeleting);
   }, [isCreating, isDeleting, onPendingChange]);
 
-  const { observerRef } = useInfiniteScroll({
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-  });
-
   const onSubmit = ({ content }: CommentForm) => {
-    createComment(content, {
-      onSuccess: () => reset(),
-      onError: () => toast.error('댓글 등록에 실패했습니다.'),
-    });
+    createComment(
+      { content },
+      {
+        onSuccess: () => reset(),
+        onError: () => toast.error('댓글 등록에 실패했습니다.'),
+      },
+    );
   };
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-0.5">
         <span className="font-base-semibold md:font-lg-semibold text-gray-800">댓글</span>
-        <span className="font-base-semibold md:font-lg-semibold text-orange-600">{totalCount}</span>
+        <span className="font-base-semibold md:font-lg-semibold text-orange-600">
+          {data?.pages[0]?.totalCount}
+        </span>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex gap-3 md:gap-4">
@@ -111,10 +103,11 @@ export function CommentSection({
                 isMyComment={comment.userId === userId}
                 onDelete={deleteComment}
                 isDeleting={isBusy}
+                userId={userId}
               />
             ))}
           </ul>
-          <div ref={observerRef} className="h-4" />
+          <div ref={observerRef} />
         </>
       )}
     </div>

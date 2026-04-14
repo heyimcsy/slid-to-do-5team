@@ -1,54 +1,71 @@
 'use client';
 
-import type { Todo } from '@/api/todos';
-
 import { useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useGetGoals } from '@/api/goals';
-import { useGetTodos } from '@/api/todos';
 import {
   CalendarGrid,
   CalendarHead,
   CalendarScheduleList,
   ScheduleCalendarSkeleton,
 } from '@/app/(routers)/calendar/_components/index';
+import { CALENDAR_TEXT } from '@/app/(routers)/calendar/constants';
+import { useGetAllTodos } from '@/app/(routers)/calendar/hooks/useGetAllTodos';
 import { useScheduleCalendar } from '@/app/(routers)/calendar/hooks/useScheduleCalendar';
+
+import { ROUTES } from '@/constants/routes';
+
+import { ErrorFallback } from '@/components/ErrorFallback';
+
+const goalsLimit = 20;
 
 export default function ScheduleCalendar() {
   const searchParams = useSearchParams();
-  const goalId: number = Number(searchParams.get('goalId'));
-
-  const safeGoalId = isNaN(goalId) || goalId === null ? 0 : goalId;
+  const router = useRouter();
+  const goalId = Number(searchParams.get('goalId'));
+  const safeGoalId = isNaN(goalId) || goalId === 0 ? 0 : goalId;
 
   const [selectedGoalId, setSelectedGoalId] = useState<number>(safeGoalId);
 
-  const { data: goalsData, isLoading: goalsLoading } = useGetGoals({});
-  const needMore: undefined | boolean = goalsData && goalsData.goals.length < goalsData.totalCount;
-  const { data: allGoalsData } = useGetGoals({
+  const {
+    data: goalsData,
+    isLoading: goalsLoading,
+    isError: goalsError,
+    refetch: refetchGoals,
+  } = useGetGoals({ limit: goalsLimit });
+  const needMore = goalsData && goalsLimit < goalsData.totalCount;
+  const {
+    data: allGoalsData,
+    isLoading: allGoalsLoading,
+    isError: allGoalsError,
+    refetch: allGoalsRefetch,
+  } = useGetGoals({
     limit: goalsData?.totalCount,
     enabled: !!needMore,
   });
 
-  const { data: getAllTodos, isLoading: todosLoading } = useGetTodos({
-    goalId: selectedGoalId === 0 ? undefined : selectedGoalId,
-    limit: 100,
-  });
-  const isLoading = goalsLoading || todosLoading || (needMore && !allGoalsData);
-  const todos: Pick<Todo, 'id' | 'title' | 'dueDate' | 'done'>[] =
-    getAllTodos?.todos.map((todo) => {
-      return {
-        id: todo.id,
-        title: todo.title,
-        done: todo.done,
-        dueDate: todo.dueDate,
-      };
-    }) ?? [];
+  const {
+    todos,
+    totalCount,
+    oldestDueDate,
+    newestDueDate,
+    isLoading: todosLoading,
+    isError: todosError,
+    refetch: refetchTodo,
+  } = useGetAllTodos({ goalId: selectedGoalId });
 
+  const isLoading = goalsLoading || allGoalsLoading || todosLoading || (needMore && !allGoalsData);
+  const isError = todosError || goalsError || allGoalsError;
+  const refetch = () => {
+    if (goalsError || allGoalsError) refetchGoals();
+    if (allGoalsError) allGoalsRefetch();
+    if (todosError) refetchTodo();
+  };
   const allGoals = useMemo(() => {
     const source = needMore ? allGoalsData?.goals : goalsData?.goals;
-    if (!source) return [{ label: '전체 목표', value: 0 }];
+    if (!source) return [{ label: CALENDAR_TEXT.ALL_GOALS, value: 0 }];
     return [
-      { label: '전체 목표', value: 0 },
+      { label: CALENDAR_TEXT.ALL_GOALS, value: 0 },
       ...source.map((goal) => ({ label: goal.title, value: goal.id })),
     ];
   }, [goalsData, allGoalsData, needMore]);
@@ -69,8 +86,12 @@ export default function ScheduleCalendar() {
   } = useScheduleCalendar(todos);
 
   const onGoalChange = (value: number) => {
+    router.replace(ROUTES.CALENDAR(value));
     setSelectedGoalId(value);
+    findToday();
   };
+
+  if (isError) return <ErrorFallback onRetry={refetch} title={CALENDAR_TEXT.ERROR_TITLE} />;
   if (isLoading) return <ScheduleCalendarSkeleton />;
   return (
     <div className="h-full w-full bg-white md:h-fit md:rounded-[24px] lg:h-228">
@@ -85,6 +106,9 @@ export default function ScheduleCalendar() {
         selectValue={allGoals}
         selectedGoalId={selectedGoalId}
         onGoalChange={onGoalChange}
+        totalCount={totalCount}
+        oldestDueDate={oldestDueDate}
+        newestDueDate={newestDueDate}
       />
       <CalendarGrid
         cells={cells}

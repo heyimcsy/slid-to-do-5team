@@ -41,19 +41,21 @@ function DrawerOverlay({
 function DrawerContent({
   className,
   children,
+  viewportClassName = '100dvh',
   ...props
-}: React.ComponentProps<typeof DrawerPrimitive.Popup>) {
+}: React.ComponentProps<typeof DrawerPrimitive.Popup> & { viewportClassName?: string }) {
   return (
     <DrawerPortal>
       <DrawerOverlay />
       <DrawerPrimitive.Viewport
-        className="fixed inset-0 z-50 flex items-end"
+        className={cn('fixed inset-0 z-50 flex items-end')}
         // TODO: 모바일 버전의 할 일 상세 Drawer가 화면에 나타나지 않는 버그로 인한 임시 추가
-        style={{ minHeight: '100dvh' }}
+        style={{ minHeight: viewportClassName }}
       >
         <DrawerPrimitive.Popup
           data-slot="drawer-content"
           className={cn(
+            'max-h-[80dvh]',
             'bg-background flex flex-col outline-none',
             'w-full rounded-t-lg border-t',
             'transition-transform duration-300 ease-out',

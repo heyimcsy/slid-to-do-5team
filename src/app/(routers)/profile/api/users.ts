@@ -1,15 +1,11 @@
+import { PROFILE_TEXT } from '@/app/(routers)/profile/constants';
 import { apiClient } from '@/lib/apiClient.browser';
 import { parseUserFromBackendUnknown } from '@/lib/auth/schemas/user';
 import { authUserStore } from '@/stores/authUserStore';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-
-
+import { toast } from 'sonner';
 
 import { communityQueryKeys } from '../../(board)/community/_api/communityQueryKeys';
-
-
-
-
 
 const USER_ME = 'user-me';
 const USERS_URL = '/users';
@@ -95,18 +91,16 @@ export const usePatchProfile = () => {
         const parsed = parseUserFromBackendUnknown(data);
         if (parsed) authUserStore.getState().setUser(parsed);
       }
+      toast.success(PROFILE_TEXT.SUCCESS_PROFILE_MESSAGE);
     },
-    onError: (error: Response) => {
-      console.error(error);
+    onError: () => {
+      toast.error(PROFILE_TEXT.ERROR_MESSAGE(PROFILE_TEXT.IMAGE_NAME));
     },
   });
 };
 
 // 비밀번호 변경
-export const usePatchPassword = (options: {
-  onSuccess?: (data: Pick<Response, 'message'>) => void;
-  onError?: (error: Response) => void;
-}) => {
+export const usePatchPassword = (options: { onError?: (error: Response) => void }) => {
   return useMutation({
     mutationFn: async (payload: PatchPasswordPayload) => {
       return await apiClient<{ message: string }>(`${USERS_URL}/me/password`, {
@@ -115,12 +109,12 @@ export const usePatchPassword = (options: {
       });
     },
     ...options,
-    onSuccess: (data: Pick<Response, 'message'>) => {
-      options?.onSuccess?.(data);
+    onSuccess: () => {
+      toast.success(PROFILE_TEXT.SUCCESS_PASSWORD_MESSAGE);
     },
     onError: (error: Response) => {
       options?.onError?.(error);
-      console.error(error);
+      toast.error(PROFILE_TEXT.ERROR_MESSAGE(PROFILE_TEXT.PASSWORD));
     },
   });
 };

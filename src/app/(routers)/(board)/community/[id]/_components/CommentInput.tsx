@@ -16,8 +16,13 @@ interface CommentInputProps {
   register: UseFormRegisterReturn;
   contentLength?: number;
   disabled?: boolean;
-  variant?: 'create' | 'edit';
+  variant?: 'create' | 'underline';
 }
+
+const variantStyles = {
+  create: 'rounded-xl border border-gray-300 px-3 py-3 md:rounded-2xl md:px-4 md:py-4',
+  underline: 'border-b-2 border-gray-300 px-1 py-1.5',
+};
 
 export function CommentInput({
   register,
@@ -30,12 +35,9 @@ export function CommentInput({
   return (
     <div
       className={cn(
-        'flex min-w-0 flex-1 items-center rounded-xl border bg-white px-3 py-3 md:rounded-2xl md:px-4 md:py-4',
-        isOverLimit
-          ? 'border-red-400 bg-red-50'
-          : variant === 'edit'
-            ? 'border-orange-500'
-            : 'border-gray-300',
+        'flex min-w-0 flex-1 items-center bg-white',
+        variantStyles[variant],
+        isOverLimit && 'border-red-400 bg-red-50',
       )}
     >
       <input

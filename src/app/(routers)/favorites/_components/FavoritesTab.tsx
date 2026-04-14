@@ -1,6 +1,6 @@
 'use client';
 
-import type { Favorite } from '../_api/favoritesQueries';
+import type { Favorite } from '../types';
 
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
@@ -19,7 +19,8 @@ import {
   SelectTrigger,
 } from '@/components/ui/select';
 
-import { toTask, useGetFavorites } from '../_api/favoritesQueries';
+import { useGetFavorites } from '../_api/favoritesQueries';
+import { toTask } from '../types';
 import { FavoritesTabSkeleton } from './FavoritesTabSkeleton';
 
 type Tab = 'ALL' | 'TODO' | 'DONE';
@@ -72,7 +73,7 @@ export default function FavoritesTab() {
   if (isError) return <ErrorFallback onRetry={refetch} title="찜한 할 일" />;
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full w-[343px] flex-col pt-8 pb-14 md:w-[636px] md:pt-6 lg:w-[720px]">
       <ScrollToTop />
       <h1 className="font-xl-bold mb-6 hidden text-gray-800 md:block">
         찜한 할 일 <span className="text-orange-500">{data?.pages[0]?.totalCount ?? 0}</span>

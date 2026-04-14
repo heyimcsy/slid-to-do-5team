@@ -3,9 +3,15 @@ import type { PaginatedResponse } from '@/api/response';
 import type { TagColor } from '@/utils/tag';
 
 import { NOTIFICATIONS } from '@/api/notifications';
-import { favoritesQueryKeys } from '@/app/(routers)/favorites/_api/favoritesQueries';
+import { favoritesQueryKeys } from '@/app/(routers)/favorites/_api/favoritesQueryKeys';
 import { apiClient } from '@/lib/apiClient.browser';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 import { mapTagsWithColor } from '@/utils/tag';
 
@@ -63,6 +69,7 @@ interface GetTodosParams {
   done?: boolean;
   limit?: number;
   cursor?: number;
+  enabled?: boolean;
 }
 
 export interface Favorite {
@@ -73,6 +80,8 @@ export interface Favorite {
   createdAt: string;
   todo: Pick<Todo, 'id' | 'title' | 'done' | 'goal'>;
 }
+
+// TODO: 낙관적 업데이트 inifiniteTodos 버전에도 추가하기
 
 // 기존 Todo 타입에 isFavorite 추가된 버전
 export type TodoWithFavorites = Todo & { favorites: boolean };
@@ -86,7 +95,7 @@ type CreateTodoPayload = Pick<Todo, 'title' | 'goalId' | 'dueDate'> &
     tags?: string[];
   };
 
-export const useGetTodos = ({ goalId, done, limit, cursor }: GetTodosParams) => {
+export const useGetTodos = ({ goalId, done, limit, cursor, enabled }: GetTodosParams) => {
   return useQuery({
     queryKey: [TODOS, { goalId, done, limit, cursor }],
     queryFn: async () => {
@@ -117,6 +126,7 @@ export const useGetTodos = ({ goalId, done, limit, cursor }: GetTodosParams) => 
         todos: todosWithFavorite,
       };
     },
+    enabled,
   });
 };
 
@@ -124,13 +134,13 @@ export const useInfiniteTodos = ({ goalId, done, limit }: GetTodosParams) => {
   return useInfiniteQuery<PaginatedResponse<TodoWithFavorites, 'todos'>>({
     queryKey: [TODOS, 'infinite', { goalId, done, limit }],
 
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam }) => {
       const params = new URLSearchParams();
 
       if (goalId !== undefined) params.append('goalId', String(goalId));
       if (done !== undefined) params.append('done', String(done));
       if (limit !== undefined) params.append('limit', String(limit));
-      if (pageParam !== undefined) params.append('cursor', String(pageParam));
+      if (pageParam !== null) params.append('cursor', String(pageParam));
 
       const queryString = params.toString();
       const url = queryString ? `${TODOS_URL}?${queryString}` : TODOS_URL;
@@ -154,10 +164,10 @@ export const useInfiniteTodos = ({ goalId, done, limit }: GetTodosParams) => {
     },
 
     getNextPageParam: (lastPage) => {
-      return lastPage.nextCursor ?? undefined;
+      return lastPage.nextCursor ?? null;
     },
-
-    initialPageParam: 0,
+    initialPageParam: null as number | null,
+    placeholderData: keepPreviousData,
   });
 };
 
@@ -309,6 +319,7 @@ export const usePostTodo = () => {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [TODOS] });
+      queryClient.invalidateQueries({ queryKey: favoritesQueryKeys.all });
     },
   });
 };

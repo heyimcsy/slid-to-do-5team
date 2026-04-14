@@ -1,9 +1,15 @@
+import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
+
+import { prefetchFavorites } from './_api/favoritesApis';
 import FavoritesTab from './_components/FavoritesTab';
 
-export default function FavoritesPage() {
+export default async function FavoritesPage() {
+  const queryClient = new QueryClient();
+  await prefetchFavorites(queryClient);
+
   return (
-    <div className="flex h-full w-[343px] flex-col pb-14 pt-8 md:w-[636px] md:pt-6 lg:w-[720px]">
+    <HydrationBoundary state={dehydrate(queryClient)}>
       <FavoritesTab />
-    </div>
+    </HydrationBoundary>
   );
 }
