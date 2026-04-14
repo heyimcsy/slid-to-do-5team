@@ -1,15 +1,9 @@
 import type { Metadata } from 'next';
 
-
-
 import AppSidebarHeader from '@/components/sidebar/AppSidebarHeader';
 import MobileHeader from '@/components/sidebar/MobileHeader';
 import SidebarNav from '@/components/sidebar/SidebarNav';
 import { Sidebar, SidebarContent, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-
-
-
-
 
 export const metadata: Metadata = {
   title: '슬리드 투두',
@@ -32,10 +26,10 @@ export default function RootLayout({
           </SidebarContent>
         </Sidebar>
         <SidebarInset>
-          <div className="sticky top-0 border-b border-black/5 bg-white/40 p-2 backdrop-blur-lg duration-150 md:hidden">
+          <div className="sticky top-0 z-10 border-b border-black/5 bg-white/40 p-2 backdrop-blur-lg duration-150 md:hidden">
             <MobileHeader />
           </div>
-          <div className="flex h-full w-full min-w-[375px] items-center justify-center overflow-y-scroll bg-gray-100">
+          <div className="flex min-h-0 w-full min-w-[375px] flex-1 items-start justify-center overflow-y-auto bg-gray-100">
             {children}
           </div>
         </SidebarInset>
