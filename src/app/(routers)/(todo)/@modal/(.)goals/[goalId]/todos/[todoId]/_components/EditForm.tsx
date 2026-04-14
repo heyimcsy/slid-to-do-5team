@@ -231,7 +231,15 @@ export function EditForm({ todo, onCancel }: EditFormProps) {
                   <FieldLabel className="font-sm-semi md:font-base-semibold gap-1">
                     마감기한<span className="text-orange-600">*</span>
                   </FieldLabel>
-                  <Popover open={open} onOpenChange={setOpen}>
+                  <Popover
+                    open={open}
+                    onOpenChange={(isOpen) => {
+                      if (!isOpen && tempDate) {
+                        setDate(tempDate);
+                      }
+                      setOpen(isOpen);
+                    }}
+                  >
                     <PopoverTrigger
                       tabIndex={-1}
                       onKeyDown={(e) => {
@@ -391,7 +399,15 @@ export function EditForm({ todo, onCancel }: EditFormProps) {
                     <FieldLabel className="font-sm-semi md:font-base-semibold gap-1">
                       마감기한<span className="text-orange-600">*</span>
                     </FieldLabel>
-                    <Popover open={open} onOpenChange={setOpen}>
+                    <Popover
+                      open={open}
+                      onOpenChange={(isOpen) => {
+                        if (!isOpen && tempDate) {
+                          setDate(tempDate);
+                        }
+                        setOpen(isOpen);
+                      }}
+                    >
                       <PopoverTrigger
                         tabIndex={-1}
                         onKeyDown={(e) => {
