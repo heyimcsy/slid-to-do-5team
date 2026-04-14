@@ -39,11 +39,8 @@ export function CommentItem({
   const [isEditing, setIsEditing] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
-  const { data, hasNextPage, isFetchingNextPage, fetchNextPage } = useGetCommentsByParentId(
-    comment.postId,
-    comment.id,
-    showReplies && parentId === null,
-  );
+  const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isLoading, isError, refetch } =
+    useGetCommentsByParentId(comment.postId, comment.id, showReplies && parentId === null);
   const { mutate: toggleLike, isPending: isLikePending } = useToggleCommentLike(
     comment.postId,
     comment.id,
@@ -174,6 +171,17 @@ export function CommentItem({
           )}
           {showReplies && (
             <div className="relative">
+              {isLoading && (
+                <div className="mx-auto my-2 size-4 animate-spin rounded-full border-2 border-orange-500 border-t-transparent" />
+              )}
+              {isError && (
+                <button
+                  onClick={() => void refetch()}
+                  className="font-sm-regular items-center pl-10 text-gray-500 underline"
+                >
+                  다시 시도
+                </button>
+              )}
               <ul className="flex flex-col gap-4 pt-1">
                 {replyComments.map((reply) => (
                   <CommentItem
