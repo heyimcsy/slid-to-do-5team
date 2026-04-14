@@ -10,9 +10,9 @@ import { cn } from '@/lib';
 import { Icon } from '@/components/icon/Icon';
 import { Button } from '@/components/ui/button';
 
-import RecentItemActionBar from './RecentItemActionBar';
+import ItemActionBar from './ItemActionBar';
 
-export default function RecentTodoList({
+export default function TodoList({
   id,
   goalId,
   done,
@@ -52,7 +52,7 @@ export default function RecentTodoList({
           </p>
         </Link>
       </div>
-      <RecentItemActionBar
+      <ItemActionBar
         id={id}
         goalId={goalId}
         noteIds={noteIds}
