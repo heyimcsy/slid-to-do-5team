@@ -55,19 +55,29 @@ export function useAnimatedProgress(
   }, [onFrame, options?.ease]);
 
   const max = options?.max ?? 100;
-  const safeMax = max > 0 ? max : 100;
+  const safeMax = Number.isFinite(max) && max > 0 ? max : 100;
   const durationMs = options?.durationMs ?? PROGRESS_ANIMATION_DURATION_MS;
   const minStepDurationMs = options?.minStepDurationMs ?? MIN_STEP_DURATION_MS;
 
-  const clampedTarget = Math.min(Math.max(0, target), safeMax);
+  const finiteTarget = Number.isFinite(target) ? target : 0;
+  const clampedTarget = Math.min(Math.max(0, finiteTarget), safeMax);
 
   useLayoutEffect(() => {
     clampedTargetRef.current = clampedTarget;
   }, [clampedTarget]);
 
   useEffect(() => {
-    const from = valueRef.current;
+    let from = valueRef.current;
+    if (!Number.isFinite(from)) {
+      from = 0;
+      valueRef.current = 0;
+    }
     const to = clampedTarget;
+    if (!Number.isFinite(to)) {
+      valueRef.current = 0;
+      onFrameRef.current(0, { max: safeMax, percent: 0 });
+      return;
+    }
     if (from === to) return;
 
     // prefers-reduced-motion 이 true면 rAF 없이 즉시 목표값 + onFrame 1회로 처리
@@ -92,7 +102,8 @@ export function useAnimatedProgress(
       }
 
       const t = Math.min(1, (now - startTime) / activeDurationMs);
-      const next = from + (to - from) * ease(t);
+      const nextRaw = from + (to - from) * ease(t);
+      const next = Number.isFinite(nextRaw) ? nextRaw : to;
       valueRef.current = next;
       const percent = safeMax === 0 ? 0 : (next / safeMax) * 100;
       onFrameRef.current(next, { max: safeMax, percent });
