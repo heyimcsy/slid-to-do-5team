@@ -136,7 +136,7 @@ export function CommentItem({
                 type="button"
                 aria-label={isLiked ? '좋아요 취소' : '좋아요'}
                 onClick={handleLikeClick}
-                className="flex items-center gap-1 text-gray-400 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex items-center gap-1 text-gray-400 hover:text-gray-600"
               >
                 <HeartIcon aria-hidden filled={isLiked} width={16} height={16} />
                 {likeCount !== undefined && likeCount > 0 && (
