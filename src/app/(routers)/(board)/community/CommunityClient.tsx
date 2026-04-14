@@ -64,7 +64,11 @@ export default function CommunityClient() {
   const handleSearchChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
 
-    params.set('search', value);
+    if (!value) {
+      params.delete('search');
+    } else {
+      params.set('search', value);
+    }
 
     router.replace(`${pathname}?${params.toString()}`);
   };
