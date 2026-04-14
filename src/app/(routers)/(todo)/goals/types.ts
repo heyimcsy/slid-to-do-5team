@@ -1,9 +1,5 @@
-import type { TodoWithFavorites } from '@/api/todos';
-
 export interface TotalListTabProps {
   goalId: number;
-  todoLists: TodoWithFavorites[];
-  todoListsDone: TodoWithFavorites[];
 }
 
 export interface TodoListProps {
@@ -17,8 +13,8 @@ export interface TodoListProps {
 }
 export interface TodoSectionProps {
   goalId: number;
+  done: boolean;
   title: string;
-  todos: TodoWithFavorites[];
   bgColor: string;
   emptyImage: string;
   emptyText: string;

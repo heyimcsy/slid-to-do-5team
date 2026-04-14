@@ -21,6 +21,7 @@ export const GOALS_TEXT = {
   },
   CALENDAR: '캘린더 보기',
   NOTE_DETAIL_BUTTON: '노트 열기',
+  NO_MORE_TODOS: '할 일을 더 생성해주세요',
 } as const;
 
 export const NOTES_TEXT = {
