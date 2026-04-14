@@ -3,7 +3,7 @@ import { apiClient } from '@/lib/apiClient.browser';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { type PaginatedResponse } from './response';
-import { type TodoWithFavorites } from './todos';
+import { type Todo } from './todos';
 
 const TODOS = 'todos';
 const FAVORITES_URL = (todoId: number) => `/todos/${todoId}/favorites`;
@@ -17,18 +17,15 @@ export const usePostFavorite = () => {
       await queryClient.cancelQueries({ queryKey: [TODOS] });
       const previousTodos = queryClient.getQueriesData({ queryKey: [TODOS] });
 
-      queryClient.setQueriesData(
-        { queryKey: [TODOS] },
-        (old: PaginatedResponse<TodoWithFavorites, 'todos'>) => {
-          if (!old || !old.todos) return old;
-          return {
-            ...old,
-            todos: old.todos.map((todo) =>
-              todo.id === todoId ? { ...todo, favorites: true } : todo,
-            ),
-          };
-        },
-      );
+      queryClient.setQueriesData({ queryKey: [TODOS] }, (old: PaginatedResponse<Todo, 'todos'>) => {
+        if (!old || !old.todos) return old;
+        return {
+          ...old,
+          todos: old.todos.map((todo) =>
+            todo.id === todoId ? { ...todo, isFavorite: true } : todo,
+          ),
+        };
+      });
 
       return { previousTodos };
     },
@@ -55,18 +52,15 @@ export const useDeleteFavorite = () => {
       await queryClient.cancelQueries({ queryKey: [TODOS] });
       const previousTodos = queryClient.getQueriesData({ queryKey: [TODOS] });
 
-      queryClient.setQueriesData(
-        { queryKey: [TODOS] },
-        (old: PaginatedResponse<TodoWithFavorites, 'todos'>) => {
-          if (!old || !old.todos) return old;
-          return {
-            ...old,
-            todos: old.todos.map((todo) =>
-              todo.id === todoId ? { ...todo, favorites: false } : todo,
-            ),
-          };
-        },
-      );
+      queryClient.setQueriesData({ queryKey: [TODOS] }, (old: PaginatedResponse<Todo, 'todos'>) => {
+        if (!old || !old.todos) return old;
+        return {
+          ...old,
+          todos: old.todos.map((todo) =>
+            todo.id === todoId ? { ...todo, isFavorite: false } : todo,
+          ),
+        };
+      });
 
       return { previousTodos };
     },
