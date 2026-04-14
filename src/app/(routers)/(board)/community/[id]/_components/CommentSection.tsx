@@ -3,7 +3,8 @@
 import type { Comment } from '../../types';
 import type { CommentForm } from './CommentInput';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -11,8 +12,6 @@ import { toast } from 'sonner';
 import { useCreateComment, useDeleteComment, useGetComments } from '../../_api/communityQueries';
 import { CommentInput, commentSchema } from './CommentInput';
 import { CommentItem } from './CommentItem';
-
-const VISIBLE_STEP = 5;
 
 interface CommentSectionProps {
   postId: number;
@@ -27,38 +26,15 @@ export function CommentSection({
   isPostDeleting = false,
   onPendingChange,
 }: CommentSectionProps) {
-  const { data: commentsData, isError, isFetching, refetch } = useGetComments(postId);
+  const { data, isError, refetch, fetchNextPage, hasNextPage, isFetchingNextPage, isFetching } =
+    useGetComments(postId);
 
-  const { rootComments, repliesMap } = useMemo(() => {
-    const all = commentsData?.comments ?? [];
-    const rootComments = all.filter((c) => c.parentId === null);
-    const repliesMap = new Map<number, Comment[]>();
-    all
-      .filter((c) => c.parentId !== null)
-      .forEach((c) => {
-        const parentId = c.parentId!;
-        if (!repliesMap.has(parentId)) repliesMap.set(parentId, []);
-        repliesMap.get(parentId)!.push(c);
-      });
-    return { rootComments, repliesMap };
-  }, [commentsData]);
+  const comments: Comment[] = useMemo(
+    () => (data?.pages ?? []).flatMap((page) => page.comments),
+    [data],
+  );
 
-  const [visibleCount, setVisibleCount] = useState(VISIBLE_STEP);
-  const sentinelRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setVisibleCount((prev) => (prev < rootComments.length ? prev + VISIBLE_STEP : prev));
-      }
-    });
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [rootComments.length]);
+  const { observerRef } = useInfiniteScroll({ hasNextPage, isFetchingNextPage, fetchNextPage });
 
   const { mutate: createComment, isPending: isCreating } = useCreateComment(postId);
   const { mutate: deleteComment, isPending: isDeleting } = useDeleteComment(postId);
@@ -86,15 +62,12 @@ export function CommentSection({
     );
   };
 
-  const visibleComments = rootComments.slice(0, visibleCount);
-  const hasMore = visibleCount < rootComments.length;
-
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-0.5">
         <span className="font-base-semibold md:font-lg-semibold text-gray-800">댓글</span>
         <span className="font-base-semibold md:font-lg-semibold text-orange-600">
-          {rootComments.length}
+          {data?.pages[0]?.totalCount}
         </span>
       </div>
 
@@ -123,19 +96,18 @@ export function CommentSection({
       ) : (
         <>
           <ul className="flex flex-col gap-8 md:gap-10">
-            {visibleComments.map((comment) => (
+            {comments.map((comment) => (
               <CommentItem
                 key={comment.id}
                 comment={comment}
                 isMyComment={comment.userId === userId}
                 onDelete={deleteComment}
                 isDeleting={isBusy}
-                replies={repliesMap.get(comment.id)}
                 userId={userId}
               />
             ))}
           </ul>
-          {hasMore && <div ref={sentinelRef} className="h-4" />}
+          <div ref={observerRef} />
         </>
       )}
     </div>
