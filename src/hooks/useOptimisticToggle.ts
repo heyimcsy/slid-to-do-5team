@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useDebouncedCallback } from './useDebounceCallback';
 
@@ -18,6 +18,13 @@ export const useOptimisticToggle = ({
   const [value, setValue] = useState(serverValue);
   const [count, setCount] = useState(serverCount);
   const valueRef = useRef(serverValue);
+
+  useEffect(() => {
+    if (valueRef.current === serverValue) {
+      setValue(serverValue);
+      setCount(serverCount);
+    }
+  }, [serverValue, serverCount]);
 
   const debouncedCall = useDebouncedCallback(
     (currentServerValue: boolean, currentServerCount?: number) => {
