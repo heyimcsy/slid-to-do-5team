@@ -2,7 +2,9 @@
 
 import type { Editor } from '@tiptap/react';
 
-import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -15,6 +17,12 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 
+const linkSchema = z.object({
+  url: z.string().url({ message: '올바른 링크 형식을 입력해주세요' }),
+});
+
+type LinkFormValues = z.infer<typeof linkSchema>;
+
 interface LinkModalProps {
   editor: Editor;
   onClose: () => void;
@@ -23,16 +31,20 @@ interface LinkModalProps {
 
 export function LinkModal({ editor, onClose, onLinkConfirm }: LinkModalProps) {
   const existingUrl = editor.getAttributes('link').href ?? '';
-  const [url, setUrl] = useState(existingUrl);
 
-  const handleConfirm = () => {
-    if (!url.trim()) {
-      editor.chain().focus().unsetLink().run();
-      onClose();
-      return;
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<LinkFormValues>({
+    resolver: zodResolver(linkSchema),
+    defaultValues: { url: existingUrl },
+    mode: 'onSubmit',
+  });
+
+  const onSubmit = ({ url }: LinkFormValues) => {
     editor.chain().focus().setLink({ href: url.trim() }).run();
-    onLinkConfirm?.(url.trim()); // ← 부모로 URL 전달
+    onLinkConfirm?.(url.trim());
     onClose();
   };
 
@@ -42,13 +54,15 @@ export function LinkModal({ editor, onClose, onLinkConfirm }: LinkModalProps) {
         <DialogHeader>
           <DialogTitle>링크 업로드</DialogTitle>
         </DialogHeader>
-        <Input
-          autoFocus
-          placeholder="링크를 입력해주세요"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleConfirm()}
-        />
+        <div className="space-y-1">
+          <Input
+            autoFocus
+            placeholder="링크를 입력해주세요"
+            {...register('url')}
+            onKeyDown={(e) => e.key === 'Enter' && handleSubmit(onSubmit)()}
+          />
+          {errors.url && <p className="text-xs text-red-500">{errors.url.message}</p>}
+        </div>
         <DialogFooter>
           <DialogClose
             render={
@@ -57,7 +71,12 @@ export function LinkModal({ editor, onClose, onLinkConfirm }: LinkModalProps) {
               </Button>
             }
           />
-          <Button onClick={handleConfirm} variant="default" className="w-1/2">
+          <Button
+            onClick={handleSubmit(onSubmit)}
+            variant="default"
+            className="w-1/2"
+            disabled={!isValid}
+          >
             확인
           </Button>
         </DialogFooter>
