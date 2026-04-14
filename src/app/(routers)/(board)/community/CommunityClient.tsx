@@ -70,7 +70,7 @@ export default function CommunityClient() {
       params.set('search', value);
     }
 
-    router.replace(`${pathname}?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   if (isLoading) return <PostListSkeleton />;
