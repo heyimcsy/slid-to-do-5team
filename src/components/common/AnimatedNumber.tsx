@@ -40,7 +40,7 @@ export function AnimatedNumber({
   useLayoutEffect(() => {
     const el = numberRef.current;
     if (el) el.textContent = String(Math.round(valueRef.current));
-  });
+  }, [clamped, valueRef]);
 
   return (
     <span ref={numberRef} className={cn(className)} suppressHydrationWarning>
