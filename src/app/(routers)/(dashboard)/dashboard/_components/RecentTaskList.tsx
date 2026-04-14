@@ -57,7 +57,7 @@ export function RecentTaskList() {
           </Link>
         </section>
       </div>
-      <div className="flex min-h-46.5 w-full flex-col justify-center rounded-[1.75rem] bg-orange-500 px-4 py-4.5 text-white transition-shadow duration-300 hover:shadow-[0_10px_40px_0_oklch(0.7654_0.134_48.24/0.4)] md:min-h-46.5 md:rounded-[1.75rem] md:px-4 md:py-4.5 lg:min-h-64 lg:rounded-[2.5rem] lg:px-8 lg:py-7.5 dark:bg-orange-300 dark:text-black">
+      <div className="flex h-47 w-full flex-col justify-center rounded-[1.75rem] bg-orange-500 px-4 py-4.5 text-white transition-shadow duration-300 hover:shadow-[0_10px_40px_0_oklch(0.7654_0.134_48.24/0.4)] md:max-h-47 md:min-h-46.5 md:rounded-[1.75rem] md:px-4 md:py-4.5 lg:min-h-64 lg:rounded-[2.5rem] lg:px-8 lg:py-7.5 dark:bg-orange-300 dark:text-black">
         {recentTodos.length === 0 ? (
           <div className="flex items-center justify-center">최근에 등록한 할 일이 없어요</div>
         ) : (

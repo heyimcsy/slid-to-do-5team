@@ -29,7 +29,7 @@ export default function RecentTodoList({
     <div
       className={cn(
         'group rounded-[12px] duration-300 hover:bg-orange-600 dark:hover:bg-orange-400',
-        'flex h-9 min-h-9 w-full items-center justify-between space-x-[6px] px-1 md:h-11 md:min-h-11 md:px-2',
+        'flex h-10 min-h-10 w-full items-center justify-between space-x-[6px] px-1 md:h-10 md:min-h-10 md:px-2 lg:h-12 lg:min-h-12',
       )}
     >
       <div className="flex w-full min-w-0 items-center space-x-1 md:space-x-2">
