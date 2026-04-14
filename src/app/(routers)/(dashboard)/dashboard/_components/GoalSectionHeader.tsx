@@ -11,11 +11,13 @@ import { IconButton } from '@/components/ui/button';
 import { GoalSectionTitleWithProgress } from './GoalSectionTitleWithProgress';
 
 export function GoalSectionHeader({
+  goalId,
   title,
   progress,
   searchQuery,
   onSearchChange,
 }: {
+  goalId: number;
   title: string;
   progress: number;
   searchQuery: string;
@@ -25,7 +27,7 @@ export function GoalSectionHeader({
 
   /** `/goals/todos/new` → `(todo)/@modal/(.)goals/todos/new`가 인터셉트되면 NewForm 모달, 아니면 동일 URL 전체 페이지 */
   const handleNewGoal = () => {
-    router.push(ROUTES.TODO_NEW);
+    router.push(`${ROUTES.TODO_NEW}?goalId=${goalId}`);
   };
   return (
     <div className="goal-section-header grid w-full grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-4 px-2 pb-3 md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-center md:gap-4">
