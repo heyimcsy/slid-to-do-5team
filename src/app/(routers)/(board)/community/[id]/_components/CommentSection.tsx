@@ -94,19 +94,21 @@ export function CommentSection({
           </button>
         </div>
       ) : (
-        <ul className="flex flex-col gap-8 md:gap-10">
-          {comments.map((comment) => (
-            <CommentItem
-              key={comment.id}
-              comment={comment}
-              isMyComment={comment.userId === userId}
-              onDelete={deleteComment}
-              isDeleting={isBusy}
-              userId={userId}
-            />
-          ))}
+        <>
+          <ul className="flex flex-col gap-8 md:gap-10">
+            {comments.map((comment) => (
+              <CommentItem
+                key={comment.id}
+                comment={comment}
+                isMyComment={comment.userId === userId}
+                onDelete={deleteComment}
+                isDeleting={isBusy}
+                userId={userId}
+              />
+            ))}
+          </ul>
           <div ref={observerRef} />
-        </ul>
+        </>
       )}
     </div>
   );
