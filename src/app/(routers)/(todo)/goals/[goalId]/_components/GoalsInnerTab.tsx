@@ -49,12 +49,12 @@ export default function GoalsInnerTab({ goalId }: { goalId: number }) {
           <GoalsTab goalId={goalId} goalData={goalData} />
           <div className="flex flex-col space-y-4 md:flex-row md:space-x-5 lg:w-1/2 lg:flex-row lg:space-y-0 lg:space-x-6">
             {/*목표 진행도*/}
-            <div className="flex h-40 w-full items-center justify-center space-x-8 rounded-[16px] bg-orange-500 text-white hover:shadow-2xl hover:shadow-orange-300 lg:w-1/2">
+            <div className="flex h-40 w-full items-center justify-center space-x-6 rounded-[16px] bg-orange-500 text-white hover:shadow-2xl hover:shadow-orange-300 lg:w-1/2">
               <DonutProgress
                 trackColor={DONUT_PROGRESS_COLORS.TRACK_COLOR}
                 value={progressPercent}
               />
-              <div className="flex flex-col items-center justify-start">
+              <div className="flex w-24 flex-col items-center justify-start">
                 <h3 className="font-lg-bold">{GOALS_TEXT.PROGRESS_LABEL}</h3>
                 <p className="display-lg-bold">
                   {progressPercent}
