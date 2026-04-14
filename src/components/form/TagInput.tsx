@@ -1,20 +1,15 @@
 'use client';
 
+import type { Tag, TagColor } from '@/types/tag';
 import type { KeyboardEvent } from 'react';
 
 import React, { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { COLORS } from '@/types/tag';
+
 import { Badge } from '@/components/ui/badge';
 import { Field, FieldLabel } from '@/components/ui/field';
-
-const COLORS = ['gray', 'green', 'yellow', 'red', 'purple'] as const;
-type TagColor = (typeof COLORS)[number];
-
-interface Tag {
-  name: string;
-  color: TagColor;
-}
 
 interface Props {
   value: Tag[];

@@ -12,7 +12,7 @@ interface Props {
   register: UseFormRegister<FormValues>;
 }
 
-export const TitleInput = React.memo(function TagInput({ register }: Props) {
+export const TitleInput = React.memo(function TitleInput({ register }: Props) {
   const { onChange, ...rest } = register('title');
 
   return (

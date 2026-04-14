@@ -1,6 +1,7 @@
 'use client';
 
 import type { Todo } from '@/api/todos';
+import type { FormValues } from '@/types/form';
 import type { Tag } from '@/types/tag';
 
 import { useEffect, useState } from 'react';
@@ -10,10 +11,10 @@ import { uploadImage } from '@/api/images';
 import { usePatchTodos } from '@/api/todos';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import z from 'zod';
 
+import { schema } from '@/types/form';
 import { formatDate } from '@/utils/date';
 
 import { ImageUploadInput } from '@/components/common/ImageUploadInput';
@@ -44,20 +45,6 @@ import { Spinner } from '@/components/ui/spinner';
 
 const COLORS = ['gray', 'green', 'yellow', 'red', 'purple'] as const;
 
-type FormValues = z.infer<typeof schema>;
-
-const schema = z.object({
-  title: z.string().min(1),
-  link: z
-    .string()
-    .regex(
-      /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z]{2,24}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/,
-      '올바른 URL 형식을 입력해주세요 (예: http://www.example.com)',
-    )
-    .optional()
-    .or(z.literal('')),
-});
-
 interface EditFormProps {
   todo: Todo;
   onCancel: () => void;
@@ -85,15 +72,7 @@ export function EditForm({ todo, onCancel }: EditFormProps) {
   const [tags, setTags] = useState<Tag[]>(initialTags);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const {
-    getValues,
-    control,
-    register,
-    setValue,
-    trigger,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormValues>({
+  const { getValues, control, register, setValue, trigger, handleSubmit } = useForm<FormValues>({
     mode: 'onChange',
     reValidateMode: 'onBlur',
     resolver: zodResolver(schema),
@@ -103,16 +82,6 @@ export function EditForm({ todo, onCancel }: EditFormProps) {
   useEffect(() => {
     if (isSuccess) router.back();
   }, [isSuccess, router]);
-
-  const link = useWatch({ control, name: 'link' });
-
-  const handleLinkValidate = async () => {
-    const isValid = await trigger('link');
-    if (!isValid) {
-      const error = errors.link?.message;
-      if (error) toast.error(error);
-    }
-  };
 
   const isValid = selectedGoalId !== null && date !== undefined;
 
@@ -451,34 +420,12 @@ export function EditForm({ todo, onCancel }: EditFormProps) {
                   </Field>
                   <TagInput value={tags} onChange={setTags} />
 
-                  <Field>
-                    <FieldLabel className="font-sm-semi md:font-base-semibold">링크</FieldLabel>
-                    <Input
-                      type="url"
-                      {...register('link')}
-                      placeholder="링크를 업로드해주세요"
-                      className="w-full border-dashed bg-gray-50"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleLinkValidate();
-                        }
-                      }}
-                      onBlur={handleLinkValidate}
-                      startAdornment={
-                        <button type="button">
-                          <Icon name="linkEditor" />
-                        </button>
-                      }
-                      endAdornment={
-                        link && (
-                          <button type="button" onClick={() => setValue('link', '')}>
-                            <Icon name="close" color="gray" />
-                          </button>
-                        )
-                      }
-                    />
-                  </Field>
+                  <LinkInput
+                    control={control}
+                    register={register}
+                    trigger={trigger}
+                    setValue={setValue}
+                  />
 
                   <Field>
                     <FieldLabel className="font-sm-semi md:font-base-semibold">이미지</FieldLabel>
