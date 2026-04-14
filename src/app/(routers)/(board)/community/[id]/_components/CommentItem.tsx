@@ -2,7 +2,9 @@
 
 import type { Comment } from '../../types';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { useOptimisticToggle } from '@/hooks/useOptimisticToggle';
 import { cn } from '@/lib';
 import { toast } from 'sonner';
 
@@ -13,7 +15,7 @@ import { KebabMenu } from '@/components/common/KebabMenu';
 import { Icon } from '@/components/icon/Icon';
 import { HeartIcon } from '@/components/icon/icons/Heart';
 
-import { useToggleCommentLike } from '../../_api/communityQueries';
+import { useGetCommentsByParentId, useToggleCommentLike } from '../../_api/communityQueries';
 import { WriterAvatar } from '../../_components/WriterAvatar';
 import { CommentEditForm } from './CommentEditForm';
 import { ReplyForm } from './ReplyForm';
@@ -23,9 +25,7 @@ interface CommentItemProps {
   isMyComment: boolean;
   onDelete: (commentId: number, options?: { onError?: () => void }) => void;
   isDeleting: boolean;
-  replies?: Comment[];
   userId?: number;
-  isReply?: boolean;
 }
 
 export function CommentItem({
@@ -33,28 +33,46 @@ export function CommentItem({
   isMyComment,
   onDelete,
   isDeleting,
-  replies,
   userId,
-  isReply = false,
 }: CommentItemProps) {
-  const { content, createdAt, writer } = comment;
+  const { content, createdAt, writer, replyCount, parentId } = comment;
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
-  const { mutate: toggleLike, isPending: isLikePending } = useToggleCommentLike(
+
+  const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isLoading, isError, refetch } =
+    useGetCommentsByParentId(comment.postId, comment.id, showReplies && parentId === null);
+
+  const { mutate: toggleLike } = useToggleCommentLike(
     comment.postId,
     comment.id,
+    comment.parentId ?? undefined,
   );
+
+  const isReply = parentId !== null;
+
+  const replyComments: Comment[] = useMemo(
+    () => (data?.pages ?? []).flatMap((page) => page.comments),
+    [data],
+  );
+
+  const { observerRef } = useInfiniteScroll({ hasNextPage, isFetchingNextPage, fetchNextPage });
 
   const kebabItems = [
     { label: '수정하기', onClick: () => setIsEditing(true) },
     { label: '삭제하기', onClick: () => setDeleteDialogOpen(true), variant: 'danger' as const },
   ];
 
-  const handleLikeClick = () => {
-    toggleLike(comment.isLiked);
-  };
+  const {
+    value: isLiked,
+    count: likeCount,
+    toggle: handleLikeClick,
+  } = useOptimisticToggle({
+    serverValue: comment.isLiked,
+    serverCount: comment.likeCount,
+    onToggle: (serverIsLiked, { onError }) => toggleLike(serverIsLiked, { onError }),
+  });
 
   return (
     <li className={cn('flex flex-col gap-4', isReply && 'pl-10')}>
@@ -116,14 +134,13 @@ export function CommentItem({
               </span>
               <button
                 type="button"
-                aria-label={comment.isLiked ? '좋아요 취소' : '좋아요'}
+                aria-label={isLiked ? '좋아요 취소' : '좋아요'}
                 onClick={handleLikeClick}
-                disabled={isLikePending}
-                className="flex items-center gap-1 text-gray-400 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex items-center gap-1 text-gray-400 hover:text-gray-600"
               >
-                <HeartIcon aria-hidden filled={comment.isLiked} width={16} height={16} />
-                {comment.likeCount > 0 && (
-                  <span className="font-xs-regular">{comment.likeCount}</span>
+                <HeartIcon aria-hidden filled={isLiked} width={16} height={16} />
+                {likeCount !== undefined && likeCount > 0 && (
+                  <span className="font-xs-regular">{likeCount}</span>
                 )}
               </button>
               {!isReply && (
@@ -152,7 +169,7 @@ export function CommentItem({
         />
       )}
 
-      {!isReply && replies && replies.length > 0 && (
+      {!isReply && replyCount > 0 && (
         <>
           {!showReplies && (
             <button
@@ -160,21 +177,32 @@ export function CommentItem({
               onClick={() => setShowReplies(true)}
               className="font-xs-semibold flex items-center gap-1 text-gray-400"
             >
-              <span>답글 {replies.length}개 보기</span>
+              <span>답글 {replyCount}개 보기</span>
               <Icon name="arrow" direction="down" />
             </button>
           )}
           {showReplies && (
             <div className="relative">
+              {isLoading && (
+                <div className="mx-auto my-2 size-4 animate-spin rounded-full border-2 border-orange-500 border-t-transparent" />
+              )}
+              {isError && (
+                <button
+                  type="button"
+                  onClick={() => void refetch()}
+                  className="font-sm-regular items-center pl-10 text-gray-500 underline"
+                >
+                  다시 시도
+                </button>
+              )}
               <ul className="flex flex-col gap-4 pt-1">
-                {replies.map((reply) => (
+                {replyComments.map((reply) => (
                   <CommentItem
                     key={reply.id}
                     comment={reply}
                     isMyComment={reply.userId === userId}
                     onDelete={onDelete}
                     isDeleting={isDeleting}
-                    isReply
                   />
                 ))}
               </ul>
@@ -186,6 +214,7 @@ export function CommentItem({
                 <span>답글 숨기기</span>
                 <Icon name="arrow" direction="up" />
               </button>
+              <div ref={observerRef} />
             </div>
           )}
         </>

@@ -6,7 +6,12 @@ import { notFound } from 'next/navigation';
 import { apiClientServer } from '@/lib/apiClient.server';
 import { QueryClient } from '@tanstack/react-query';
 
-import { BEST_POSTS_LIMIT, communityQueryKeys, POSTS_PAGE_LIMIT } from './communityQueryKeys';
+import {
+  BEST_POSTS_LIMIT,
+  COMMENTS_PAGE_LIMIT,
+  communityQueryKeys,
+  POSTS_PAGE_LIMIT,
+} from './communityQueryKeys';
 
 const getPostsServer = (type: 'all' | 'best' = 'all') =>
   apiClientServer<PostsResponse>(`/posts?type=${type}&limit=${POSTS_PAGE_LIMIT}`, { retry: false });
@@ -18,7 +23,10 @@ const getPostByIdServer = (postId: number) =>
   apiClientServer<Post>(`/posts/${postId}`, { retry: false });
 
 const getCommentsServer = (postId: number) =>
-  apiClientServer<CommentsResponse>(`/posts/${postId}/comments`, { retry: false });
+  apiClientServer<CommentsResponse>(
+    `/posts/${postId}/comments?limit=${COMMENTS_PAGE_LIMIT}&parentId=null`,
+    { retry: false },
+  );
 
 export const prefetchPostsList = (queryClient: QueryClient) =>
   Promise.all([
@@ -43,9 +51,10 @@ export const prefetchPostDetail = async (queryClient: QueryClient, postId: numbe
       .catch(() => {
         notFound();
       }),
-    queryClient.prefetchQuery({
+    queryClient.prefetchInfiniteQuery({
       queryKey: communityQueryKeys.comments(postId),
       queryFn: () => getCommentsServer(postId),
+      initialPageParam: undefined as string | undefined,
     }),
   ]);
 };
