@@ -1,24 +1,3 @@
-// export async function GET(request: Request) {
-//   const { searchParams } = new URL(request.url);
-//   const url = searchParams.get('url');
-//
-//   if (!url) return Response.json({ image: null });
-//
-//   try {
-//     const res = await fetch(url);
-//     const html = await res.text();
-//
-//     const match =
-//       html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/) ||
-//       html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/);
-//
-//     return Response.json({ image: match?.[1] ?? null });
-//   } catch {
-//     return Response.json({ image: null });
-//   }
-// }
-// 비용이 안든다
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const url = searchParams.get('url');
@@ -61,13 +40,20 @@ export async function GET(request: Request) {
       ? faviconHref.startsWith('http')
         ? faviconHref
         : `${origin}${faviconHref.startsWith('/') ? '' : '/'}${faviconHref}`
-      : `${origin}/favicon.ico`; // 없으면 기본 경로 시도
+      : `${origin}/favicon.ico`;
+
+    // 외부 URL을 프록시 URL로 변환
+    const proxiedFavicon = `/api/og-image?url=${encodeURIComponent(favicon)}`;
+    console.log(ogImage?.[1]);
+    const proxiedImage = ogImage?.[1]
+      ? `/api/og-image?url=${encodeURIComponent(ogImage[1])}`
+      : null;
 
     return Response.json({
-      image: ogImage?.[1] ?? null,
+      image: proxiedImage,
       title: ogTitle?.[1] ?? null,
       description: ogDescription?.[1] ?? null,
-      favicon,
+      favicon: proxiedFavicon,
     });
   } catch {
     return Response.json({ image: null, title: null, description: null, favicon: null });
