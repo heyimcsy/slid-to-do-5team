@@ -1,4 +1,4 @@
-import { favoritesQueryKeys } from '@/app/(routers)/favorites/_api/favoritesQueries';
+import { favoritesQueryKeys } from '@/app/(routers)/favorites/_api/favoritesQueryKeys';
 import { apiClient } from '@/lib/apiClient.browser';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 

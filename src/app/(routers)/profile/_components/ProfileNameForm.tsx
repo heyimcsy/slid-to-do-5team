@@ -1,19 +1,10 @@
-import type { ProfileFormValues } from '../hooks/useProfileForm';
-import type { FieldErrors, UseFormRegister } from 'react-hook-form';
+import type { ProfileNameFormProps } from '@/app/(routers)/profile/types';
 
+import { EMAIL, NAME, PROFILE_TEXT } from '@/app/(routers)/profile/constants';
 import { cn } from '@/lib';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-
-interface ProfileNameFormProps {
-  register: UseFormRegister<ProfileFormValues>;
-  errors: FieldErrors<ProfileFormValues>;
-  email: string;
-  isNameChanged: boolean;
-  checkData: { available: boolean } | undefined;
-  onCheckNickname: () => void;
-}
 
 export default function ProfileNameForm({
   register,
@@ -22,43 +13,47 @@ export default function ProfileNameForm({
   isNameChanged,
   checkData,
   onCheckNickname,
+  oauthProvider,
 }: ProfileNameFormProps) {
   return (
     <div className="w-full space-y-4">
       <div className="flex flex-col space-y-2">
-        <label htmlFor="email" className="font-sm-semibold text-gray-700">
-          이메일
+        <label htmlFor={EMAIL} className="font-sm-semibold text-gray-700">
+          {PROFILE_TEXT.EMAIL}
         </label>
-        <Input id="email" value={email} readOnly disabled />
+        <Input id={EMAIL} value={email} readOnly disabled />
       </div>
 
       <div className="flex flex-col space-y-2">
-        <label htmlFor="name" className="font-sm-semibold text-gray-700">
-          이름
+        <label htmlFor={NAME} className="font-sm-semibold text-gray-700">
+          {PROFILE_TEXT.NAME}
         </label>
         <div className="flex gap-1">
           <div className="min-w-0 flex-1">
             <Input
               maxLength={20}
-              id="name"
-              {...register('name')}
-              placeholder="닉네임을 입력해주세요"
+              id={NAME}
+              {...register(NAME)}
+              placeholder={PROFILE_TEXT.NAME_PLACEHOLDER}
+              disabled={oauthProvider}
             />
           </div>
-          <Button
-            type="button"
-            disabled={!isNameChanged}
-            className="shrink-0"
-            onClick={onCheckNickname}
-          >
-            중복확인
-          </Button>
+          {!oauthProvider && (
+            <Button
+              type="button"
+              disabled={!isNameChanged}
+              className="shrink-0"
+              onClick={onCheckNickname}
+            >
+              {PROFILE_TEXT.DUPLICATE}
+            </Button>
+          )}
         </div>
         <p className="font-xs-regular h-4">
           {errors.name?.message && <span className="text-red-500">{errors.name.message}</span>}
           {checkData !== undefined && (
             <span className={cn(checkData.available ? 'text-blue-400' : 'text-red-500')}>
-              {checkData.available ? '사용 가능한 이름입니다.' : '중복된 이름입니다.'}
+              {checkData.available ? PROFILE_TEXT.CHECK.POSSIBLE : PROFILE_TEXT.CHECK.IMPOSSIBLE}
             </span>
           )}
         </p>

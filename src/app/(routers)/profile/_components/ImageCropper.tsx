@@ -2,41 +2,58 @@
 
 import type { Crop } from 'react-image-crop';
 
-import { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 
 import 'react-image-crop/dist/ReactCrop.css';
 
-import { uploadImage } from '@/api/images';
+import type { ImageCropperProps } from '@/app/(routers)/profile/types';
+
+import { PROFILE_TEXT } from '@/app/(routers)/profile/constants';
+
+import { DIALOG_VALUE } from '@/constants/ui-label';
 
 import { Icon } from '@/components/icon/Icon';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 
-interface ImageCropperProps {
-  onCropComplete: (uploadImage: string) => void;
-}
+const MAX_SIZE = 400;
+const COMPRESS_QUALITY = 0.8;
 
 export default function ImageCropper({ onCropComplete }: ImageCropperProps) {
-  const [isUploading, setIsUploading] = useState(false);
   const [src, setSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState<Crop>();
   const [open, setOpen] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
+  const objectUrlRef = useRef<string | null>(null);
+  const originalFileRef = useRef<File | null>(null);
+
+  const cleanupObjectUrl = () => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+    setSrc(null);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    originalFileRef.current = file;
+    cleanupObjectUrl();
     const url = URL.createObjectURL(file);
+    objectUrlRef.current = url;
     setSrc(url);
     setOpen(true);
+
+    e.target.value = '';
   };
 
-  // 이미지 로드 시 기본 크롭 영역 설정
   const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const { width, height } = e.currentTarget;
     const crop = centerCrop(
-      makeAspectCrop({ unit: '%', width: 80 }, 1, width, height), // 1:1 비율
+      makeAspectCrop({ unit: '%', width: 80 }, 1, width, height),
       width,
       height,
     );
@@ -46,7 +63,6 @@ export default function ImageCropper({ onCropComplete }: ImageCropperProps) {
   const handleCropConfirm = () => {
     if (!imgRef.current || !crop) return;
 
-    const canvas = document.createElement('canvas');
     const image = imgRef.current;
     const scaleX = image.naturalWidth / image.width;
     const scaleY = image.naturalHeight / image.height;
@@ -56,35 +72,38 @@ export default function ImageCropper({ onCropComplete }: ImageCropperProps) {
     const cropWidth = (crop.width / 100) * image.width * scaleX;
     const cropHeight = (crop.height / 100) * image.height * scaleY;
 
-    canvas.width = cropWidth;
-    canvas.height = cropHeight;
+    // 최대 크기 제한으로 압축
+    const scale = Math.min(1, MAX_SIZE / Math.max(cropWidth, cropHeight));
+    const canvasWidth = Math.round(cropWidth * scale);
+    const canvasHeight = Math.round(cropHeight * scale);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // 동그랗게 자르기
+    // 원형 클리핑
     ctx.beginPath();
-    ctx.arc(cropWidth / 2, cropHeight / 2, cropWidth / 2, 0, Math.PI * 2);
+    ctx.arc(canvasWidth / 2, canvasHeight / 2, canvasWidth / 2, 0, Math.PI * 2);
     ctx.clip();
-    ctx.drawImage(image, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+    ctx.drawImage(image, cropX, cropY, cropWidth, cropHeight, 0, 0, canvasWidth, canvasHeight);
 
-    canvas.toBlob(async (blob) => {
-      if (!blob) return;
-      const file = new File([blob], 'profile.png', { type: 'image/png' });
-
-      try {
-        setIsUploading(true);
-        const imageUrl = await uploadImage(file); // ← presigned URL 업로드
-        onCropComplete(imageUrl); // ← URL 전달
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) return;
+        const file = new File([blob], 'profile.webp', { type: 'image/webp' });
+        onCropComplete(file);
         setOpen(false);
-      } catch (e) {
-        console.error('이미지 업로드 실패', e);
-      } finally {
-        setIsUploading(false);
-      }
-    }, 'image/png');
+        cleanupObjectUrl();
+      },
+      'image/webp',
+      COMPRESS_QUALITY,
+    );
   };
 
+  useEffect(() => cleanupObjectUrl, []);
   return (
     <>
       <label htmlFor="profile" className="cursor-pointer">
@@ -98,9 +117,15 @@ export default function ImageCropper({ onCropComplete }: ImageCropperProps) {
         onChange={handleFileChange}
       />
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="w-86 md:w-114">
-          <p className="font-base-semibold pb-2 text-gray-800">프로필 이미지 편집</p>
+      <Dialog
+        open={open}
+        onOpenChange={(nextOpen) => {
+          setOpen(nextOpen);
+          if (!nextOpen) cleanupObjectUrl();
+        }}
+      >
+        <DialogContent className="w-86 md:w-114" aria-label={PROFILE_TEXT.IMAGE_EDIT}>
+          <p className="font-base-semibold pb-2 text-gray-800">{PROFILE_TEXT.IMAGE_EDIT}</p>
           {src && (
             <ReactCrop
               crop={crop}
@@ -118,11 +143,18 @@ export default function ImageCropper({ onCropComplete }: ImageCropperProps) {
             </ReactCrop>
           )}
           <DialogFooter className="pt-4">
-            <Button variant="ghost" className="w-1/2" onClick={() => setOpen(false)}>
-              취소
+            <Button
+              variant="ghost"
+              className="w-1/2"
+              onClick={() => {
+                setOpen(false);
+                cleanupObjectUrl();
+              }}
+            >
+              {DIALOG_VALUE.BUTTON.CANCEL}
             </Button>
             <Button variant="default" className="w-1/2" onClick={handleCropConfirm}>
-              {isUploading ? '업로드 중...' : '확인'}
+              {DIALOG_VALUE.BUTTON.CONFIRM}
             </Button>
           </DialogFooter>
         </DialogContent>

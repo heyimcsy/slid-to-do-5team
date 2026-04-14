@@ -18,7 +18,7 @@ import { ScrollToTop } from '@/components/common/ScrollToTop';
 import { ErrorFallback } from '@/components/ErrorFallback';
 import { Icon } from '@/components/icon/Icon';
 
-import { useDeletePost, useGetComments, useGetPostById } from '../_api/communityQueries';
+import { useDeletePost, useGetPostById } from '../_api/communityQueries';
 import { WriterAvatar } from '../_components/WriterAvatar';
 import { extractImagesFromContent } from '../_utils/extractImagesFromContent';
 import { CommentSection } from './_components/CommentSection';
@@ -29,7 +29,6 @@ interface PostDetailClientProps {
 }
 
 export function PostDetailClient({ postId }: PostDetailClientProps) {
-  useGetComments(postId);
   const { data: post, isLoading: isPostLoading, isError, refetch } = useGetPostById(postId);
   const { data: user } = useGetMe();
   const userId = Number(user?.id);

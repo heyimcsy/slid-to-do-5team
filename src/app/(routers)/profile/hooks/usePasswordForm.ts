@@ -1,42 +1,55 @@
+import {
+  CONFIRM_PASSWORD,
+  CURRENT_PASSWORD,
+  NEW_PASSWORD,
+  PROFILE_TEXT,
+} from '@/app/(routers)/profile/constants';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { usePatchPassword } from '../api/users';
 
 const passwordSchema = z
   .object({
-    currentPassword: z.string().min(1, '현재 비밀번호를 입력해주세요'),
-    newPassword: z.string().min(8, '비밀번호는 8자 이상이어야 합니다'),
-    confirmPassword: z.string().min(1, '비밀번호를 다시 입력해주세요'),
+    currentPassword: z.string().min(1, PROFILE_TEXT.CURRENT_PASSWORD),
+    newPassword: z.string().min(8, PROFILE_TEXT.PASSWORD_LENGTH),
+    confirmPassword: z.string().min(1, PROFILE_TEXT.REPEAT_PASSWORD),
   })
   .refine((d) => d.currentPassword !== d.newPassword, {
-    message: '기존 비밀번호와 새 비밀번호가 일치합니다.',
-    path: ['newPassword'],
+    message: PROFILE_TEXT.DUPLICATE_PASSWORD,
+    path: [NEW_PASSWORD],
   })
   .refine((d) => d.newPassword === d.confirmPassword, {
-    message: '비밀번호가 일치하지 않습니다',
-    path: ['confirmPassword'],
+    message: PROFILE_TEXT.PASSWORD_UNSAME,
+    path: [CONFIRM_PASSWORD],
   });
 
 export type PasswordFormValues = z.infer<typeof passwordSchema>;
 
 export function usePasswordForm() {
-  const { mutateAsync: patchPassword } = usePatchPassword({
-    onSuccess: (data) => toast.success(data.message),
-    onError: (error) => toast.error(error.message),
-  });
-
   const {
     control,
     formState: { errors },
     reset,
     trigger,
     getValues,
+    setError,
   } = useForm<PasswordFormValues>({
     resolver: zodResolver(passwordSchema),
     defaultValues: { currentPassword: '', newPassword: '', confirmPassword: '' },
+    mode: 'onBlur',
+  });
+
+  const { mutateAsync: patchPassword } = usePatchPassword({
+    onError: (error) => {
+      if (error.code === 'INVALID_CREDENTIALS') {
+        setError(CURRENT_PASSWORD, {
+          message: PROFILE_TEXT.CURRENT_PASSWORD_UNSAME,
+        });
+        return;
+      }
+    },
   });
 
   const submitPassword = async () => {
