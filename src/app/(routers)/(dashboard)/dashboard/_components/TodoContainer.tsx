@@ -40,6 +40,15 @@ export function TodoContainer({
     fetchNextPage: doneQuery.fetchNextPage,
   });
 
+  const q = searchQuery.trim();
+  const pendingSearchNoResults =
+    q.length > 0 &&
+    todoList.length === 0 &&
+    pendingTodosRaw.length > 0 &&
+    !pendingQuery.hasNextPage;
+  const doneSearchNoResults =
+    q.length > 0 && doneList.length === 0 && doneTodosRaw.length > 0 && !doneQuery.hasNextPage;
+
   return (
     <div className="flex min-h-0 flex-col gap-x-8 gap-y-2 md:flex-row md:gap-2 lg:flex-row lg:gap-8">
       <TodoListSection
@@ -54,6 +63,7 @@ export function TodoContainer({
         showScrollTail={Boolean(pendingQuery.hasNextPage || todoList.length > 0)}
         scrollSentinelRef={pendingObserverRef}
         isFetchingNextPage={pendingQuery.isFetchingNextPage}
+        isSearchNoResults={pendingSearchNoResults}
       />
 
       <TodoListSection
@@ -68,6 +78,7 @@ export function TodoContainer({
         showScrollTail={Boolean(doneQuery.hasNextPage || doneList.length > 0)}
         scrollSentinelRef={doneObserverRef}
         isFetchingNextPage={doneQuery.isFetchingNextPage}
+        isSearchNoResults={doneSearchNoResults}
       />
     </div>
   );

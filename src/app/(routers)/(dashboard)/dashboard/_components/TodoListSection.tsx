@@ -52,6 +52,8 @@ export function TodoListSection({
   showScrollTail = false,
   scrollSentinelRef,
   isFetchingNextPage = false,
+  /** 검색/필터 적용 후에만 0건이고, 서버에서 내려온 원본 목록에는 항목이 있을 때 */
+  isSearchNoResults = false,
 }: {
   title: string;
   items: Todo[];
@@ -62,12 +64,14 @@ export function TodoListSection({
   showScrollTail?: boolean;
   scrollSentinelRef?: RefObject<HTMLDivElement | null>;
   isFetchingNextPage?: boolean;
+  isSearchNoResults?: boolean;
 }) {
   const emptyText = variant === 'completed' ? '완료된' : '해야';
   const emptyImage =
     variant === 'completed' ? '/images/big-zero-done.svg' : '/images/big-zero-todo.svg';
 
-  const showEmptyIllustration = items.length === 0 && !isLoading && !isError && !showScrollTail;
+  const showEmptyIllustration =
+    items.length === 0 && !isLoading && !isError && !showScrollTail && !isSearchNoResults;
 
   return (
     <section
@@ -90,6 +94,10 @@ export function TodoListSection({
         </div>
       ) : isLoading && items.length === 0 ? (
         <TodoListSectionSkeleton variant={variant} />
+      ) : isSearchNoResults ? (
+        <div className="mt-4 flex flex-col items-center justify-center py-6">
+          <p className="text-sm text-gray-500 dark:text-black">검색 결과가 없어요</p>
+        </div>
       ) : showEmptyIllustration ? (
         <div className="mt-4 flex flex-col items-center justify-center">
           <Image
