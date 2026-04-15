@@ -1,5 +1,7 @@
 'use client';
 
+import type { VariantProps } from 'class-variance-authority';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDeleteFavorite, usePostFavorite } from '@/api/favorites';
@@ -8,6 +10,7 @@ import { GOALS_TEXT } from '@/app/(routers)/(todo)/constants';
 import { useDebouncedCallback } from '@/hooks/useDebounceCallback';
 import { cn } from '@/lib';
 import { useTheme } from 'next-themes';
+import { toast } from 'sonner';
 
 import { ROUTES } from '@/constants/routes';
 import { DIALOG_VALUE, SELECT_VALUE } from '@/constants/ui-label';
@@ -29,6 +32,7 @@ export default function ItemActionBar({
   noteIds,
   linkUrl,
   favorites,
+  variant,
 }: {
   id: number;
   goalId: number;
@@ -71,7 +75,13 @@ export default function ItemActionBar({
   };
 
   const handleCopyLink = async (linkUrl: string) => {
-    await navigator.clipboard.writeText(linkUrl);
+    try {
+      await navigator.clipboard.writeText(linkUrl);
+      toast.success('링크가 복사되었습니다');
+    } catch (error) {
+      toast.error('링크 복사에 실패했습니다', { id: 'link-copy-error' });
+      console.error(error);
+    }
   };
 
   const handleFavorite = useDebouncedCallback(() => {
@@ -81,6 +91,18 @@ export default function ItemActionBar({
       postFavorite(id);
     }
   }, 500);
+
+  const variantStyle = {
+    recent: {
+      favorite: 'white',
+    },
+    completed: {
+      favorite: 'strong',
+    },
+    pending: {
+      favorite: 'strong',
+    },
+  };
 
   return (
     <div className="flex h-fit shrink-0 space-x-[6px] lg:space-x-2">
@@ -102,6 +124,7 @@ export default function ItemActionBar({
         <Button
           variant="icon"
           size="none"
+          aria-label="링크 복사"
           onClick={(e) => {
             e.stopPropagation();
             if (linkUrl) {
@@ -109,7 +132,12 @@ export default function ItemActionBar({
             }
           }}
         >
-          <Icon name="link" variant="orange" />
+          <Icon
+            name="link"
+            variant={
+              resolvedTheme === 'dark' ? 'white' : variant === 'recent' ? 'default' : 'orange'
+            }
+          />
         </Button>
       )}
       <Select items={selectValue} onValueChange={handleSelectChange}>
@@ -140,10 +168,16 @@ export default function ItemActionBar({
         }}
         variant="icon"
         size="none"
+        aria-label={favorites ? '찜하기 취소' : '찜하기'}
+        aria-pressed={favorites}
       >
         <Icon
           name={favorites ? 'filledStar' : 'outlineStar'}
-          variant={resolvedTheme === 'dark' ? 'white' : favorites ? 'white' : 'orange'}
+          variant={
+            resolvedTheme === 'dark'
+              ? 'white'
+              : (variantStyle[variant].favorite as VariantProps<typeof Icon>['variant'])
+          }
         />
       </Button>
     </div>
