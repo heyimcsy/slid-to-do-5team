@@ -16,6 +16,8 @@ import {
   AUTH_SERVICE_ERROR_MESSAGE_KO,
 } from '@/constants/error-message';
 
+import { originMatchesAllowedEntry } from './utils/origin';
+
 /** 갱신 실패·액세스 토큰 없음 — 백엔드로 무인증 프록시하지 않음 */
 function proxyAuthRequiredResponse(): Response {
   return new Response(
@@ -111,26 +113,6 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: ['/((?!_next|api|favicon\\.ico|fonts|images|icons).*)'],
 };
-
-/**
- * `ALLOWED_ORIGINS` 항목이 `Origin` 헤더 값과 맞는지 확인.
- * - 리터럴: `===` 또는 `startsWith(entry + '/')` (기존 동작)
- * - `*` 포함(예: `https://*.ngrok-free.app`): `*` 는 호스트 내 **한 라벨**(점 없음)에 대응
- *
- * @internal 테스트용 export
- */
-export function originMatchesAllowedEntry(allowed: string, candidateOrigin: string): boolean {
-  if (!allowed.includes('*')) {
-    return candidateOrigin === allowed || candidateOrigin.startsWith(allowed + '/');
-  }
-  try {
-    const parts = allowed.split('*');
-    const escaped = parts.map((p) => p.replace(/[.+?^${}()|[\]\\]/g, '\\$&'));
-    return new RegExp(`^${escaped.join('[^.]+')}$`).test(candidateOrigin);
-  } catch {
-    return false;
-  }
-}
 
 /**
  * @description BFF 요청 origin 검증 (cross-site 요청 차단)
