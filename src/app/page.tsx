@@ -28,6 +28,7 @@ export default function HomePage() {
           height={720}
           className="h-full w-full max-w-332 min-w-80 object-cover pt-18.5"
           priority
+          fetchPriority="high"
         />
       </section>
       <section className="features flex w-full flex-col items-center bg-orange-500 text-white lg:flex-row lg:items-center lg:justify-center lg:gap-6 dark:bg-orange-300 dark:text-black">
@@ -57,6 +58,7 @@ export default function HomePage() {
             height={720}
             className="h-full w-full max-w-167.5 min-w-80 object-cover pt-12 pb-3 lg:pb-0"
             priority
+            fetchPriority="high"
           />
         </aside>
       </section>
