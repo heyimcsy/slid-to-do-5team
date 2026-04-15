@@ -8,6 +8,7 @@ import {
   GOALS_TEXT,
   NOTE_IMAGE_BIG,
 } from '@/app/(routers)/(todo)/constants';
+import { GoalProgressPercentage } from '@/app/(routers)/(todo)/goals/[goalId]/_components/GoalProgressPercentage';
 import GoalsInnerTabSkeleton from '@/app/(routers)/(todo)/goals/[goalId]/_components/GoalsInnerTabSkeleton';
 import GoalsTab from '@/app/(routers)/(todo)/goals/[goalId]/_components/GoalsTab';
 import TotalListTab from '@/app/(routers)/(todo)/goals/[goalId]/_components/TotalListTab';
@@ -56,10 +57,7 @@ export default function GoalsInnerTab({ goalId }: { goalId: number }) {
               />
               <div className="flex flex-col items-center justify-start">
                 <h3 className="font-lg-bold">{GOALS_TEXT.PROGRESS_LABEL}</h3>
-                <p className="display-lg-bold">
-                  {progressPercent}
-                  <span className="font-xl-medium mr-1">{GOALS_TEXT.PROGRESS_UNIT}</span>
-                </p>
+                <GoalProgressPercentage value={progressPercent} />
               </div>
             </div>
             {/*노트 모아보기*/}

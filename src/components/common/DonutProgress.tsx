@@ -1,4 +1,10 @@
+'use client';
+
+import { useLayoutEffect, useRef } from 'react';
+import { useAnimatedProgress } from '@/hooks/useAnimatedProgress';
 import { cn } from '@/lib';
+
+import { PROGRESS_ANIMATION_DURATION_MS } from '@/constants/animation';
 
 interface DonutProgressProps {
   value: number;
@@ -7,7 +13,13 @@ interface DonutProgressProps {
   responsive?: boolean;
   ariaLabel?: string;
   className?: string;
+  /** 0→100 전체 스윕 기준 시간 (ms). 실제 재생은 |Δvalue|에 비례 */
+  durationMs?: number;
 }
+// 반지름(radius)
+const R = 80;
+// 원주(원의 둘레)
+const CIRCUMFERENCE = 2 * Math.PI * R;
 
 /**
  * 도넛 형태의 진행률 표시 컴포넌트
@@ -34,36 +46,70 @@ export function DonutProgress({
   trackColor = '#009D97',
   responsive = false,
   className,
+  durationMs = PROGRESS_ANIMATION_DURATION_MS,
 }: Readonly<DonutProgressProps>) {
-  const r = 80;
-  const circumference = 2 * Math.PI * r;
-  const offset = circumference * (1 - value / 100);
+  const circleRef = useRef<SVGCircleElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const progressRef = useRef<HTMLProgressElement>(null);
+
+  const clamped = Math.min(100, Math.max(0, value));
+
+  const valueRef = useAnimatedProgress(
+    clamped,
+    { max: 100, durationMs, minStepDurationMs: 90 },
+    (next, { percent }) => {
+      const c = circleRef.current;
+      if (c) {
+        c.style.strokeDashoffset = String(CIRCUMFERENCE * (1 - next / 100));
+      }
+      rootRef.current?.setAttribute('aria-valuenow', String(Math.round(percent)));
+      const p = progressRef.current;
+      if (p) p.value = next;
+    },
+  );
+
+  useLayoutEffect(() => {
+    const v = valueRef.current;
+    const p = progressRef.current;
+    if (p) p.value = v;
+    const c = circleRef.current;
+    if (c) {
+      c.style.strokeDashoffset = String(CIRCUMFERENCE * (1 - v / 100));
+    }
+    rootRef.current?.setAttribute('aria-valuenow', String(Math.round(v)));
+  }, [clamped, valueRef]);
 
   return (
     <div
+      ref={rootRef}
       className={cn('size-27', responsive && 'lg:size-46', className)}
       role="progressbar"
       aria-label="donut progress"
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-valuenow={value}
     >
-      <progress value={value} max={100} className="sr-only" />
+      <progress
+        ref={progressRef}
+        value={0}
+        max={100}
+        className="sr-only"
+        suppressHydrationWarning
+      />
       <svg viewBox="0 0 184 184" width="100%" height="100%">
-        <circle cx="92" cy="92" r={r} fill="none" stroke={trackColor} strokeWidth="24" />
+        <circle cx="92" cy="92" r={R} fill="none" stroke={trackColor} strokeWidth="24" />
         <circle
+          ref={circleRef}
           aria-hidden="true"
           cx="92"
           cy="92"
-          r={r}
+          r={R}
           fill="none"
           stroke={color}
           strokeWidth="24"
           strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
+          strokeDasharray={CIRCUMFERENCE}
+          strokeDashoffset={CIRCUMFERENCE}
           transform="translate(184 0) scale(-1 1) rotate(-90 92 92)"
-          style={{ transition: 'stroke-dashoffset 0.6s cubic-bezier(0.4,0,0.2,1)' }}
         />
       </svg>
     </div>

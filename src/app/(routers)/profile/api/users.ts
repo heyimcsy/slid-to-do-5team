@@ -1,5 +1,7 @@
 import { PROFILE_TEXT } from '@/app/(routers)/profile/constants';
 import { apiClient } from '@/lib/apiClient.browser';
+import { parseUserFromBackendUnknown } from '@/lib/auth/schemas/user';
+import { authUserStore } from '@/stores/authUserStore';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
@@ -71,6 +73,24 @@ export const usePatchProfile = () => {
     onSuccess: (data) => {
       queryClient.setQueryData([USER_ME], data); // 캐시 즉시 업데이트
       queryClient.invalidateQueries({ queryKey: communityQueryKeys.all });
+
+      const prev = authUserStore.getState().user;
+      if (prev) {
+        authUserStore.getState().setUser({
+          ...prev,
+          id: String(data.id),
+          email: data.email,
+          name: data.name,
+          image: data.image,
+          teamId: data.teamId,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
+        });
+      } else {
+        // 만약 이전 사용자 정보가 없다면 백엔드 응답 데이터를 사용하여 사용자 정보 설정
+        const parsed = parseUserFromBackendUnknown(data);
+        if (parsed) authUserStore.getState().setUser(parsed);
+      }
       toast.success(PROFILE_TEXT.SUCCESS_PROFILE_MESSAGE);
     },
     onError: () => {

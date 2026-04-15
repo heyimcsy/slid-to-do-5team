@@ -6,6 +6,8 @@ import { useUserInfo } from '@/hooks/auth/useUserInfo';
 
 import { DonutProgress } from '@/components/common/DonutProgress';
 
+import { ProgressPercentage } from './ProgressPercentage';
+
 export const MyProgress = () => {
   const user = useUserInfo();
   const name = user?.name ?? '손';
@@ -57,9 +59,7 @@ export const MyProgress = () => {
             <h3 className="font-sm-semibold md:font-sm-semibold lg:font-xl-semibold">
               {name}님의 진행도는
             </h3>
-            <h5 className="display-lg-bold md:display-lg-bold lg:display-xl-bold after:font-xl-medium md:after:font-xl-medium lg:after:font-3xl-medium font-features-['ss01','ss02','ss06','ss08'] after:content-['%']">
-              {progress}
-            </h5>
+            <ProgressPercentage value={progress} />
           </div>
         </div>
       </div>
