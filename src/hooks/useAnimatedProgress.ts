@@ -4,6 +4,13 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { MIN_STEP_DURATION_MS, PROGRESS_ANIMATION_DURATION_MS } from '@/constants/animation';
 
+/** 공개 옵션에서 온 ms — NaN/±∞/0 이하면 fallback (rAF에서 t→1 보장) */
+function normalizePositiveMs(value: number | undefined, fallback: number): number {
+  if (value === undefined) return fallback;
+  if (!Number.isFinite(value) || value <= 0) return fallback;
+  return value;
+}
+
 /** t ∈ [0,1] → ease-out cubic */
 export const easeOutCubic = (t: number): number => 1 - (1 - t) ** 3;
 
@@ -56,8 +63,8 @@ export function useAnimatedProgress(
 
   const max = options?.max ?? 100;
   const safeMax = Number.isFinite(max) && max > 0 ? max : 100;
-  const durationMs = options?.durationMs ?? PROGRESS_ANIMATION_DURATION_MS;
-  const minStepDurationMs = options?.minStepDurationMs ?? MIN_STEP_DURATION_MS;
+  const durationMs = normalizePositiveMs(options?.durationMs, PROGRESS_ANIMATION_DURATION_MS);
+  const minStepDurationMs = normalizePositiveMs(options?.minStepDurationMs, MIN_STEP_DURATION_MS);
 
   const finiteTarget = Number.isFinite(target) ? target : 0;
   const clampedTarget = Math.min(Math.max(0, finiteTarget), safeMax);
@@ -90,7 +97,11 @@ export function useAnimatedProgress(
 
     const delta = Math.abs(to - from);
     const spanMs = safeMax <= 0 ? durationMs : (delta / safeMax) * durationMs;
-    const activeDurationMs = Math.min(durationMs, Math.max(minStepDurationMs, spanMs));
+    const activeDurationMsRaw = Math.min(durationMs, Math.max(minStepDurationMs, spanMs));
+    const activeDurationMs =
+      Number.isFinite(activeDurationMsRaw) && activeDurationMsRaw > 0
+        ? activeDurationMsRaw
+        : Math.min(durationMs, minStepDurationMs);
 
     const startTime = performance.now();
     const ease = easeRef.current;
