@@ -7,6 +7,7 @@ import type {
   PostsResponse,
   SortOption,
 } from '../types';
+import type { InfiniteData } from '@tanstack/react-query';
 
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
@@ -210,7 +211,7 @@ export const useDeleteComment = (postId: number) => {
 };
 
 // 댓글 좋아요 토글
-export const useToggleCommentLike = (postId: number, commentId: number) => {
+export const useToggleCommentLike = (postId: number, commentId: number, parentId?: number) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -218,39 +219,24 @@ export const useToggleCommentLike = (postId: number, commentId: number) => {
       apiClient<CommentLikeResponse>(`/posts/${postId}/comments/${commentId}/likes`, {
         method: isLiked ? 'DELETE' : 'POST',
       }),
-    onMutate: async (isLiked) => {
-      await queryClient.cancelQueries({ queryKey: communityQueryKeys.comments(postId) });
-      const previous = queryClient.getQueryData(communityQueryKeys.comments(postId));
-      queryClient.setQueryData(communityQueryKeys.comments(postId), (old: CommentsResponse) => {
-        if (!old) return old;
-        return {
-          ...old,
-          comments: old.comments.map((c) =>
-            c.id === commentId
-              ? {
-                  ...c,
-                  isLiked: !isLiked,
-                  likeCount: Math.max(0, c.likeCount + (isLiked ? -1 : 1)),
-                }
-              : c,
-          ),
-        };
-      });
-      return { previous };
-    },
     onSuccess: (data) => {
-      queryClient.setQueryData(communityQueryKeys.comments(postId), (old: CommentsResponse) => {
+      const queryKey =
+        parentId !== undefined
+          ? communityQueryKeys.replyComments(postId, parentId)
+          : communityQueryKeys.comments(postId);
+
+      queryClient.setQueryData<InfiniteData<CommentsResponse>>(queryKey, (old) => {
         if (!old) return old;
         return {
           ...old,
-          comments: old.comments.map((c) =>
-            c.id === commentId ? { ...c, isLiked: data.isLiked, likeCount: data.likeCount } : c,
-          ),
+          pages: old.pages.map((page) => ({
+            ...page,
+            comments: page.comments.map((c) =>
+              c.id === commentId ? { ...c, isLiked: data.isLiked, likeCount: data.likeCount } : c,
+            ),
+          })),
         };
       });
-    },
-    onError: (_err, _vars, context) => {
-      queryClient.setQueryData(communityQueryKeys.comments(postId), context?.previous);
     },
   });
 };
