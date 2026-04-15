@@ -8,6 +8,7 @@ import { PROFILE_IMAGE } from '@/app/(routers)/profile/constants';
 export default function ProfileImageSection({
   imageUrl,
   onCropComplete,
+  oauthProvider,
 }: ProfileImageSectionProps) {
   return (
     <div className="relative h-fit w-fit">
@@ -19,9 +20,11 @@ export default function ProfileImageSection({
           className="object-cover"
         />
       </div>
-      <div className="absolute right-3 bottom-0 flex size-9 items-center justify-center rounded-[18px] bg-orange-500">
-        <ImageCropper onCropComplete={onCropComplete} />
-      </div>
+      {!oauthProvider && (
+        <div className="absolute right-3 bottom-0 flex size-9 items-center justify-center rounded-[18px] bg-orange-500">
+          <ImageCropper onCropComplete={onCropComplete} />
+        </div>
+      )}
     </div>
   );
 }
