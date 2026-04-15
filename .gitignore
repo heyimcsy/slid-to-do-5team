@@ -45,3 +45,9 @@ next-env.d.ts
 
 .cursor/
 .claude/
+
+# Sentry Config File
+.env.sentry-build-plugin
+
+# performance logs
+/docs/performance/
