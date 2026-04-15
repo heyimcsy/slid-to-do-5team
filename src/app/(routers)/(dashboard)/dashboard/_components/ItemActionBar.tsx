@@ -1,5 +1,7 @@
 'use client';
 
+import type { VariantProps } from 'class-variance-authority';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDeleteFavorite, usePostFavorite } from '@/api/favorites';
@@ -90,6 +92,18 @@ export default function ItemActionBar({
     }
   }, 500);
 
+  const variantStyle = {
+    recent: {
+      favorite: 'white',
+    },
+    completed: {
+      favorite: 'strong',
+    },
+    pending: {
+      favorite: 'strong',
+    },
+  };
+
   return (
     <div className="flex h-fit shrink-0 space-x-[6px] lg:space-x-2">
       <Button
@@ -156,7 +170,11 @@ export default function ItemActionBar({
       >
         <Icon
           name={favorites ? 'filledStar' : 'outlineStar'}
-          variant={resolvedTheme === 'dark' ? 'white' : favorites ? 'white' : 'orange'}
+          variant={
+            resolvedTheme === 'dark'
+              ? 'white'
+              : (variantStyle[variant].favorite as VariantProps<typeof Icon>['variant'])
+          }
         />
       </Button>
     </div>
