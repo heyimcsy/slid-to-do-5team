@@ -9,6 +9,7 @@ import goalImage from '@/../public/images/small-goal.svg';
 import { useDeleteGoals, usePatchGoals } from '@/api/goals';
 import { GOAL_IMAGE, GOALS_TEXT } from '@/app/(routers)/(todo)/constants';
 
+import { ROUTES } from '@/constants/routes';
 import { DIALOG_VALUE, SELECT_VALUE } from '@/constants/ui-label';
 
 import { DeleteDialog } from '@/components/common/DeleteDialog';
@@ -31,16 +32,16 @@ import {
   SelectTrigger,
 } from '@/components/ui/select';
 
-interface GoalsTabProps {
+interface GoalHeaderProps {
   goalId: number;
   goalData: Omit<Goal, 'completedCount' | 'todoCount'> | undefined;
 }
-export default function GoalsTab({ goalId, goalData }: GoalsTabProps) {
+export default function GoalHeader({ goalId, goalData }: GoalHeaderProps) {
   const router = useRouter();
 
   const { mutate: deleteGoal } = useDeleteGoals({
     onSuccess: () => {
-      router.push('/dashboard');
+      router.push(ROUTES.DASHBOARD);
     },
   });
   const { mutate: editGoal } = usePatchGoals();

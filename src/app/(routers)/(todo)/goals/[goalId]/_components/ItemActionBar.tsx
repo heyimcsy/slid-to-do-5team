@@ -27,13 +27,13 @@ export default function ItemActionBar({
   goalId,
   noteIds,
   linkUrl,
-  favorites,
+  isFavorite,
 }: {
   id: number;
   goalId: number;
   noteIds: number[];
   linkUrl: string | null;
-  favorites: boolean;
+  isFavorite: boolean;
 }) {
   const router = useRouter();
   const { mutate: deleteTodo } = useDeleteTodos();
@@ -73,12 +73,12 @@ export default function ItemActionBar({
   };
 
   const handleFavorite = useDebouncedCallback(() => {
-    if (favorites) {
+    if (isFavorite) {
       deleteFavorite(id);
     } else {
       postFavorite(id);
     }
-  }, 500);
+  }, 300);
 
   return (
     <div className="flex h-fit shrink-0 space-x-[6px] lg:space-x-2">
@@ -108,11 +108,20 @@ export default function ItemActionBar({
         </Button>
       )}
       <Select items={selectValue} onValueChange={handleSelectChange}>
-        <SelectTrigger size="sm" iconTrigger className="size-[20px] dark:hidden">
-          <Icon name="dotscircle" size={20} />
-        </SelectTrigger>
-        <SelectTrigger size="sm" iconTrigger className="hidden size-[20px] dark:block">
-          <Icon name="dotscircle" size={20} variant="ghost" />
+        <SelectTrigger size="sm" iconTrigger className="size-[20px]">
+          <Icon
+            name="dotscircle"
+            size={20}
+            className="dark:hidden"
+            aria-label={DIALOG_VALUE.DOT_TRIGGER_ALIA_LABEL}
+          />
+          <Icon
+            name="dotscircle"
+            size={20}
+            variant="ghost"
+            className="hidden dark:block"
+            aria-label={DIALOG_VALUE.DOT_TRIGGER_ALIA_LABEL}
+          />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
@@ -140,8 +149,8 @@ export default function ItemActionBar({
         size="none"
       >
         <Icon
-          name={favorites ? 'filledStar' : 'outlineStar'}
-          variant={favorites ? 'orange' : undefined}
+          name={isFavorite ? 'filledStar' : 'outlineStar'}
+          variant={isFavorite ? 'orange' : undefined}
         />
       </Button>
     </div>

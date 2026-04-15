@@ -1,9 +1,10 @@
 import type { PaginatedResponse } from '@/api/response';
-import type { Todo } from '@/api/todos';
+import type { TodoResponse } from '@/api/todos';
 import type { InfiniteData, QueryClient } from '@tanstack/react-query';
 
 import { GOALS } from '@/api/goals';
 import { TODOS } from '@/api/todos';
+import { NOTES_TEXT } from '@/app/(routers)/(todo)/constants';
 import { favoritesQueryKeys } from '@/app/(routers)/favorites/_api/favoritesQueryKeys';
 import { apiClient } from '@/lib/apiClient.browser';
 import {
@@ -13,6 +14,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 // ── 마크(인라인 스타일) ──────────────────────────
 type BoldMark = { type: 'bold' };
@@ -121,7 +123,7 @@ export interface Notes {
   linkUrl: string;
   teamId: string;
   title: string;
-  todo: Pick<Todo, 'id' | 'title' | 'done'>;
+  todo: Pick<TodoResponse, 'id' | 'title' | 'done' | 'tags' | 'goal' | 'createdAt'>;
   todoId: number;
   updatedAt: string;
   userId: number;
@@ -140,16 +142,18 @@ export const useGetNotesInfinite = ({
   goalId,
   limit = 5,
   sort,
+  search,
 }: {
   goalId: number;
   limit?: number;
   sort?: string;
+  search?: string;
 }) => {
   return useInfiniteQuery({
-    queryKey: [NOTES, { goalId, limit, sort }],
+    queryKey: [NOTES, { goalId, limit, sort, search }],
     queryFn: async ({ pageParam }) =>
       await apiClient<NotesGetResponse>(
-        `${NOTES_URL}?goalId=${goalId}&limit=${limit}${sort ? `&sort=${sort}` : ''}${pageParam ? `&cursor=${pageParam}` : ''}`,
+        `${NOTES_URL}?goalId=${goalId}&limit=${limit}${sort ? `&sort=${sort}` : ''}${search ? `&search=${search}` : ''}${pageParam ? `&cursor=${pageParam}` : ''}`,
       ),
     initialPageParam: null as number | null,
     getNextPageParam: (lastPage) => lastPage?.nextCursor ?? null,
@@ -199,7 +203,14 @@ export const usePostNote = (options: { onSuccess?: () => void }) => {
             updatedAt: new Date().toISOString(),
             teamId: '',
             userId: 0,
-            todo: { id: payload.todoId, title: '', done: false },
+            todo: {
+              id: payload.todoId,
+              title: '',
+              done: false,
+              tags: [],
+              goal: { title: '', id: Date.now() },
+              createdAt: new Date().toISOString(),
+            },
           };
 
           return {
@@ -241,7 +252,7 @@ export const usePostNote = (options: { onSuccess?: () => void }) => {
   });
 };
 
-export const usePatchNote = () => {
+export const usePatchNote = (options: { onSuccess?: () => void }) => {
   const queryClient: QueryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: PatchNotePayload) => {
@@ -252,9 +263,15 @@ export const usePatchNote = () => {
         body,
       });
     },
+    ...options,
     onSuccess: (_, payload) => {
       queryClient.invalidateQueries({ queryKey: [NOTES] });
       queryClient.invalidateQueries({ queryKey: [NOTE, payload.id] });
+      toast.success(NOTES_TEXT.NOTE_EDIT_SUCCESS);
+      options?.onSuccess?.();
+    },
+    onError: () => {
+      toast.error(NOTES_TEXT.NOTE_EDIT_ERROR);
     },
   });
 };

@@ -1,4 +1,4 @@
-import NotesContainer from '@/app/(routers)/(todo)/goals/[goalId]/notes/_components/NotesContainer';
+import { NotesContainer } from './_components';
 
 export default function Notes() {
   return (

@@ -1,6 +1,6 @@
 'use client';
 
-import type { Task } from '../../app/(routers)/(dashboard)/dashboard/todos/types';
+import type { Todo } from '@/api/todos';
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -25,7 +25,7 @@ import { Spinner } from '../ui/spinner';
 import { DeleteDialog } from './DeleteDialog';
 
 interface TodoItemProps {
-  task: Task;
+  task: Todo;
 }
 
 export default function TodoItem({ task }: TodoItemProps) {
@@ -36,8 +36,8 @@ export default function TodoItem({ task }: TodoItemProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // 찜하기 아이콘 Ui 상태 관리
-  const [isFavorite, setIsFavorite] = useState(task.favorites);
-  const isFavoriteRef = useRef(task.favorites);
+  const [isFavorite, setIsFavorite] = useState(task.isFavorite);
+  const isFavoriteRef = useRef(task.isFavorite);
 
   const [isNavigating, setIsNavigating] = useState(false); // 추가
 

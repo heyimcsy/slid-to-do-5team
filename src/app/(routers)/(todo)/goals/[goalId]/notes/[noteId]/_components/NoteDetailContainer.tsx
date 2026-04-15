@@ -6,7 +6,7 @@ import noteImage from '@/../public/images/img-note.svg';
 import MetaTags from '@/app/(routers)/(todo)/_components/MetaTags';
 import NoteDetailSkeleton from '@/app/(routers)/(todo)/@modal/(.)goals/[goalId]/notes/[noteId]/_components/NoteDetailSkeleton';
 import { NOTE_IMAGE } from '@/app/(routers)/(todo)/constants';
-import { useOgInfo } from '@/app/(routers)/(todo)/goals/[goalId]/notes/new/hooks/useOgInfo';
+import { useOgInfo } from '@/app/(routers)/(todo)/goals/[goalId]/notes/hooks/useOgInfo';
 import { useNoteDetail } from '@/hooks/useNoteDetail';
 import Link from '@tiptap/extension-link';
 import { EditorContent, useEditor } from '@tiptap/react';
