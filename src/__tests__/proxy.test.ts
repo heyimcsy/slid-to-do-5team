@@ -2,15 +2,11 @@
  * @jest-environment node
  */
 import { NextRequest } from 'next/server';
-import {
-  forwardToBackend,
-  isAllowedOrigin,
-  isPublicPath,
-  originMatchesAllowedEntry,
-  proxy,
-} from '@/proxy';
+import { forwardToBackend, isAllowedOrigin, isPublicPath, proxy } from '@/proxy';
 
 import { APP_URL } from '@/constants/api';
+
+import { originMatchesAllowedEntry } from '@/utils/origin';
 
 const TEST_APP_URL = APP_URL || 'http://localhost:3000';
 
