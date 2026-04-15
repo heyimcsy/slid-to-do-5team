@@ -8,7 +8,7 @@ export const uploadImage = async (file: File): Promise<string> => {
   try {
     compressedFile = await compressImage(file);
   } catch {
-    throw new Error('이미지 압축에 실패했습니다.');
+    compressedFile = file;
   }
 
   const { uploadUrl, url } = await apiClient<{ uploadUrl: string; url: string }>('/images', {
