@@ -27,8 +27,9 @@ export class PerfRecorder {
       const note = duration > this.warnThreshold ? '⚠️' : '';
 
       const now = new Date();
-      const date = now.toISOString().split('T')[0];
-      const time = now.toTimeString().split(' ')[0];
+      const pad = (value: number) => value.toString().padStart(2, '0');
+      const date = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+      const time = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 
       const category = this.route.split('/')[1] ?? 'unknown';
       const filePath = join(process.cwd(), 'docs', 'performance', `${category}.md`);
