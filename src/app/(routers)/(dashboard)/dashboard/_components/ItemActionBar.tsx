@@ -29,7 +29,6 @@ export default function ItemActionBar({
   noteIds,
   linkUrl,
   favorites,
-  variant,
 }: {
   id: number;
   goalId: number;
