@@ -80,7 +80,7 @@ export default function HomePage() {
           </aside>
           <aside className="cards mx-auto grid grid-cols-1 justify-items-center gap-4 *:max-w-80 md:grid-cols-3 lg:max-w-245 lg:grid-cols-3">
             {STEPS.map((step, index) => (
-              <FadeInSection key={step.title} delay={index * 0.2}>
+              <FadeInSection key={step.title} delay={index * 0.3}>
                 <FeatureCard
                   id={step.id}
                   icon={step.icon}
@@ -99,13 +99,17 @@ export default function HomePage() {
           />
           <aside className="order-1 w-full min-w-0 lg:order-2 lg:flex lg:flex-1 lg:justify-end">
             <h2 className="mb-10 flex max-w-full flex-col gap-y-2 pt-14 pr-10 text-right md:gap-y-3 lg:mb-0 lg:gap-y-4 lg:py-0 lg:pr-12">
-              <p className="font-base-semibold md:font-2xl-semibold lg:font-3xl-semibold text-orange-600 dark:text-orange-300">
-                활발한 소통 게시판
-              </p>
-              <p className="font-xl-bold md:display-md-bold lg:display-lg-bold text-gray-700 dark:text-gray-200">
-                <span className="block">다양한 사람들과</span>
-                <span className="mt-0 block md:mt-2 lg:mt-4.5">서로의 목표를 응원해요</span>
-              </p>
+              <FadeInSection>
+                <p className="font-base-semibold md:font-2xl-semibold lg:font-3xl-semibold text-orange-600 dark:text-orange-300">
+                  활발한 소통 게시판
+                </p>
+              </FadeInSection>
+              <FadeInSection delay={0.4}>
+                <p className="font-xl-bold md:display-md-bold lg:display-lg-bold text-gray-700 dark:text-gray-200">
+                  <span className="block">다양한 사람들과</span>
+                  <span className="mt-0 block md:mt-2 lg:mt-4.5">서로의 목표를 응원해요</span>
+                </p>
+              </FadeInSection>
             </h2>
           </aside>
         </section>
@@ -136,15 +140,19 @@ export default function HomePage() {
               className="pointer-events-none absolute right-[28.05px] bottom-[91px] h-auto w-7.5 md:right-[56px] md:bottom-[118px] md:w-12 lg:right-[264px] lg:bottom-[222px] lg:w-15"
               priority
             />
-            <h2 className="flex flex-col gap-y-1 text-center md:gap-y-3 lg:gap-y-4">
-              <p className="font-base-semibold md:font-2xl-semibold lg:font-3xl-semibold text-orange-600 dark:text-orange-300">
-                슬리드투두 하나로 정리부터 실행까지
-              </p>
-              <p className="font-xl-bold md:display-md-bold lg:display-lg-bold text-gray-700 dark:text-gray-200">
-                오늘의 할 일, 슬리드 투두로 계획해요
-              </p>
-            </h2>
-            <StartButton href={START_HREF}>시작하기</StartButton>
+            <FadeInSection variant="scale">
+              <h2 className="flex flex-col gap-y-1 text-center md:gap-y-3 lg:gap-y-4">
+                <p className="font-base-semibold md:font-2xl-semibold lg:font-3xl-semibold text-orange-600 dark:text-orange-300">
+                  슬리드투두 하나로 정리부터 실행까지
+                </p>
+                <p className="font-xl-bold md:display-md-bold lg:display-lg-bold text-gray-700 dark:text-gray-200">
+                  오늘의 할 일, 슬리드 투두로 계획해요
+                </p>
+              </h2>
+            </FadeInSection>
+            <FadeInSection delay={0.5}>
+              <StartButton href={START_HREF}>시작하기</StartButton>
+            </FadeInSection>
           </footer>
         </section>
       </div>
