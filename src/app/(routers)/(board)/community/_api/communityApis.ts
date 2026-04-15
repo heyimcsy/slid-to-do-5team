@@ -8,24 +8,38 @@ import { QueryClient } from '@tanstack/react-query';
 
 import {
   BEST_POSTS_LIMIT,
+  CACHE_TIMES,
   COMMENTS_PAGE_LIMIT,
   communityQueryKeys,
+  communityTags,
   POSTS_PAGE_LIMIT,
 } from './communityQueryKeys';
 
 const getPostsServer = (type: 'all' | 'best' = 'all') =>
-  apiClientServer<PostsResponse>(`/posts?type=${type}&limit=${POSTS_PAGE_LIMIT}`, { retry: false });
+  apiClientServer<PostsResponse>(`/posts?type=${type}&limit=${POSTS_PAGE_LIMIT}`, {
+    retry: false,
+    next: { revalidate: CACHE_TIMES.posts, tags: [communityTags.posts] },
+  });
 
 const getBestPostsServer = () =>
-  apiClientServer<PostsResponse>(`/posts?type=best&limit=${BEST_POSTS_LIMIT}`, { retry: false });
+  apiClientServer<PostsResponse>(`/posts?type=best&limit=${BEST_POSTS_LIMIT}`, {
+    retry: false,
+    next: { revalidate: CACHE_TIMES.bestPosts, tags: [communityTags.bestPosts] },
+  });
 
 const getPostByIdServer = (postId: number) =>
-  apiClientServer<Post>(`/posts/${postId}`, { retry: false });
+  apiClientServer<Post>(`/posts/${postId}`, {
+    retry: false,
+    next: { revalidate: CACHE_TIMES.post, tags: [communityTags.post(postId), communityTags.posts] },
+  });
 
 const getCommentsServer = (postId: number) =>
   apiClientServer<CommentsResponse>(
     `/posts/${postId}/comments?limit=${COMMENTS_PAGE_LIMIT}&parentId=null`,
-    { retry: false },
+    {
+      retry: false,
+      next: { revalidate: CACHE_TIMES.comments, tags: [communityTags.comments(postId)] },
+    },
   );
 
 export const prefetchPostsList = (queryClient: QueryClient) =>
@@ -36,7 +50,7 @@ export const prefetchPostsList = (queryClient: QueryClient) =>
       initialPageParam: undefined as string | undefined,
     }),
     queryClient.prefetchQuery({
-      queryKey: [...communityQueryKeys.postsList('best'), { limit: 3 }],
+      queryKey: [...communityQueryKeys.postsList('best'), { limit: BEST_POSTS_LIMIT }],
       queryFn: () => getBestPostsServer(),
     }),
   ]);
