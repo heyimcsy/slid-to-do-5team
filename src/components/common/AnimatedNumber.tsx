@@ -27,6 +27,8 @@ export function AnimatedNumber({
 }: AnimatedNumberProps) {
   const clamped = Math.min(max, Math.max(0, value));
   const numberRef = useRef<HTMLSpanElement>(null);
+  /** useAnimatedProgress 내부 safeMax와 동일 — 퍼센트 스케일 맞춤 */
+  const safeMax = Number.isFinite(max) && max > 0 ? max : 100;
 
   const valueRef = useAnimatedProgress(
     clamped,
@@ -39,8 +41,10 @@ export function AnimatedNumber({
 
   useLayoutEffect(() => {
     const el = numberRef.current;
-    if (el) el.textContent = String(Math.round(valueRef.current));
-  }, [clamped, valueRef]);
+    if (!el) return;
+    const percent = safeMax === 0 ? 0 : (valueRef.current / safeMax) * 100;
+    el.textContent = String(Math.round(percent));
+  }, [clamped, valueRef, safeMax]);
 
   return (
     <span ref={numberRef} className={cn(className)} suppressHydrationWarning>
