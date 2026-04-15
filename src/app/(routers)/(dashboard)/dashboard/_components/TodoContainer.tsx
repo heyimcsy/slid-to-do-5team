@@ -1,4 +1,4 @@
-import type { TodoWithFavorites } from '@/api/todos';
+import type { Todo } from '@/api/todos';
 
 import { TodoListSection } from './TodoListSection';
 
@@ -12,7 +12,7 @@ export function TodoContainer({
   todos,
   searchQuery = '',
 }: {
-  todos: TodoWithFavorites[];
+  todos: Todo[];
   searchQuery?: string;
 }) {
   const list = (todos ?? []).filter((item) => matchesTodoSearch(item.title, searchQuery));

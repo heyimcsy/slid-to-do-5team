@@ -27,13 +27,13 @@ export default function ItemActionBar({
   goalId,
   noteIds,
   linkUrl,
-  favorites,
+  isFavorite,
 }: {
   id: number;
   goalId: number;
   noteIds: number[];
   linkUrl: string | null;
-  favorites: boolean;
+  isFavorite: boolean;
 }) {
   const router = useRouter();
   const { mutate: deleteTodo } = useDeleteTodos();
@@ -73,7 +73,7 @@ export default function ItemActionBar({
   };
 
   const handleFavorite = useDebouncedCallback(() => {
-    if (favorites) {
+    if (isFavorite) {
       deleteFavorite(id);
     } else {
       postFavorite(id);
@@ -149,8 +149,8 @@ export default function ItemActionBar({
         size="none"
       >
         <Icon
-          name={favorites ? 'filledStar' : 'outlineStar'}
-          variant={favorites ? 'orange' : undefined}
+          name={isFavorite ? 'filledStar' : 'outlineStar'}
+          variant={isFavorite ? 'orange' : undefined}
         />
       </Button>
     </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import type { Goal } from '@/api/goals';
-import type { TodoWithFavorites } from '@/api/todos';
+import type { Todo } from '@/api/todos';
 
 import { useState } from 'react';
 import Image from 'next/image';
@@ -23,14 +23,7 @@ import { TodoContainer } from './TodoContainer';
 
 type GoalListItem = Pick<Goal, 'id' | 'title' | 'completedCount' | 'todoCount'>;
 
-function GoalTodosRow({
-  goal,
-  todos,
-}: {
-  goalId: number;
-  goal: GoalListItem;
-  todos: TodoWithFavorites[];
-}) {
+function GoalTodosRow({ goal, todos }: { goalId: number; goal: GoalListItem; todos: Todo[] }) {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebouncedValue(searchQuery, SEARCH_DEBOUNCE_MS);
   const progress =

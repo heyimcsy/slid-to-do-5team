@@ -20,7 +20,7 @@ export default function TodoList({
   title,
   noteIds,
   linkUrl,
-  favorites,
+  isFavorite,
 }: TodoListProps) {
   const { mutate: checkTodo } = usePatchTodos();
 
@@ -60,7 +60,7 @@ export default function TodoList({
         goalId={goalId}
         noteIds={noteIds}
         linkUrl={linkUrl}
-        favorites={favorites}
+        isFavorite={isFavorite}
       />
     </div>
   );

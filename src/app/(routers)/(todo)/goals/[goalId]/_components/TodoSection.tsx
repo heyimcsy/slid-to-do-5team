@@ -95,7 +95,7 @@ export default function TodoSection({
                     title={todo.title}
                     noteIds={todo.noteIds}
                     linkUrl={todo.linkUrl}
-                    favorites={todo.isFavorite}
+                    isFavorite={todo.isFavorite}
                   />
                 ))}
                 {hasNextPage ? (

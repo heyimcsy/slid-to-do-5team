@@ -9,7 +9,7 @@ export interface TodoListProps {
   title: string;
   noteIds: number[];
   linkUrl: string | null;
-  favorites: boolean;
+  isFavorite: boolean;
 }
 export interface TodoSectionProps {
   goalId: number;
