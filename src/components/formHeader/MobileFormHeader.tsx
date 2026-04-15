@@ -40,7 +40,7 @@ export function MobileFormHeader({
         </header>
         <div className="bg-gray-50 px-4 py-1.5">{toolbar}</div>
       </div>
-      <div className="min-h-16" aria-hidden />
+      <div className="min-h-14" aria-hidden />
     </div>
   );
 }
