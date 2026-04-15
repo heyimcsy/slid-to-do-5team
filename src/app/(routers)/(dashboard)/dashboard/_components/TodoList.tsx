@@ -40,7 +40,8 @@ export default function TodoList({
       container: 'bg-transparent text-white dark:text-black dark:bg-orange-300',
     },
     completed: {
-      container: 'bg-gray-100 text-black dark:bg-gray-300 dark:text-black',
+      container:
+        'bg-transparent hover:bg-orange-300 text-black dark:bg-transparent dark:hover:bg-orange-300/80 dark:text-black',
     },
     pending: {
       container: 'bg-orange-100 hover:bg-orange-300 text-black dark:bg-orange-300 dark:text-black',
