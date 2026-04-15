@@ -5,22 +5,32 @@ import type { TodoWithFavorites } from '@/api/todos';
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { useGetGoals } from '@/api/goals';
+import { useInfiniteGoals } from '@/api/goals';
 import { useGetTodos } from '@/api/todos';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
 import { SEARCH_DEBOUNCE_MS } from '@/constants/query';
 
+import { GoalCreateModal } from '@/components/common/GoalCreateModal';
 import { FlagLineIcon } from '@/components/icon/icons/FlagLine';
 import { IconButton } from '@/components/ui/button';
 
+import { GOALS_PAGE_SIZE } from '../_constants/goals';
 import { GoalsContainer } from './GoalsContainer';
 import { GoalSectionHeader } from './GoalSectionHeader';
 import { TodoContainer } from './TodoContainer';
 
 type GoalListItem = Pick<Goal, 'id' | 'title' | 'completedCount' | 'todoCount'>;
 
-function GoalTodosRow({ goal, todos }: { goal: GoalListItem; todos: TodoWithFavorites[] }) {
+function GoalTodosRow({
+  goal,
+  todos,
+}: {
+  goalId: number;
+  goal: GoalListItem;
+  todos: TodoWithFavorites[];
+}) {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebouncedValue(searchQuery, SEARCH_DEBOUNCE_MS);
   const progress =
@@ -29,6 +39,7 @@ function GoalTodosRow({ goal, todos }: { goal: GoalListItem; todos: TodoWithFavo
   return (
     <GoalsContainer>
       <GoalSectionHeader
+        goalId={goal.id}
         title={goal.title}
         progress={progress}
         searchQuery={searchQuery}
@@ -40,21 +51,34 @@ function GoalTodosRow({ goal, todos }: { goal: GoalListItem; todos: TodoWithFavo
 }
 
 export function TodosByGoalSection() {
+  const [isGoalCreateModalOpen, setIsGoalCreateModalOpen] = useState(false);
   const { data: todos, isLoading, error } = useGetTodos({ limit: 100 });
-  // const { data: todosByGoalData } = useGetTodos({ limit: 100 });
-  // const todosData = todosByGoalData?.todos ?? [];
-  // console.log(todosData);
-  // Object.groupBy 메서드를 사용해 목표별로 그룹화
-  // const byGoal = Object.groupBy(todosData, (todo) => todo.goalId);
 
-  // 목표 2개 조회(초기 렌더링)
-  const { data: goals, isLoading: goalsLoading, error: goalsError } = useGetGoals({ limit: 100 });
+  const {
+    data: goalsInfinite,
+    isLoading: goalsLoading,
+    error: goalsError,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useInfiniteGoals({ limit: GOALS_PAGE_SIZE });
+
+  const { observerRef } = useInfiniteScroll({
+    hasNextPage: hasNextPage ?? false,
+    isFetchingNextPage,
+    fetchNextPage,
+  });
+
+  const goalsList = goalsInfinite?.pages.flatMap((page) => page.goals) ?? [];
 
   if (isLoading || goalsLoading) return <div>로딩중...</div>;
-  if (error || !todos || goalsError || !goals) return <div>에러</div>;
+  if (error || !todos || goalsError) return <div>에러</div>;
 
   const allTodos = todos.todos ?? [];
   const todosByGoalId = Object.groupBy(allTodos, (todo) => todo.goalId);
+  const handleNewGoal = () => {
+    setIsGoalCreateModalOpen(true);
+  };
 
   return (
     <section className="todos-by-goal-section-container mt-8 flex w-full md:mt-10 lg:mt-10">
@@ -76,7 +100,7 @@ export function TodosByGoalSection() {
             </h2>
           </section>
           <section className="flex items-center">
-            <IconButton variant="ghost" size="sm" type="button">
+            <IconButton variant="ghost" size="sm" type="button" onClick={handleNewGoal}>
               <FlagLineIcon variant="orange" />
               <span className="font-sm-semibold md:font-sm-semibold lg:font-base-semibold">
                 새 목표 추가
@@ -85,7 +109,7 @@ export function TodosByGoalSection() {
           </section>
         </div>
         <section className="todos-by-goal-section flex w-full flex-col gap-6">
-          {goals.goals.length === 0 ? (
+          {goalsList.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center gap-y-4.5 py-4.25">
               <Image
                 src="/images/big-zero-done.svg"
@@ -99,12 +123,34 @@ export function TodosByGoalSection() {
               </span>
             </div>
           ) : (
-            goals.goals.map((goal) => (
-              <GoalTodosRow key={goal.id} goal={goal} todos={todosByGoalId[goal.id] ?? []} />
-            ))
+            <>
+              {goalsList.map((goal) => (
+                <GoalTodosRow
+                  key={goal.id}
+                  goalId={goal.id}
+                  goal={goal}
+                  todos={todosByGoalId[goal.id] ?? []}
+                />
+              ))}
+              {hasNextPage ? (
+                <div
+                  ref={observerRef}
+                  className="flex min-h-8 w-full justify-center py-2"
+                  aria-hidden
+                >
+                  {isFetchingNextPage ? (
+                    <span className="font-sm-medium text-gray-500">목표를 불러오는 중…</span>
+                  ) : null}
+                </div>
+              ) : null}
+            </>
           )}
         </section>
       </div>
+      <GoalCreateModal
+        isOpen={isGoalCreateModalOpen}
+        onClose={() => setIsGoalCreateModalOpen(false)}
+      />
     </section>
   );
 }
