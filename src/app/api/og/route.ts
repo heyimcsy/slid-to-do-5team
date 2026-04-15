@@ -44,7 +44,6 @@ export async function GET(request: Request) {
 
     // 외부 URL을 프록시 URL로 변환
     const proxiedFavicon = `/api/og-image?url=${encodeURIComponent(favicon)}`;
-    console.log(ogImage?.[1]);
     const proxiedImage = ogImage?.[1]
       ? `/api/og-image?url=${encodeURIComponent(ogImage[1])}`
       : null;
