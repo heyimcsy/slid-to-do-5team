@@ -30,6 +30,7 @@ export default function ItemActionBar({
   noteIds,
   linkUrl,
   favorites,
+  variant,
 }: {
   id: number;
   goalId: number;
@@ -116,7 +117,12 @@ export default function ItemActionBar({
             }
           }}
         >
-          <Icon name="link" variant="orange" />
+          <Icon
+            name="link"
+            variant={
+              resolvedTheme === 'dark' ? 'white' : variant === 'recent' ? 'default' : 'orange'
+            }
+          />
         </Button>
       )}
       <Select items={selectValue} onValueChange={handleSelectChange}>
