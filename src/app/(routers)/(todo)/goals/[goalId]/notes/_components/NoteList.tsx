@@ -36,13 +36,14 @@ export function NoteList({ notes, goalId, observerRef, hasNextPage }: NoteListPr
           ))}
         </div>
       )}
-      {hasNextPage ? (
-        <div ref={observerRef} className="h-1" />
-      ) : (
-        <div className="flex h-5 w-full flex-shrink-0 items-center justify-around">
-          <p className="font-sm-regular text-gray-400">{NOTES_TEXT.NO_MORE_NOTES}</p>
-        </div>
-      )}
+      {notes.length > 0 &&
+        (hasNextPage ? (
+          <div ref={observerRef} className="h-1" />
+        ) : (
+          <div className="flex h-5 w-full flex-shrink-0 items-center justify-around">
+            <p className="font-sm-regular text-gray-400">{NOTES_TEXT.NO_MORE_NOTES}</p>
+          </div>
+        ))}
     </>
   );
 }
