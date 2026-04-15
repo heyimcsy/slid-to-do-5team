@@ -1,5 +1,6 @@
 import Image from 'next/image';
 
+import { FadeInSection } from './_components/FadeInSection';
 import { FeatureCard } from './_components/FeatureCard';
 import { StartButton } from './_components/StartButton';
 import { STEPS } from './_constants/steps';
@@ -21,14 +22,16 @@ export default function HomePage() {
           </p>
         </h2>
         <StartButton href={START_HREF}>시작하기</StartButton>
-        <Image
-          src="/images/hero-dashboard.svg"
-          alt="슬리드투두 대시보드 이미지"
-          width={1200}
-          height={720}
-          className="h-full w-full max-w-332 min-w-80 object-cover pt-18.5"
-          priority
-        />
+        <FadeInSection className="h-full w-full max-w-332 min-w-80">
+          <Image
+            src="/images/hero-dashboard.svg"
+            alt="슬리드투두 대시보드 이미지"
+            width={1200}
+            height={720}
+            className="h-full w-full max-w-332 min-w-80 object-cover pt-18.5"
+            priority
+          />
+        </FadeInSection>
       </section>
       <section className="features flex w-full flex-col items-center bg-orange-500 text-white lg:flex-row lg:items-center lg:justify-center lg:gap-6 dark:bg-orange-300 dark:text-black">
         {/* Features Section */}
