@@ -1,12 +1,13 @@
 'use client';
 
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useDeleteFavorite, usePostFavorite } from '@/api/favorites';
 import { useDeleteTodos } from '@/api/todos';
 import { GOALS_TEXT } from '@/app/(routers)/(todo)/constants';
 import { useDebouncedCallback } from '@/hooks/useDebounceCallback';
 import { cn } from '@/lib';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useTheme } from 'next-themes';
 
 import { ROUTES } from '@/constants/routes';
 import { DIALOG_VALUE, SELECT_VALUE } from '@/constants/ui-label';
@@ -28,14 +29,17 @@ export default function ItemActionBar({
   noteIds,
   linkUrl,
   favorites,
+  variant,
 }: {
   id: number;
   goalId: number;
   noteIds: number[];
   linkUrl: string | null;
   favorites: boolean;
+  variant: 'recent' | 'completed' | 'pending';
 }) {
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
   const { mutate: deleteTodo } = useDeleteTodos();
   const { mutate: postFavorite } = usePostFavorite();
   const { mutate: deleteFavorite } = useDeleteFavorite();
@@ -110,10 +114,7 @@ export default function ItemActionBar({
         </Button>
       )}
       <Select items={selectValue} onValueChange={handleSelectChange}>
-        <SelectTrigger size="sm" iconTrigger className="size-[20px] dark:hidden">
-          <Icon name="dotscircle" size={20} />
-        </SelectTrigger>
-        <SelectTrigger size="sm" iconTrigger className="hidden size-[20px] dark:block">
+        <SelectTrigger size="sm" iconTrigger className="size-[20px]">
           <Icon name="dotscircle" size={20} variant="ghost" className="dark:bg-transparent" />
         </SelectTrigger>
         <SelectContent>
@@ -143,7 +144,7 @@ export default function ItemActionBar({
       >
         <Icon
           name={favorites ? 'filledStar' : 'outlineStar'}
-          variant={favorites ? 'orange' : undefined}
+          variant={resolvedTheme === 'dark' ? 'white' : favorites ? 'white' : 'orange'}
         />
       </Button>
     </div>
