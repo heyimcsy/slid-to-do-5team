@@ -58,7 +58,7 @@ export function TodosByGoalSection() {
                 title={todo.title}
                 noteIds={todo.noteIds}
                 linkUrl={todo.linkUrl}
-                favorites={todo.favorites}
+                favorites={todo.isFavorite}
               />
             ))
           )}

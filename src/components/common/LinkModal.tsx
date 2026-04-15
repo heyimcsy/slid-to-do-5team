@@ -59,7 +59,13 @@ export function LinkModal({ editor, onClose, onLinkConfirm }: LinkModalProps) {
             autoFocus
             placeholder="링크를 입력해주세요"
             {...register('url')}
-            onKeyDown={(e) => e.key === 'Enter' && handleSubmit(onSubmit)()}
+            onKeyDown={(e) => {
+              if (e.nativeEvent.isComposing) return;
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSubmit(onSubmit)();
+              }
+            }}
           />
           {errors.url && <p className="text-xs text-red-500">{errors.url.message}</p>}
         </div>

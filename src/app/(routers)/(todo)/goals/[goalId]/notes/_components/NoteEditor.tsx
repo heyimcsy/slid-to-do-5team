@@ -1,3 +1,5 @@
+'use client';
+
 import type { NoteEditorProps } from '@/app/(routers)/(todo)/goals/[goalId]/notes/types';
 
 import Image from 'next/image';

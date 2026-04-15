@@ -270,8 +270,7 @@ export const usePatchNote = (options: { onSuccess?: () => void }) => {
       toast.success(NOTES_TEXT.NOTE_EDIT_SUCCESS);
       options?.onSuccess?.();
     },
-    onError: (_, __, context) => {
-      console.log('error', context);
+    onError: () => {
       toast.error(NOTES_TEXT.NOTE_EDIT_ERROR);
     },
   });
