@@ -5,11 +5,13 @@ import type { TodoListProps } from '@/app/(routers)/(todo)/goals/types';
 import Link from 'next/link';
 import { usePatchTodos } from '@/api/todos';
 import { useDebouncedCallback } from '@/hooks/useDebounceCallback';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from '@/lib';
 
 import { Icon } from '@/components/icon/Icon';
 import { Button } from '@/components/ui/button';
 
+import { shouldMarquee } from '../_constants/todos';
 import ItemActionBar from './ItemActionBar';
 
 /**
@@ -32,6 +34,11 @@ export default function TodoList({
   isFavorite,
   variant,
 }: TodoListPropsWithVairant) {
+  const isMdUp = useMediaQuery('(min-width: 768px)');
+  const isLgUp = useMediaQuery('(min-width: 1628px)');
+  const currentBreakpoint = isLgUp ? 'lg' : isMdUp ? 'md' : 'sm';
+  const enableMarquee = shouldMarquee(title, currentBreakpoint);
+
   /**
    * @description variant 값에 따라 스타일을 다르게 적용합니다
    */
@@ -68,7 +75,8 @@ export default function TodoList({
           <div className="min-w-0 flex-1 overflow-hidden">
             <p
               className={cn(
-                'font-sm-regular md:font-base-regular lg:font-lg-regular cursor-pointer truncate group-hover:hidden',
+                'font-sm-regular md:font-base-regular lg:font-lg-regular cursor-pointer truncate',
+                enableMarquee ? 'group-hover:hidden' : '',
                 done && variant === 'recent' ? 'line-through' : '',
                 done && variant === 'completed' ? 'text-gray-500 line-through dark:text-black' : '',
               )}
@@ -76,7 +84,12 @@ export default function TodoList({
               {title}
             </p>
 
-            <div className="hidden w-max min-w-full items-center overflow-hidden group-hover:flex">
+            <div
+              className={cn(
+                'hidden w-max min-w-full items-center overflow-hidden',
+                enableMarquee ? 'group-hover:flex' : '',
+              )}
+            >
               <div className="animate-todo-marquee flex min-w-max">
                 <span
                   className={cn(
