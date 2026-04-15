@@ -7,10 +7,13 @@ import CommunityClient from './CommunityClient';
 
 export default async function CommunityPage() {
   const perf = new PerfRecorder({ route: '/community', warnThreshold: 300 });
-
   const queryClient = new QueryClient();
-  await prefetchPostsList(queryClient);
-  await perf.flush();
+
+  try {
+    await prefetchPostsList(queryClient);
+  } finally {
+    await perf.flush();
+  }
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

@@ -7,10 +7,13 @@ import FavoritesTab from './_components/FavoritesTab';
 
 export default async function FavoritesPage() {
   const perf = new PerfRecorder({ route: '/favorites', warnThreshold: 300 });
-
   const queryClient = new QueryClient();
-  await prefetchFavorites(queryClient);
-  await perf.flush();
+
+  try {
+    await prefetchFavorites(queryClient);
+  } finally {
+    await perf.flush();
+  }
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
