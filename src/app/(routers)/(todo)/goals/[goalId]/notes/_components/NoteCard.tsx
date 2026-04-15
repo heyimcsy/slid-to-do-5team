@@ -1,6 +1,6 @@
 'use client';
 
-import type { Todo } from '@/api/todos';
+import type { NoteCardProps } from '@/app/(routers)/(todo)/goals/[goalId]/notes/types';
 
 import { useState } from 'react';
 import Image from 'next/image';
@@ -27,19 +27,7 @@ import {
   SelectTrigger,
 } from '@/components/ui/select';
 
-export function NoteCard({
-  goalId,
-  id,
-  title,
-  todo,
-  createdAt,
-}: {
-  goalId: number;
-  id: number;
-  title: string;
-  todo: Pick<Todo, 'id' | 'title' | 'done'>;
-  createdAt: string;
-}) {
+export default function NoteCard({ goalId, id, title, todo, createdAt }: NoteCardProps) {
   const selectValue = [
     { label: SELECT_VALUE.EDIT.LABEL, value: SELECT_VALUE.EDIT.VALUE },
     { label: SELECT_VALUE.DELETE.LABEL, value: SELECT_VALUE.DELETE.VALUE },
@@ -84,11 +72,14 @@ export function NoteCard({
           />
 
           {/* 중단: 노트 제목 */}
-          <p className="font-sm-semibold md:font-xl-semibold line-clamp-2 text-gray-800">{title}</p>
+          <p className="font-sm-semibold group-hover:font-sm-bold md:font-xl-semibold md:group-hover:font-xl-bold line-clamp-2 text-gray-800">
+            {title}
+          </p>
         </div>
         <div
           onClick={(e) => {
-            e.stopPropagation(); // 부모로 전파 중지
+            e.stopPropagation();
+            e.preventDefault();
           }}
         >
           <Select
@@ -96,19 +87,18 @@ export function NoteCard({
             onValueChange={handleSelectChange}
             aria-label={DIALOG_VALUE.DOT_TRIGGER_ALIA_LABEL}
           >
-            <SelectTrigger size="sm" iconTrigger className="size-[20px] dark:hidden">
-              <Icon name="dotscircle" size={20} />
-            </SelectTrigger>
-            <SelectTrigger
-              size="sm"
-              iconTrigger
-              className="hidden size-[20px] dark:block"
-              aria-label={DIALOG_VALUE.DOT_TRIGGER_ALIA_LABEL}
-            >
+            <SelectTrigger size="sm" iconTrigger className="size-[20px]">
+              <Icon
+                name="dotscircle"
+                size={20}
+                className="dark:hidden"
+                aria-label={DIALOG_VALUE.DOT_TRIGGER_ALIA_LABEL}
+              />
               <Icon
                 name="dotscircle"
                 size={20}
                 variant="ghost"
+                className="hidden dark:block"
                 aria-label={DIALOG_VALUE.DOT_TRIGGER_ALIA_LABEL}
               />
             </SelectTrigger>

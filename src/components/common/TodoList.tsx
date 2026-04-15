@@ -1,12 +1,12 @@
-import type { TodoWithFavorites } from '@/api/todos';
+import type { Todo } from '@/api/todos';
 
 import Image from 'next/image';
 
 import TodoItem from './TodoItem';
 
 interface TodoListProps {
-  todolists: TodoWithFavorites[];
   observerRef: React.Ref<HTMLDivElement>;
+  todolists: Todo[];
 }
 
 export default function TodoList({ todolists, observerRef }: TodoListProps) {

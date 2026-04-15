@@ -37,5 +37,5 @@ export const toTask = (fav: Favorite) => ({
   goal: fav.todo.goal,
   noteIds: fav.todo.noteIds ?? [],
   tags: [],
-  favorites: true,
+  isFavorite: true,
 });

@@ -1,11 +1,15 @@
 'use client';
 
-import type { NoteDraft } from '@/app/(routers)/(todo)/goals/[goalId]/notes/new/page';
+import type {
+  NoteDraft,
+  SpeechComponentProps,
+} from '@/app/(routers)/(todo)/goals/[goalId]/notes/types';
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import speechBubble from '@/../public/images/speech-bubble.svg';
 import { NOTE_CREATE, NOTES_TEXT, SPEECH_BUBBLE_IMAGE } from '@/app/(routers)/(todo)/constants';
+import { NOTE_EDIT } from '@/app/(routers)/(todo)/goals/[goalId]/notes/hooks/useNoteDraft';
 import { cn } from '@/lib';
 
 import { BUTTON_LABEL, DIALOG_VALUE } from '@/constants/ui-label';
@@ -26,12 +30,12 @@ export default function SpeechComponent({
   loadDraft,
   clearDraft,
   className,
-}: {
-  loadDraft: () => void;
-  clearDraft: () => void;
-  className?: string;
-}) {
-  const raw = localStorage.getItem(NOTE_CREATE);
+  edit = false,
+  noteId,
+}: SpeechComponentProps) {
+  const raw = edit
+    ? localStorage.getItem(`${NOTE_EDIT}-${noteId}`)
+    : localStorage.getItem(NOTE_CREATE);
 
   const [showDraftBubble, setShowDraftBubble] = useState(() => {
     if (!raw) return false;

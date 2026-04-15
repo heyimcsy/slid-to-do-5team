@@ -2,13 +2,13 @@
 
 import type { Tag } from '@/types/tag';
 
-import React, { useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
 import { useGetGoal, useGetGoals } from '@/api/goals';
 import { uploadImage } from '@/api/images';
 import { usePostTodo } from '@/api/todos';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
@@ -59,7 +59,23 @@ export default function NewForm({ onCancel }: { onCancel: () => void }) {
   const { data: goalsData } = useGetGoals();
 
   const params = useParams();
-  const goalIdFromUrl = params?.goalId ? Number(params.goalId) : null;
+  const searchParams = useSearchParams();
+
+  /**
+   * @description useParams, useSearchParams 둘 다 goalId를 파싱하기 위한 함수입니다.
+   * @param value - 목표 ID
+   * @returns 목표 ID
+   */
+  const parseGoalId = (value: string | string[] | null | undefined): number | null => {
+    const raw = Array.isArray(value) ? value[0] : value;
+    if (!raw) return null;
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+
+  const goalIdFromParams = parseGoalId(params?.goalId);
+  const goalIdFromSearch = parseGoalId(searchParams.get('goalId'));
+  const goalIdFromUrl = goalIdFromParams ?? goalIdFromSearch;
 
   const { data: goalData } = useGetGoal({ id: goalIdFromUrl ?? 0 });
   const [date, setDate] = React.useState<Date>();

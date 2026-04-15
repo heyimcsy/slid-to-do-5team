@@ -1,6 +1,7 @@
 import type { Goal } from '@/api/goals';
 import type { PaginatedResponse } from '@/api/response';
 import type { TagColor } from '@/utils/tag';
+import type { InfiniteData } from '@tanstack/react-query';
 
 import { NOTIFICATIONS } from '@/api/notifications';
 import { favoritesQueryKeys } from '@/app/(routers)/favorites/_api/favoritesQueryKeys';
@@ -41,6 +42,7 @@ export interface Todo {
   goal: Pick<Goal, 'id' | 'title'>;
   noteIds: number[];
   tags: Tag[];
+  isFavorite: boolean;
 }
 
 export interface TodoResponse {
@@ -64,6 +66,7 @@ export const TODOS = 'todos';
 export const TODO = 'todo';
 export const TODOS_URL = '/todos';
 
+export type TodosGetResponse = PaginatedResponse<Todo, 'todos'>;
 interface GetTodosParams {
   goalId?: number;
   done?: boolean;
@@ -72,22 +75,7 @@ interface GetTodosParams {
   enabled?: boolean;
 }
 
-export interface Favorite {
-  id: number;
-  teamId: string;
-  userId: number;
-  todoId: number;
-  createdAt: string;
-  todo: Pick<Todo, 'id' | 'title' | 'done' | 'goal'>;
-}
-
 // TODO: 낙관적 업데이트 inifiniteTodos 버전에도 추가하기
-
-// 기존 Todo 타입에 isFavorite 추가된 버전
-export type TodoWithFavorites = Todo & { favorites: boolean };
-
-// useGetTodos 반환 response 타입
-export type TodosWithFavoriteResponse = PaginatedResponse<TodoWithFavorites, 'todos'>;
 
 // usePostTodo 타입
 type CreateTodoPayload = Pick<Todo, 'title' | 'goalId' | 'dueDate'> &
@@ -96,7 +84,7 @@ type CreateTodoPayload = Pick<Todo, 'title' | 'goalId' | 'dueDate'> &
   };
 
 export const useGetTodos = ({ goalId, done, limit, cursor, enabled }: GetTodosParams) => {
-  return useQuery({
+  return useQuery<TodosGetResponse>({
     queryKey: [TODOS, { goalId, done, limit, cursor }],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -108,30 +96,14 @@ export const useGetTodos = ({ goalId, done, limit, cursor, enabled }: GetTodosPa
       const queryString = params.toString();
       const url = queryString ? `${TODOS_URL}?${queryString}` : TODOS_URL;
 
-      // 두 개 병렬 요청
-      const [todosData, favoritesData] = await Promise.all([
-        apiClient<PaginatedResponse<Todo, 'todos'>>(url),
-        apiClient<PaginatedResponse<Favorite, 'favorites'>>(`${TODOS_URL}/favorites`),
-      ]);
-
-      // favorites의 todoId만 Set으로 추출 (O(1) 조회)
-      const favoriteTodoIds = new Set(favoritesData.favorites.map((f) => f.todoId));
-      const todosWithFavorite = todosData.todos.map((todo) => ({
-        ...todo,
-        favorites: favoriteTodoIds.has(todo.id),
-      }));
-
-      return {
-        ...todosData,
-        todos: todosWithFavorite,
-      };
+      return apiClient<TodosGetResponse>(url);
     },
     enabled,
   });
 };
 
 export const useInfiniteTodos = ({ goalId, done, limit }: GetTodosParams) => {
-  return useInfiniteQuery<PaginatedResponse<TodoWithFavorites, 'todos'>>({
+  return useInfiniteQuery<TodosGetResponse>({
     queryKey: [TODOS, 'infinite', { goalId, done, limit }],
 
     queryFn: async ({ pageParam }) => {
@@ -145,22 +117,7 @@ export const useInfiniteTodos = ({ goalId, done, limit }: GetTodosParams) => {
       const queryString = params.toString();
       const url = queryString ? `${TODOS_URL}?${queryString}` : TODOS_URL;
 
-      const [todosData, favoritesData] = await Promise.all([
-        apiClient<PaginatedResponse<Todo, 'todos'>>(url),
-        apiClient<PaginatedResponse<Favorite, 'favorites'>>(`${TODOS_URL}/favorites`),
-      ]);
-
-      const favoriteTodoIds = new Set(favoritesData.favorites.map((f) => f.todoId));
-
-      const todosWithFavorite: TodoWithFavorites[] = todosData.todos.map((todo) => ({
-        ...todo,
-        favorites: favoriteTodoIds.has(todo.id),
-      }));
-
-      return {
-        ...todosData,
-        todos: todosWithFavorite,
-      };
+      return apiClient<TodosGetResponse>(url);
     },
 
     getNextPageParam: (lastPage) => {
@@ -201,24 +158,40 @@ export const usePatchTodos = () => {
       return await apiClient(`${TODOS_URL}/${id}`, { method: 'PATCH', body });
     },
     onMutate: async (payload: PatchTodoPayload) => {
-      // 진행 중인 refetch 취소 (덮어쓰기 방지)
       await queryClient.cancelQueries({ queryKey: [TODOS] });
-      // 현재 캐시 스냅샷 저장 (롤백용)
       const previousTodos = queryClient.getQueriesData({ queryKey: [TODOS] });
-      // 캐시 즉시 업데이트
-      queryClient.setQueriesData({ queryKey: [TODOS] }, (old: PaginatedResponse<Todo, 'todos'>) => {
-        if (!old || !old.todos) return old;
-        return {
-          ...old,
-          todos: old.todos.map((todo: Todo) =>
-            todo.id === payload.id ? { ...todo, ...payload } : todo,
-          ),
-        };
-      });
 
-      return { previousTodos }; // context로 전달
+      queryClient.setQueriesData(
+        { queryKey: [TODOS] },
+        (old: TodosGetResponse | InfiniteData<TodosGetResponse>) => {
+          if (!old) return old;
+
+          // 인피니트 쿼리
+          if ('pages' in old) {
+            return {
+              ...old,
+              pages: old.pages.map((page: TodosGetResponse) => ({
+                ...page,
+                todos: page.todos.map((todo: Todo) =>
+                  todo.id === payload.id ? { ...todo, ...payload } : todo,
+                ),
+              })),
+            };
+          }
+
+          // 일반 쿼리
+          if (!('todos' in old) || !old.todos) return old;
+          return {
+            ...old,
+            todos: old.todos.map((todo: Todo) =>
+              todo.id === payload.id ? { ...todo, ...payload } : todo,
+            ),
+          };
+        },
+      );
+
+      return { previousTodos };
     },
-
     onError: (_: Error, __: PatchTodoPayload, context) => {
       // 실패 시 스냅샷으로 롤백
       context?.previousTodos.forEach(([queryKey, data]) => {
@@ -236,6 +209,90 @@ export const usePatchTodos = () => {
   });
 };
 
+// export const useDeleteTodos = () => {
+//   const queryClient = useQueryClient();
+//
+//   return useMutation({
+//     mutationFn: async ({ id }: { id: number }) => {
+//       return await apiClient(`${TODOS_URL}/${id}`, { method: 'DELETE' });
+//     },
+//     onMutate: async ({ id }: { id: number }) => {
+//       await queryClient.cancelQueries({ queryKey: [TODOS] });
+//       const previousTodos = queryClient.getQueriesData({ queryKey: [TODOS] });
+//       queryClient.setQueriesData({ queryKey: [TODOS] }, (old: PaginatedResponse<Todo, 'todos'>) => {
+//         if (!old || !old.todos) return old;
+//         return {
+//           ...old,
+//           todos: old.todos.filter((todo: Todo) => todo.id !== id),
+//           totalCount: old.totalCount - 1,
+//         };
+//       });
+//       return { previousTodos };
+//     },
+//     onError: (_: Error, __, context) => {
+//       context?.previousTodos.forEach(([queryKey, data]) => {
+//         queryClient.setQueryData(queryKey, data);
+//       });
+//     },
+//     onSettled: (_, __, payload) => {
+//       queryClient.invalidateQueries({ queryKey: [TODOS] });
+//       queryClient.invalidateQueries({ queryKey: [TODO, payload.id] });
+//       queryClient.invalidateQueries({ queryKey: favoritesQueryKeys.all });
+//     },
+//   });
+// };
+//
+// export const usePostTodo = () => {
+//   const queryClient = useQueryClient();
+//   return useMutation({
+//     mutationFn: async (payload: CreateTodoPayload) => {
+//       return await apiClient<Todo>(TODOS_URL, { method: 'POST', body: payload });
+//     },
+//     onMutate: async (payload) => {
+//       await queryClient.cancelQueries({ queryKey: [TODOS] });
+//       const previousTodos = queryClient.getQueriesData({ queryKey: [TODOS] });
+//
+//       // API 응답 전에 캐시에 즉시 추가
+//       queryClient.setQueriesData({ queryKey: [TODOS] }, (old: PaginatedResponse<Todo, 'todos'>) => {
+//         if (!old || !old.todos) return old;
+//
+//         const optimisticTodo: Todo = {
+//           id: Date.now(), // 임시 id
+//           teamId: '',
+//           userId: 0,
+//           goalId: payload.goalId,
+//           title: payload.title,
+//           done: false,
+//           fileUrl: null,
+//           linkUrl: payload.linkUrl ?? null,
+//           dueDate: payload.dueDate,
+//           createdAt: new Date().toISOString(),
+//           updatedAt: new Date().toISOString(),
+//           goal: { id: payload.goalId, title: '' },
+//           noteIds: [],
+//           tags: [],
+//           isFavorite: false,
+//         };
+//         return {
+//           ...old,
+//           todos: [optimisticTodo, ...old.todos],
+//           totalCount: old.totalCount + 1,
+//         };
+//       });
+//
+//       return { previousTodos };
+//     },
+//     onError: (_, __, context) => {
+//       context?.previousTodos.forEach(([queryKey, data]) => {
+//         queryClient.setQueryData(queryKey, data);
+//       });
+//     },
+//     onSettled: () => {
+//       queryClient.invalidateQueries({ queryKey: [TODOS] });
+//       queryClient.invalidateQueries({ queryKey: favoritesQueryKeys.all });
+//     },
+//   });
+// };
 export const useDeleteTodos = () => {
   const queryClient = useQueryClient();
 
@@ -246,14 +303,32 @@ export const useDeleteTodos = () => {
     onMutate: async ({ id }: { id: number }) => {
       await queryClient.cancelQueries({ queryKey: [TODOS] });
       const previousTodos = queryClient.getQueriesData({ queryKey: [TODOS] });
-      queryClient.setQueriesData({ queryKey: [TODOS] }, (old: PaginatedResponse<Todo, 'todos'>) => {
-        if (!old || !old.todos) return old;
-        return {
-          ...old,
-          todos: old.todos.filter((todo: Todo) => todo.id !== id),
-          totalCount: old.totalCount - 1,
-        };
-      });
+
+      queryClient.setQueriesData(
+        { queryKey: [TODOS] },
+        (old: TodosGetResponse | InfiniteData<TodosGetResponse> | undefined) => {
+          if (!old) return old;
+
+          if ('pages' in old) {
+            return {
+              ...old,
+              pages: old.pages.map((page: TodosGetResponse) => ({
+                ...page,
+                todos: page.todos.filter((todo: Todo) => todo.id !== id),
+                totalCount: page.totalCount - 1,
+              })),
+            };
+          }
+
+          if (!('todos' in old) || !old.todos) return old;
+          return {
+            ...old,
+            todos: old.todos.filter((todo: Todo) => todo.id !== id),
+            totalCount: old.totalCount - 1,
+          };
+        },
+      );
+
       return { previousTodos };
     },
     onError: (_: Error, __, context) => {
@@ -279,29 +354,45 @@ export const usePostTodo = () => {
       await queryClient.cancelQueries({ queryKey: [TODOS] });
       const previousTodos = queryClient.getQueriesData({ queryKey: [TODOS] });
 
-      // API 응답 전에 캐시에 즉시 추가
+      const optimisticTodo: Todo = {
+        id: Date.now(),
+        teamId: '',
+        userId: 0,
+        goalId: payload.goalId,
+        title: payload.title,
+        done: false,
+        fileUrl: null,
+        linkUrl: payload.linkUrl ?? null,
+        dueDate: payload.dueDate,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        goal: { id: payload.goalId, title: '' },
+        noteIds: [],
+        tags: [],
+        isFavorite: false,
+      };
+
       queryClient.setQueriesData(
         { queryKey: [TODOS] },
-        (old: PaginatedResponse<TodoWithFavorites, 'todos'>) => {
-          if (!old || !old.todos) return old;
+        (old: TodosGetResponse | InfiniteData<TodosGetResponse> | undefined) => {
+          if (!old) return old;
 
-          const optimisticTodo: TodoWithFavorites = {
-            id: Date.now(), // 임시 id
-            teamId: '',
-            userId: 0,
-            goalId: payload.goalId,
-            title: payload.title,
-            done: false,
-            fileUrl: null,
-            linkUrl: payload.linkUrl ?? null,
-            dueDate: payload.dueDate,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            goal: { id: payload.goalId, title: '' },
-            noteIds: [],
-            tags: [],
-            favorites: false,
-          };
+          if ('pages' in old) {
+            return {
+              ...old,
+              pages: old.pages.map((page: TodosGetResponse, index: number) =>
+                index === 0
+                  ? {
+                      ...page,
+                      todos: [optimisticTodo, ...page.todos],
+                      totalCount: page.totalCount + 1,
+                    }
+                  : page,
+              ),
+            };
+          }
+
+          if (!('todos' in old) || !old.todos) return old;
           return {
             ...old,
             todos: [optimisticTodo, ...old.todos],

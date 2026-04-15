@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import NoteDetailContent from '@/app/(routers)/(todo)/@modal/(.)goals/[goalId]/notes/[noteId]/_components/NoteDetailContent';
 import NoteDetailSkeleton from '@/app/(routers)/(todo)/@modal/(.)goals/[goalId]/notes/[noteId]/_components/NoteDetailSkeleton';
-import { useOgInfo } from '@/app/(routers)/(todo)/goals/[goalId]/notes/new/hooks/useOgInfo';
+import { useOgInfo } from '@/app/(routers)/(todo)/goals/[goalId]/notes/hooks/useOgInfo';
 import { useNoteDetail } from '@/hooks/useNoteDetail';
 
 import { Sheet, SheetContent } from '@/components/ui/sheet';

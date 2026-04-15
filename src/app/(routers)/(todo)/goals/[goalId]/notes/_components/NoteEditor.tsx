@@ -1,31 +1,18 @@
-import type { TodoResponse } from '@/api/todos';
-import type { OgInfoResponse } from '@/components/common/LinkEmbed';
+'use client';
 
-import React from 'react';
+import type { NoteEditorProps } from '@/app/(routers)/(todo)/goals/[goalId]/notes/types';
+
 import Image from 'next/image';
 import noteImage from '@/../public/images/img-note.svg';
 import MetaTags from '@/app/(routers)/(todo)/_components/MetaTags';
 import { NOTE_IMAGE, NOTES_TEXT } from '@/app/(routers)/(todo)/constants';
-import { Editor, EditorContent } from '@tiptap/react';
+import { EditorContent } from '@tiptap/react';
 
 import { EDITOR_LABELS } from '@/constants/ui-label';
 
 import { LinkEmbed } from '@/components/common/LinkEmbed';
 import { Toolbar } from '@/components/Toolbar';
 import { Input } from '@/components/ui/input';
-
-interface NoteEditorProps {
-  editor: Editor | null;
-  setLinkUrl: React.Dispatch<React.SetStateAction<string | null>>;
-  title: string;
-  onHandleChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  titleLength: number;
-  todoData: TodoResponse;
-  linkUrl: string | null;
-  linkData: OgInfoResponse | undefined;
-  handleLinkDelete: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  handleLinkClick: () => void;
-}
 
 export default function NoteEditor({
   editor,
