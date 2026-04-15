@@ -149,7 +149,14 @@ export function PostFormClient({
         onImageSizeExceeded={handleImageSizeExceeded}
       />
     ),
-    [editor, images.length, handleImageSelected, handleImageLimitExceeded],
+    [
+      editor,
+      IMAGE_LIMIT,
+      images.length,
+      handleImageSelected,
+      handleImageLimitExceeded,
+      handleImageSizeExceeded,
+    ],
   );
 
   return (
