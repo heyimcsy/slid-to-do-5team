@@ -22,3 +22,11 @@ export interface TodoSectionProps {
   clickedId?: number | null;
   onClickItem?: (index: number) => void;
 }
+
+export interface ItemActionBarProps {
+  id: number;
+  goalId: number;
+  noteIds: number[];
+  linkUrl: string | null;
+  isFavorite: boolean;
+}
