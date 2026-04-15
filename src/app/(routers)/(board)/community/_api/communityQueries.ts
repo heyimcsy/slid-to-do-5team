@@ -19,8 +19,10 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 
+import { updateComments, updatePost, updatePosts } from './communityActions';
 import {
   BEST_POSTS_LIMIT,
+  CACHE_TIMES,
   COMMENTS_PAGE_LIMIT,
   communityQueryKeys,
   POSTS_PAGE_LIMIT,
@@ -41,7 +43,7 @@ export const useGetPosts = (sort: SortOption = '최신순', search?: string) => 
       ),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    staleTime: 1000 * 60 * 5,
+    staleTime: CACHE_TIMES.posts * 1000,
     placeholderData: keepPreviousData,
   });
 };
@@ -51,7 +53,7 @@ export const useGetBestPosts = () => {
   return useQuery({
     queryKey: [...communityQueryKeys.postsList('best'), { limit: BEST_POSTS_LIMIT }],
     queryFn: () => apiClient<PostsResponse>(`/posts?type=best&limit=${BEST_POSTS_LIMIT}`),
-    staleTime: 1000 * 60 * 5,
+    staleTime: CACHE_TIMES.bestPosts * 1000,
   });
 };
 
@@ -60,7 +62,7 @@ export const useGetPostById = (postId: number) => {
   return useQuery({
     queryKey: communityQueryKeys.post(postId),
     queryFn: () => apiClient<Post>(`/posts/${postId}`),
-    staleTime: 1000 * 60 * 5,
+    staleTime: CACHE_TIMES.post * 1000,
     enabled: Number.isInteger(postId) && postId > 0,
   });
 };
@@ -77,14 +79,14 @@ export const useCreatePost = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(post),
       }),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.setQueryData(communityQueryKeys.post(data.id), data);
       queryClient.setQueryData(communityQueryKeys.comments(data.id), {
-        comments: [],
-        totalCount: 0,
-        nextCursor: null,
+        pages: [{ comments: [], totalCount: 0, nextCursor: null }],
+        pageParams: [undefined],
       });
       queryClient.invalidateQueries({ queryKey: communityQueryKeys.posts() });
+      await updatePosts();
       router.replace(`/community/${data.id}`);
     },
   });
@@ -96,15 +98,17 @@ export const useUpdatePost = (postId: number) => {
   const router = useRouter();
 
   return useMutation({
-    mutationFn: (updatePost: PostInput) =>
+    mutationFn: (postInput: PostInput) =>
       apiClient<Post>(`/posts/${postId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatePost),
+        body: JSON.stringify(postInput),
       }),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.setQueryData(communityQueryKeys.post(data.id), data);
       queryClient.invalidateQueries({ queryKey: communityQueryKeys.posts() });
+      await updatePost(data.id);
+      await updatePosts();
       router.replace(`/community/${data.id}`);
     },
   });
@@ -122,6 +126,7 @@ export const useDeletePost = () => {
     onSuccess: (_data, deletedPostId) => {
       queryClient.removeQueries({ queryKey: communityQueryKeys.post(deletedPostId) });
       queryClient.invalidateQueries({ queryKey: communityQueryKeys.posts() });
+      void updatePosts();
     },
   });
 };
@@ -141,7 +146,11 @@ export const useCreateComment = (postId: number) => {
         }),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: communityQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.comments(postId) });
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.posts() });
+      void updateComments(postId);
+      void updatePost(postId);
+      void updatePosts();
     },
   });
 };
@@ -157,7 +166,7 @@ export const useGetComments = (postId: number) => {
     enabled: Number.isInteger(postId) && postId > 0,
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    staleTime: 1000 * 60 * 5,
+    staleTime: CACHE_TIMES.comments * 1000,
     placeholderData: keepPreviousData,
   });
 };
@@ -173,7 +182,7 @@ export const useGetCommentsByParentId = (postId: number, parentId: number, enabl
     enabled,
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    staleTime: 1000 * 60 * 5,
+    staleTime: CACHE_TIMES.comments * 1000,
     placeholderData: keepPreviousData,
   });
 };
@@ -191,6 +200,7 @@ export const useUpdateComment = (postId: number, commentId: number) => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: communityQueryKeys.comments(postId) });
+      void updateComments(postId);
     },
   });
 };
@@ -205,7 +215,11 @@ export const useDeleteComment = (postId: number) => {
         method: 'DELETE',
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: communityQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.comments(postId) });
+      queryClient.invalidateQueries({ queryKey: communityQueryKeys.posts() });
+      void updateComments(postId);
+      void updatePost(postId);
+      void updatePosts();
     },
   });
 };
