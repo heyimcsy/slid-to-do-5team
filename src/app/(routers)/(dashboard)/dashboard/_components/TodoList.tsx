@@ -10,9 +10,19 @@ import { cn } from '@/lib';
 import { Icon } from '@/components/icon/Icon';
 import { Button } from '@/components/ui/button';
 
-import RecentItemActionBar from './RecentItemActionBar';
+import ItemActionBar from './ItemActionBar';
 
-export default function RecentTodoList({
+/**
+ * @description variant 값에 따라 스타일을 적용합니다.
+ * - recent: 최근 등록한 할 일 리스트
+ * - completed: 완료된 할 일 리스트
+ * - pending: 할 일 리스트
+ */
+interface TodoListPropsWithVairant extends TodoListProps {
+  variant: 'recent' | 'completed' | 'pending';
+}
+
+export default function TodoList({
   id,
   goalId,
   done,
@@ -20,7 +30,25 @@ export default function RecentTodoList({
   noteIds,
   linkUrl,
   favorites,
-}: TodoListProps) {
+  variant,
+}: TodoListPropsWithVairant) {
+  /**
+   * @description variant 값에 따라 스타일을 다르게 적용합니다
+   */
+  const variantStyle = {
+    recent: {
+      container: 'bg-transparent text-black dark:bg-orange-300 dark:text-black',
+      checkbox: '',
+    },
+    completed: {
+      container: 'bg-gray-100 text-black dark:bg-gray-300 dark:text-black',
+      checkbox: '',
+    },
+    pending: {
+      container: 'bg-orange-100 hover:bg-orange-300 text-black dark:bg-orange-300 dark:text-black',
+      checkbox: '',
+    },
+  };
   const { mutate: checkTodo } = usePatchTodos();
   const checkButton = useDebouncedCallback(() => {
     checkTodo({ id: id, done: !done });
@@ -29,7 +57,8 @@ export default function RecentTodoList({
     <div
       className={cn(
         'group rounded-[12px] duration-300 hover:bg-orange-600 dark:hover:bg-orange-400',
-        'flex h-9 min-h-9 w-full items-center justify-between space-x-[6px] px-1 md:h-11 md:min-h-11 md:px-2',
+        'flex h-10 min-h-10 w-full items-center justify-between space-x-[6px] px-1 md:h-10 md:min-h-10 md:px-2 lg:h-12 lg:min-h-12',
+        variantStyle[variant].container,
       )}
     >
       <div className="flex w-full min-w-0 items-center space-x-1 md:space-x-2">
@@ -44,7 +73,7 @@ export default function RecentTodoList({
           <p
             className={cn(
               'font-sm-regular md:font-base-regular lg:font-lg-regular cursor-pointer truncate',
-              done ? 'text-gray-100 line-through dark:text-black' : 'text-white dark:text-black',
+              done ? 'text-gray-100 line-through dark:text-black' : 'text-gray-800 dark:text-black',
               'hover:font-sm-semibold hover:md:font-base-semibold hover:lg:font-lg-semibold hover:truncate',
             )}
           >
@@ -52,12 +81,13 @@ export default function RecentTodoList({
           </p>
         </Link>
       </div>
-      <RecentItemActionBar
+      <ItemActionBar
         id={id}
         goalId={goalId}
         noteIds={noteIds}
         linkUrl={linkUrl}
         favorites={favorites}
+        variant={variant}
       />
     </div>
   );
