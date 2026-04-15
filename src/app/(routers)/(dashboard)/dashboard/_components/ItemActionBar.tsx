@@ -8,6 +8,7 @@ import { GOALS_TEXT } from '@/app/(routers)/(todo)/constants';
 import { useDebouncedCallback } from '@/hooks/useDebounceCallback';
 import { cn } from '@/lib';
 import { useTheme } from 'next-themes';
+import { toast } from 'sonner';
 
 import { ROUTES } from '@/constants/routes';
 import { DIALOG_VALUE, SELECT_VALUE } from '@/constants/ui-label';
@@ -71,7 +72,13 @@ export default function ItemActionBar({
   };
 
   const handleCopyLink = async (linkUrl: string) => {
-    await navigator.clipboard.writeText(linkUrl);
+    try {
+      await navigator.clipboard.writeText(linkUrl);
+      toast.success('링크가 복사되었습니다');
+    } catch (error) {
+      toast.error('링크 복사에 실패했습니다', { id: 'link-copy-error' });
+      console.error(error);
+    }
   };
 
   const handleFavorite = useDebouncedCallback(() => {
