@@ -62,13 +62,20 @@ export function GoalSectionTitleWithProgress({
     setEditTitle(value);
   };
 
+  const trimmedEditTitle = editTitle.trim();
+  const canConfirmEdit = trimmedEditTitle.length > 0 && trimmedEditTitle !== title;
+
   const onEditConfirm = () => {
-    editGoal({ id: goalId, title: editTitle.trim() });
+    if (!canConfirmEdit) return;
+    editGoal({ id: goalId, title: trimmedEditTitle });
     setEditDialogOpen(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') onEditConfirm();
+    if (e.nativeEvent.isComposing || e.keyCode === 229) return;
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    onEditConfirm();
   };
 
   return (
@@ -131,7 +138,7 @@ export function GoalSectionTitleWithProgress({
                   type="button"
                   variant="default"
                   className="w-1/2"
-                  disabled={!editTitle.trim() || editTitle === title}
+                  disabled={!canConfirmEdit}
                 >
                   {DIALOG_VALUE.BUTTON.CONFIRM}
                 </Button>
