@@ -1,3 +1,5 @@
+'use client';
+
 import type { NoteFormHeaderProps } from '@/app/(routers)/(todo)/goals/[goalId]/notes/types';
 
 import { NOTES_TEXT } from '@/app/(routers)/(todo)/constants';
