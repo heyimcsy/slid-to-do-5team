@@ -236,12 +236,13 @@ export const usePostNote = (options: { onSuccess?: () => void }) => {
       context?.previousNotes.forEach(([queryKey, data]) => {
         queryClient.setQueryData(queryKey, data);
       });
+      toast.error(NOTES_TEXT.NOTE_NEW_ERROR);
     },
 
     onSuccess: () => {
+      toast.success(NOTES_TEXT.NOTE_NEW_SUCCESS);
       options?.onSuccess?.();
     },
-
     onSettled: () => {
       // 성공/실패 모두 진짜 서버 데이터로 동기화
       queryClient.invalidateQueries({ queryKey: [NOTES] });
