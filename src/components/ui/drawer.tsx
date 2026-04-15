@@ -56,7 +56,7 @@ function DrawerContent({
           data-slot="drawer-content"
           className={cn(
             'max-h-[80dvh]',
-            'bg-background flex flex-col outline-none',
+            'flex flex-col bg-white outline-none',
             'w-full rounded-t-lg border-t',
             'transition-transform duration-300 ease-out',
             'data-[ending-style]:translate-y-full data-[starting-style]:translate-y-full',

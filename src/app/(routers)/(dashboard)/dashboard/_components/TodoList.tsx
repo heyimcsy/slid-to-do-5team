@@ -37,16 +37,14 @@ export default function TodoList({
    */
   const variantStyle = {
     recent: {
-      container: 'bg-transparent text-black dark:bg-orange-300 dark:text-black',
-      checkbox: '',
+      container: 'bg-transparent text-white dark:text-black dark:bg-orange-300',
     },
     completed: {
-      container: 'bg-gray-100 text-black dark:bg-gray-300 dark:text-black',
-      checkbox: '',
+      container:
+        'bg-transparent hover:bg-orange-300 text-black dark:bg-transparent dark:hover:bg-orange-300/80 dark:text-black',
     },
     pending: {
       container: 'bg-orange-100 hover:bg-orange-300 text-black dark:bg-orange-300 dark:text-black',
-      checkbox: '',
     },
   };
   const { mutate: checkTodo } = usePatchTodos();
@@ -73,8 +71,9 @@ export default function TodoList({
           <p
             className={cn(
               'font-sm-regular md:font-base-regular lg:font-lg-regular cursor-pointer truncate',
-              done ? 'text-gray-100 line-through dark:text-black' : 'text-gray-800 dark:text-black',
               'hover:font-sm-semibold hover:md:font-base-semibold hover:lg:font-lg-semibold hover:truncate',
+              done && variant === 'recent' ? 'line-through' : '',
+              done && variant === 'completed' ? 'text-gray-500 line-through dark:text-black' : '',
             )}
           >
             {title}
