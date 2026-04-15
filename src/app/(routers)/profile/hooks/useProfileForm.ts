@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { uploadImage } from '@/api/images';
 import { CHECK_NICKNAME, NAME, PROFILE_TEXT } from '@/app/(routers)/profile/constants';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -56,7 +57,7 @@ export function useProfileForm() {
   }, [userData?.image]);
 
   const nameValue = watch(NAME);
-  const isNameChanged = nameValue !== originalName.current;
+  const isNameChanged = useDebouncedValue(nameValue !== originalName.current, 300);
 
   const [nickNameCheck, setNickNameCheck] = useState(false);
   const { data: checkData, refetch } = useGetCheckNickname({
