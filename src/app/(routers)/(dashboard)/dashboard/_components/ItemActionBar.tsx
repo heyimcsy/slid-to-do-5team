@@ -124,6 +124,7 @@ export default function ItemActionBar({
         <Button
           variant="icon"
           size="none"
+          aria-label="링크 복사"
           onClick={(e) => {
             e.stopPropagation();
             if (linkUrl) {
@@ -167,6 +168,8 @@ export default function ItemActionBar({
         }}
         variant="icon"
         size="none"
+        aria-label={favorites ? '찜하기 취소' : '찜하기'}
+        aria-pressed={favorites}
       >
         <Icon
           name={favorites ? 'filledStar' : 'outlineStar'}
