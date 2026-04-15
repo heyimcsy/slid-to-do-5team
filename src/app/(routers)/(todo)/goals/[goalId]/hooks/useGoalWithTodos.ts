@@ -1,32 +1,32 @@
-import type { TodoWithFavorites } from '@/api/todos';
-
+import { useMemo } from 'react';
 import { useGetGoal } from '@/api/goals';
 import { useGetTodos } from '@/api/todos';
 
 export function useGoalWithTodos(goalId: number) {
   const goalResult = useGetGoal({ id: goalId });
-  const todosResult = useGetTodos({ goalId, limit: 20 });
 
-  const todoLists = todosResult.data?.todos.filter((todo: TodoWithFavorites) => !todo.done) ?? [];
-  const todoListsDone =
-    todosResult.data?.todos.filter((todo: TodoWithFavorites) => todo.done) ?? [];
-  const todoDoneCount = todoListsDone.length;
-  const totalCount = todoListsDone.length + todoLists.length;
-  const progressPercent = totalCount === 0 ? 0 : Math.round((todoDoneCount / totalCount) * 100);
+  const todoResult = useGetTodos({ goalId, done: false, limit: 1 });
+  const doneResult = useGetTodos({ goalId, done: true, limit: 1 });
+
+  const progressPercent: number = useMemo(() => {
+    const todoCount: number = todoResult.data?.totalCount ?? 0;
+    const doneCount: number = doneResult.data?.totalCount ?? 0;
+    const total: number = todoCount + doneCount;
+    return total === 0 ? 0 : Math.round((doneCount / total) * 100);
+  }, [todoResult.data?.totalCount, doneResult.data?.totalCount]);
 
   const refetch = () => {
     if (goalResult.isError) goalResult.refetch();
-    if (todosResult.isError) todosResult.refetch();
+    if (todoResult.isError) todoResult.refetch();
+    if (doneResult.isError) doneResult.refetch();
   };
 
   return {
     goalData: goalResult.data,
-    todoLists,
-    todoListsDone,
     progressPercent,
-    isLoading: goalResult.isLoading || todosResult.isLoading,
-    isError: goalResult.isError || todosResult.isError,
-    isSuccess: goalResult.isSuccess && todosResult.isSuccess,
+    isLoading: goalResult.isLoading || todoResult.isLoading || doneResult.isLoading,
+    isError: goalResult.isError || todoResult.isError || doneResult.isError,
+    isSuccess: goalResult.isSuccess && todoResult.isSuccess && doneResult.isSuccess,
     refetch,
   };
 }

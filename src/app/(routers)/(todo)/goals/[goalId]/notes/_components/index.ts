@@ -3,4 +3,7 @@ export { default as NewNoteSkeleton } from './NewNoteSkeleton';
 export { default as NoteEditor } from './NoteEditor';
 export { default as NoteFormHeader } from './NoteFormHeader';
 export { default as SaveCheckToast } from './SaveCheckToast';
-export { default as SpeechComponent } from './SpeechComponent';
+export { default as NoteCard } from './NoteCard';
+export { NoteList } from './NoteList';
+export { default as NoteContainerSkeleton } from './NoteContainerSkeleton';
+export { default as NotesContainer } from './NotesContainer';

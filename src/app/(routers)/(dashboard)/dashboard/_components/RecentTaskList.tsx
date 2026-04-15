@@ -70,7 +70,7 @@ export function RecentTaskList() {
               title={todo.title}
               noteIds={todo.noteIds}
               linkUrl={todo.linkUrl}
-              favorites={todo.favorites}
+              isFavorite={todo.isFavorite}
               variant="recent"
             />
           ))

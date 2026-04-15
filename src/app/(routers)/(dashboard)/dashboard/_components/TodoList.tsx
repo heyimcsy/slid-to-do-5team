@@ -29,7 +29,7 @@ export default function TodoList({
   title,
   noteIds,
   linkUrl,
-  favorites,
+  isFavorite,
   variant,
 }: TodoListPropsWithVairant) {
   /**
@@ -86,7 +86,7 @@ export default function TodoList({
         goalId={goalId}
         noteIds={noteIds}
         linkUrl={linkUrl}
-        favorites={favorites}
+        favorites={isFavorite}
         variant={variant}
       />
     </div>

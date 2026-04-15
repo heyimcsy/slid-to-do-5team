@@ -1,20 +1,12 @@
 import type { Notes } from '@/api/notes';
-import type { Ref } from 'react';
+import type { NoteListProps } from '@/app/(routers)/(todo)/goals/[goalId]/notes/types';
 
 import Image from 'next/image';
 import emptyImage from '@/../public/images/big-zero-done.svg';
 import { EMPTY_IMAGE_NOTE, NOTES_TEXT } from '@/app/(routers)/(todo)/constants';
+import { NoteCard } from '@/app/(routers)/(todo)/goals/[goalId]/notes/_components/index';
 
-import { NoteCard } from './NoteCard';
-
-interface NoteListProps {
-  notes: Notes[];
-  goalId: number;
-  observerRef: Ref<HTMLDivElement>;
-  hasNextPage: boolean;
-}
-
-export default function NoteList({ notes, goalId, observerRef, hasNextPage }: NoteListProps) {
+export function NoteList({ notes, goalId, observerRef, hasNextPage }: NoteListProps) {
   return (
     <>
       {notes.length === 0 ? (
@@ -44,7 +36,14 @@ export default function NoteList({ notes, goalId, observerRef, hasNextPage }: No
           ))}
         </div>
       )}
-      {hasNextPage && <div ref={observerRef} className="h-1" />}
+      {notes.length > 0 &&
+        (hasNextPage ? (
+          <div ref={observerRef} className="h-1" />
+        ) : (
+          <div className="flex h-5 w-full flex-shrink-0 items-center justify-around">
+            <p className="font-sm-regular text-gray-400">{NOTES_TEXT.NO_MORE_NOTES}</p>
+          </div>
+        ))}
     </>
   );
 }

@@ -1,6 +1,5 @@
 'use client';
 
-import type { Notes } from '@/api/notes';
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 
 import { useState } from 'react';
@@ -10,8 +9,10 @@ import goalImage from '@/../public/images/large-goal.svg';
 import { useGetGoal } from '@/api/goals';
 import { useGetNotesInfinite } from '@/api/notes';
 import { GOAL_IMAGE_BIG, NOTES_SORT, NOTES_TEXT } from '@/app/(routers)/(todo)/constants';
-import NotesContainerSkeleton from '@/app/(routers)/(todo)/goals/[goalId]/notes/_components/NoteContainerSkeleton';
-import NoteList from '@/app/(routers)/(todo)/goals/[goalId]/notes/_components/NoteList';
+import {
+  NoteContainerSkeleton,
+  NoteList,
+} from '@/app/(routers)/(todo)/goals/[goalId]/notes/_components';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
@@ -43,7 +44,11 @@ export default function NotesContainer() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useGetNotesInfinite({ goalId, sort: sortParam });
+  } = useGetNotesInfinite({
+    goalId,
+    sort: sortParam,
+    search: debouncedSearch,
+  });
 
   const allNotes = data?.pages.flatMap((page) => page.notes) ?? [];
 
@@ -52,10 +57,6 @@ export default function NotesContainer() {
     isFetchingNextPage,
     fetchNextPage,
   });
-
-  const filteredNotes: Notes[] = allNotes.filter((note: Notes) =>
-    note.title.toLowerCase().includes(debouncedSearch.toLowerCase()),
-  );
 
   const handleSortChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -69,7 +70,7 @@ export default function NotesContainer() {
     router.replace(`${pathname}?${params.toString()}`);
   };
 
-  if (isLoading) return <NotesContainerSkeleton />;
+  if (isLoading) return <NoteContainerSkeleton />;
   if (isError) return <ErrorFallback onRetry={refetch} title={NOTES_TEXT.GET_NOTES} />;
   if (isSuccess)
     return (
@@ -111,9 +112,9 @@ export default function NotesContainer() {
         </div>
 
         {/* 노트 리스트 */}
-        <div className="mt-4 md:mt-6">
+        <div className="mt-4 pb-6 md:mt-6 md:pb-10">
           <NoteList
-            notes={filteredNotes ?? []}
+            notes={allNotes}
             goalId={goalId}
             observerRef={observerRef}
             hasNextPage={hasNextPage}

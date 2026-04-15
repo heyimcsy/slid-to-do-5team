@@ -1,4 +1,4 @@
-import type { TodoWithFavorites } from '@/api/todos';
+import type { Todo } from '@/api/todos';
 
 import Image from 'next/image';
 import { cn } from '@/lib';
@@ -11,7 +11,7 @@ export function TodoListSection({
   variant,
 }: {
   title: string;
-  items: TodoWithFavorites[];
+  items: Todo[];
   variant: 'completed' | 'pending';
 }) {
   const emptyText = variant === 'completed' ? '완료된' : '해야';

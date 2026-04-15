@@ -1,34 +1,34 @@
-import type { NoteDraft } from '@/app/(routers)/(todo)/goals/[goalId]/notes/new/page';
-import type { Editor } from '@tiptap/react';
+import type {
+  NoteDraft,
+  UseNoteDraftProps,
+} from '@/app/(routers)/(todo)/goals/[goalId]/notes/types';
 
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-interface UseNoteDraftProps {
-  title: string;
-  linkUrl: string | null;
-  editor: Editor | null;
-  setTitle: React.Dispatch<React.SetStateAction<string>>;
-  setTitleLength: React.Dispatch<React.SetStateAction<number>>;
-  setLinkUrl: React.Dispatch<React.SetStateAction<string | null>>;
-}
-
+export const NOTE_CREATE: string = 'note-create';
+export const NOTE_EDIT: string = 'note-edit';
 export const useNoteDraft = ({
+  type,
   title,
   linkUrl,
   editor,
   setTitle,
   setTitleLength,
   setLinkUrl,
+  noteId,
 }: UseNoteDraftProps) => {
-  const NOTE_CREATE: string = 'note-create';
-
   const [saveCheck, setSaveCheck] = useState<boolean>(false);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   // 로컬스토리지에서 값을 불러오는 함수
   const loadDraft = () => {
-    const raw = localStorage.getItem(NOTE_CREATE);
+    let raw;
+    if (type === NOTE_CREATE) {
+      raw = localStorage.getItem(NOTE_CREATE);
+    } else {
+      raw = localStorage.getItem(`${NOTE_EDIT}-${noteId}`);
+    }
     if (!raw) return;
 
     const draft = JSON.parse(raw) as NoteDraft;
@@ -40,7 +40,11 @@ export const useNoteDraft = ({
 
   // 로컬스토리지에서 값을 삭제하는 함수
   const clearDraft = () => {
-    localStorage.removeItem(NOTE_CREATE);
+    if (type === NOTE_CREATE) {
+      localStorage.removeItem(NOTE_CREATE);
+    } else {
+      localStorage.removeItem(`${NOTE_EDIT}-${noteId}`);
+    }
   };
 
   // 로컬스토리지에 값을 저장하는 함수
@@ -59,7 +63,12 @@ export const useNoteDraft = ({
       linkUrl: linkUrl ?? '',
       savedAt: now.toISOString(),
     };
-    localStorage.setItem(NOTE_CREATE, JSON.stringify(draft));
+    if (type === NOTE_CREATE) {
+      localStorage.setItem(NOTE_CREATE, JSON.stringify(draft));
+    } else {
+      localStorage.setItem(`${NOTE_EDIT}-${noteId}`, JSON.stringify(draft));
+    }
+
     setSavedAt(now);
     setSaveCheck(true);
     setElapsedSeconds(0);

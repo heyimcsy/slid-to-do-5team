@@ -1,11 +1,9 @@
+import type { SaveCheckToastProps } from '@/app/(routers)/(todo)/goals/[goalId]/notes/types';
+
 import { NOTES_TEXT } from '@/app/(routers)/(todo)/constants';
 
 import { Icon } from '@/components/icon/Icon';
 
-interface SaveCheckToastProps {
-  saveCheck: boolean;
-  elapsedSeconds: number;
-}
 export default function SaveCheckToast({ saveCheck, elapsedSeconds }: SaveCheckToastProps) {
   return (
     <>

@@ -1,68 +1,59 @@
 'use client';
 
+import type { NoteEditContainerProps } from '@/app/(routers)/(todo)/goals/[goalId]/notes/types';
+
 import React, { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { usePostNote } from '@/api/notes';
-import { useGetTodo } from '@/api/todos';
+import { useRouter } from 'next/navigation';
+import { useGetNote, usePatchNote } from '@/api/notes';
 import { NOTES_TEXT } from '@/app/(routers)/(todo)/constants';
+import {
+  LinkEmbedOgImage,
+  NoteEditor,
+  NoteFormHeader,
+  SaveCheckToast,
+} from '@/app/(routers)/(todo)/goals/[goalId]/notes/_components';
 import SpeechComponent from '@/app/(routers)/(todo)/goals/[goalId]/notes/_components/SpeechComponent';
 import { useLinkEmbed } from '@/app/(routers)/(todo)/goals/[goalId]/notes/hooks/useLinkEmbed';
 import {
-  NOTE_CREATE,
+  NOTE_EDIT,
   useNoteDraft,
 } from '@/app/(routers)/(todo)/goals/[goalId]/notes/hooks/useNoteDraft';
 import { useOgInfo } from '@/app/(routers)/(todo)/goals/[goalId]/notes/hooks/useOgInfo';
 import { useEditorWithContent } from '@/hooks/editor';
 import { cn } from '@/lib';
 
-import {
-  LinkEmbedOgImage,
-  NewNoteSkeleton,
-  NoteEditor,
-  NoteFormHeader,
-  SaveCheckToast,
-} from '../_components';
-
-export default function NewNotePage() {
+export default function NoteEditContainer({ noteId }: NoteEditContainerProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const todoId: number = Number(searchParams.get('todoId'));
-  const {
-    data: todoData,
-    isLoading: todoIsLoading,
-    isSuccess: todoIsSuccess,
-  } = useGetTodo({ id: todoId });
-  const { mutate: createNote } = usePostNote({
+  const { data, isSuccess } = useGetNote({ id: noteId });
+  const { mutate } = usePatchNote({
     onSuccess: () => {
       router.back();
     },
   });
 
-  const [title, setTitle] = useState<string>('');
+  const [title, setTitle] = useState<string>(data?.title ?? '');
   const [titleLength, setTitleLength] = useState<number>(0);
   const [linkUrl, setLinkUrl] = useState<string | null>(null);
-
-  const { data: linkData, isSuccess: linkSuccess } = useOgInfo(linkUrl);
-
   const { editor, json } = useEditorWithContent({
     variant: 'note',
     placeholder: NOTES_TEXT.NOTE_EDITOR_PLACEHOLDER,
+    initialContent: data ? JSON.stringify(data.content) : '',
   });
-
+  const { data: linkData, isSuccess: linkSuccess } = useOgInfo(linkUrl);
+  const { showEmbed, handleLinkDelete, handleLinkClick } = useLinkEmbed({
+    editor,
+    linkData,
+    setLinkUrl,
+  });
   const { saveCheck, saveDraft, loadDraft, clearDraft, elapsedSeconds } = useNoteDraft({
-    type: 'note-create',
+    type: 'note-edit',
     title,
     linkUrl,
     editor,
     setTitle,
     setTitleLength,
     setLinkUrl,
-  });
-
-  const { showEmbed, handleLinkDelete, handleLinkClick } = useLinkEmbed({
-    editor,
-    linkData,
-    setLinkUrl,
+    noteId,
   });
 
   const onHandleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,24 +61,20 @@ export default function NewNotePage() {
     setTitle(titleValue);
     setTitleLength(titleValue.length);
   };
-
   const handleSubmit = () => {
-    if (todoIsSuccess) {
-      createNote({
-        todoId: todoData?.id,
-        title: title,
-        content: JSON.parse(json),
-        linkUrl: linkUrl ?? undefined,
-      });
-      const raw = localStorage.getItem(NOTE_CREATE);
-      if (raw) {
-        clearDraft();
-      }
+    mutate({
+      id: noteId,
+      content: JSON.parse(json),
+      title: title,
+      linkUrl: linkUrl ?? undefined,
+    });
+    const raw = localStorage.getItem(`${NOTE_EDIT}-${noteId}`);
+    if (raw) {
+      clearDraft();
     }
   };
 
-  if (todoIsLoading) return <NewNoteSkeleton />;
-  if (todoIsSuccess)
+  if (isSuccess)
     return (
       <div className={cn('h-full w-fit', showEmbed && 'w-full flex-col justify-items-center')}>
         <div className="relative flex h-full w-full flex-col items-center p-4 md:w-159 md:pt-12 md:pb-7.5 lg:w-192 lg:pt-18 lg:pb-15.5">
@@ -97,6 +84,8 @@ export default function NewNotePage() {
             loadDraft={loadDraft}
             saveDraft={saveDraft}
             handleSubmit={handleSubmit}
+            edit
+            noteId={noteId}
           />
           <NoteEditor
             editor={editor}
@@ -104,7 +93,7 @@ export default function NewNotePage() {
             title={title}
             onHandleChange={onHandleChange}
             titleLength={titleLength}
-            todoData={todoData}
+            todoData={data.todo}
             linkUrl={linkUrl}
             linkData={linkData}
             handleLinkDelete={handleLinkDelete}
@@ -115,6 +104,8 @@ export default function NewNotePage() {
           loadDraft={loadDraft}
           clearDraft={clearDraft}
           className="bottom-20 md:hidden"
+          edit
+          noteId={noteId}
         />
         <SaveCheckToast saveCheck={saveCheck} elapsedSeconds={elapsedSeconds} />
         <LinkEmbedOgImage
