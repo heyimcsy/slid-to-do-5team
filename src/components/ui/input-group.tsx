@@ -118,15 +118,18 @@ const InputGroupInput = React.forwardRef<HTMLInputElement, InputProps>(function 
   ref,
 ) {
   return (
-    <Input
-      ref={ref}
-      data-slot="input-group-control"
-      className={cn(
-        'flex-1 rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent',
-        className,
-      )}
-      {...props}
-    />
+    // Input은 className을 내부 <input>에만 붙이고, 바깥은 래퍼 <div>라서 flex-1이 부모 flex에 안 먹음 → 래퍼에 flex-1·min-w-0 (Safari에서 addon 밀림 방지)
+    <div className="min-w-0 flex-1">
+      <Input
+        ref={ref}
+        data-slot="input-group-control"
+        className={cn(
+          'w-full min-w-0 rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent',
+          className,
+        )}
+        {...props}
+      />
+    </div>
   );
 });
 InputGroupInput.displayName = 'InputGroupInput';
