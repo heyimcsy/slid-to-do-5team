@@ -42,7 +42,6 @@ export function PostSearchBar({
   }, [debouncedValue]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    isPendingRef.current = false;
     setSearch(e.target.value);
   };
 
@@ -55,7 +54,11 @@ export function PostSearchBar({
           value={search}
           onChange={handleChange}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') onSearchChange(e.currentTarget.value.trim());
+            if (e.key === 'Enter') {
+              const trimmed = e.currentTarget.value.trim();
+              if (trimmed === initialSearch) return;
+              onSearchChange(trimmed);
+            }
           }}
         />
       </div>
