@@ -1,5 +1,7 @@
 'use client';
 
+import type { ItemActionBarProps } from '@/app/(routers)/(todo)/goals/types';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDeleteFavorite, usePostFavorite } from '@/api/favorites';
@@ -28,19 +30,14 @@ export default function ItemActionBar({
   noteIds,
   linkUrl,
   isFavorite,
-}: {
-  id: number;
-  goalId: number;
-  noteIds: number[];
-  linkUrl: string | null;
-  isFavorite: boolean;
-}) {
+}: ItemActionBarProps) {
   const router = useRouter();
   const { mutate: deleteTodo } = useDeleteTodos();
   const { mutate: postFavorite } = usePostFavorite();
   const { mutate: deleteFavorite } = useDeleteFavorite();
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [localIsFavorite, setLocalIsFavorite] = useState(isFavorite);
 
   const selectValue = [
     {
@@ -50,6 +47,7 @@ export default function ItemActionBar({
     { label: SELECT_VALUE.EDIT.LABEL, value: SELECT_VALUE.EDIT.VALUE },
     { label: SELECT_VALUE.DELETE.LABEL, value: SELECT_VALUE.DELETE.VALUE },
   ];
+
   const handleSelectChange = (value: string | null) => {
     if (value === null) return;
 
@@ -72,13 +70,24 @@ export default function ItemActionBar({
     await navigator.clipboard.writeText(linkUrl);
   };
 
-  const handleFavorite = useDebouncedCallback(() => {
-    if (isFavorite) {
-      deleteFavorite(id);
+  const debouncedFavoriteApi = useDebouncedCallback((next: boolean) => {
+    if (next) {
+      postFavorite(id, {
+        onError: () => setLocalIsFavorite(isFavorite),
+      });
     } else {
-      postFavorite(id);
+      deleteFavorite(id, {
+        onError: () => setLocalIsFavorite(isFavorite),
+      });
     }
   }, 300);
+
+  const handleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const next = !isFavorite;
+    setLocalIsFavorite(next);
+    debouncedFavoriteApi(next);
+  };
 
   return (
     <div className="flex h-fit shrink-0 space-x-[6px] lg:space-x-2">
@@ -140,17 +149,10 @@ export default function ItemActionBar({
         description={DIALOG_VALUE.DESCRIPTION_DELETE(GOALS_TEXT.TODO_KO)}
         onConfirm={handleDelete}
       />
-      <Button
-        onClick={(e) => {
-          e.stopPropagation();
-          handleFavorite();
-        }}
-        variant="icon"
-        size="none"
-      >
+      <Button onClick={handleFavorite} variant="icon" size="none">
         <Icon
-          name={isFavorite ? 'filledStar' : 'outlineStar'}
-          variant={isFavorite ? 'orange' : undefined}
+          name={localIsFavorite ? 'filledStar' : 'outlineStar'}
+          variant={localIsFavorite ? 'orange' : undefined}
         />
       </Button>
     </div>
