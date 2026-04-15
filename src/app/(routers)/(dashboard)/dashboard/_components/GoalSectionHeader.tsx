@@ -34,6 +34,7 @@ export function GoalSectionHeader({
       {/* 1. ProgressBar 영역 */}
       <GoalSectionTitleWithProgress
         className="col-start-1 row-start-1 md:col-start-1 md:row-start-1"
+        goalId={goalId}
         title={title}
         progress={progress}
       />
