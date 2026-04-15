@@ -14,7 +14,7 @@ export default function TodoDetailContainer({ todoId }: { todoId: number }) {
   if (isLoading) return <TodoDetailSkeleton />;
   if (isSuccess)
     return (
-      <div className="h-fit w-fit rounded-[28px] bg-white p-6">
+      <div className="my-auto h-fit w-fit rounded-[28px] bg-white p-6">
         <TodoDetailContent
           title={data.title}
           done={data.done ? GOALS_TEXT.DONE : GOALS_TEXT.TODO}
