@@ -3,6 +3,8 @@ import 'server-only';
 import { appendFile, mkdir, open } from 'fs/promises';
 import { join } from 'path';
 
+import * as Sentry from '@sentry/nextjs';
+
 interface PerfRecorderOptions {
   route: string;
   warnThreshold?: number; // 이 값(ms) 초과 시 Note 컬럼에 ⚠️ 표시 (기본값: 300ms)
@@ -20,10 +22,19 @@ export class PerfRecorder {
   }
 
   async flush(): Promise<void> {
+    const duration = performance.now() - this.pageStartTime;
+    const category = this.route.split('/')[1] ?? 'unknown';
+
+    if (process.env.NODE_ENV === 'production') {
+      Sentry.metrics.distribution('ssr.duration', duration, {
+        unit: 'millisecond',
+        attributes: { route: this.route, category },
+      });
+    }
+
     if (process.env.NODE_ENV !== 'development') return;
 
     try {
-      const duration = performance.now() - this.pageStartTime;
       const note = duration > this.warnThreshold ? '⚠️' : '';
 
       const now = new Date();
@@ -31,7 +42,6 @@ export class PerfRecorder {
       const date = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
       const time = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 
-      const category = this.route.split('/')[1] ?? 'unknown';
       const filePath = join(process.cwd(), 'docs', 'performance', `${category}.md`);
       const row = `| ${date} | ${time} | ${this.route} | ${duration.toFixed(2)} | ${note} |\n`;
 
