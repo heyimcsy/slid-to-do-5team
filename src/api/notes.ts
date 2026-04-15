@@ -1,11 +1,20 @@
 import type { PaginatedResponse } from '@/api/response';
-import type { Todo } from '@/api/todos';
-import type { QueryClient } from '@tanstack/react-query';
+import type { TodoResponse } from '@/api/todos';
+import type { InfiniteData, QueryClient } from '@tanstack/react-query';
 
 import { GOALS } from '@/api/goals';
 import { TODOS } from '@/api/todos';
+import { NOTES_TEXT } from '@/app/(routers)/(todo)/constants';
+import { favoritesQueryKeys } from '@/app/(routers)/favorites/_api/favoritesQueryKeys';
 import { apiClient } from '@/lib/apiClient.browser';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 // ── 마크(인라인 스타일) ──────────────────────────
 type BoldMark = { type: 'bold' };
@@ -114,7 +123,7 @@ export interface Notes {
   linkUrl: string;
   teamId: string;
   title: string;
-  todo: Pick<Todo, 'id' | 'title' | 'done'>;
+  todo: Pick<TodoResponse, 'id' | 'title' | 'done' | 'tags' | 'goal' | 'createdAt'>;
   todoId: number;
   updatedAt: string;
   userId: number;
@@ -123,34 +132,32 @@ export const NOTE = 'NOTE';
 export const NOTES = 'NOTES';
 export const NOTES_URL = '/notes';
 
-interface GetNotesParams {
-  todoId?: number;
-  goalId?: number;
-  cursor?: number;
-  limit?: number;
-}
-
 export type NotesGetResponse = PaginatedResponse<Notes, 'notes'>;
 type CreateNotePayload = Pick<Notes, 'todoId' | 'title'> &
   Partial<Pick<Notes, 'content' | 'linkUrl'>>;
 
 type PatchNotePayload = Pick<Notes, 'id'> & Partial<Pick<Notes, 'title' | 'content' | 'linkUrl'>>;
-export const useGetNotes = ({ todoId, goalId, cursor, limit }: GetNotesParams = {}) => {
-  return useQuery({
-    queryKey: [NOTES, { todoId, goalId, cursor, limit }],
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      if (todoId !== undefined) params.append('todoId', String(todoId));
-      if (goalId !== undefined) params.append('goalId', String(goalId));
-      if (cursor !== undefined) params.append('cursor', String(cursor));
-      if (limit !== undefined) params.append('limit', String(limit));
 
-      const queryString = params.toString();
-      const url = queryString ? `${NOTES_URL}?${queryString}` : NOTES_URL;
-
-      return await apiClient<NotesGetResponse>(url);
-    },
-    enabled: !!goalId,
+export const useGetNotesInfinite = ({
+  goalId,
+  limit = 5,
+  sort,
+  search,
+}: {
+  goalId: number;
+  limit?: number;
+  sort?: string;
+  search?: string;
+}) => {
+  return useInfiniteQuery({
+    queryKey: [NOTES, { goalId, limit, sort, search }],
+    queryFn: async ({ pageParam }) =>
+      await apiClient<NotesGetResponse>(
+        `${NOTES_URL}?goalId=${goalId}&limit=${limit}${sort ? `&sort=${sort}` : ''}${search ? `&search=${search}` : ''}${pageParam ? `&cursor=${pageParam}` : ''}`,
+      ),
+    initialPageParam: null as number | null,
+    getNextPageParam: (lastPage) => lastPage?.nextCursor ?? null,
+    placeholderData: keepPreviousData,
   });
 };
 
@@ -163,6 +170,7 @@ export const useGetNote = ({ id }: { id: number }) => {
     enabled: !!id,
   });
 };
+
 export const usePostNote = (options: { onSuccess?: () => void }) => {
   const queryClient: QueryClient = useQueryClient();
   return useMutation({
@@ -181,26 +189,44 @@ export const usePostNote = (options: { onSuccess?: () => void }) => {
       const previousNotes = queryClient.getQueriesData({ queryKey: [NOTES] });
 
       // 낙관적으로 캐시에 추가
-      queryClient.setQueriesData({ queryKey: [NOTES] }, (old: NotesGetResponse | undefined) => {
-        if (!old) return old;
-        const optimisticNote: Notes = {
-          id: Date.now(), // 임시 id
-          title: payload.title,
-          content: payload.content ?? { type: 'doc', content: [] },
-          linkUrl: payload.linkUrl ?? '',
-          todoId: payload.todoId,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          teamId: '',
-          userId: 0,
-          todo: { id: payload.todoId, title: '', done: false },
-        };
-        return {
-          ...old,
-          notes: [optimisticNote, ...old.notes],
-          totalCount: old.totalCount + 1,
-        };
-      });
+      queryClient.setQueriesData(
+        { queryKey: [NOTES] },
+        (old: InfiniteData<NotesGetResponse> | undefined) => {
+          if (!old) return old;
+          const optimisticNote: Notes = {
+            id: Date.now(), // 임시 id
+            title: payload.title,
+            content: payload.content ?? { type: 'doc', content: [] },
+            linkUrl: payload.linkUrl ?? '',
+            todoId: payload.todoId,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            teamId: '',
+            userId: 0,
+            todo: {
+              id: payload.todoId,
+              title: '',
+              done: false,
+              tags: [],
+              goal: { title: '', id: Date.now() },
+              createdAt: new Date().toISOString(),
+            },
+          };
+
+          return {
+            ...old,
+            pages: old.pages.map((page: NotesGetResponse, index: number) =>
+              index === 0
+                ? {
+                    ...page,
+                    notes: [optimisticNote, ...page.notes],
+                    totalCount: page.totalCount + 1,
+                  }
+                : page,
+            ),
+          };
+        },
+      );
 
       return { previousNotes };
     },
@@ -221,11 +247,12 @@ export const usePostNote = (options: { onSuccess?: () => void }) => {
       queryClient.invalidateQueries({ queryKey: [NOTES] });
       queryClient.invalidateQueries({ queryKey: [GOALS] });
       queryClient.invalidateQueries({ queryKey: [TODOS] });
+      queryClient.invalidateQueries({ queryKey: favoritesQueryKeys.all });
     },
   });
 };
 
-export const usePatchNote = () => {
+export const usePatchNote = (options: { onSuccess?: () => void }) => {
   const queryClient: QueryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: PatchNotePayload) => {
@@ -236,9 +263,15 @@ export const usePatchNote = () => {
         body,
       });
     },
+    ...options,
     onSuccess: (_, payload) => {
       queryClient.invalidateQueries({ queryKey: [NOTES] });
       queryClient.invalidateQueries({ queryKey: [NOTE, payload.id] });
+      toast.success(NOTES_TEXT.NOTE_EDIT_SUCCESS);
+      options?.onSuccess?.();
+    },
+    onError: () => {
+      toast.error(NOTES_TEXT.NOTE_EDIT_ERROR);
     },
   });
 };
@@ -254,12 +287,15 @@ export const useDeleteNote = () => {
       const previousTodos = queryClient.getQueriesData({ queryKey: [NOTES] });
       queryClient.setQueriesData(
         { queryKey: [NOTES] },
-        (old: PaginatedResponse<Notes, 'notes'>) => {
+        (old: InfiniteData<NotesGetResponse> | undefined) => {
           if (!old) return old;
+
           return {
             ...old,
-            notes: old.notes.filter((note: Notes) => note.id !== id),
-            totalCount: old.totalCount - 1,
+            pages: old.pages.map((page: NotesGetResponse) => ({
+              ...page,
+              notes: page.notes.filter((note: Notes) => note.id !== id),
+            })),
           };
         },
       );
@@ -271,8 +307,11 @@ export const useDeleteNote = () => {
       });
     },
     onSettled: (_, __, payload) => {
-      queryClient.invalidateQueries({ queryKey: [NOTES, GOALS, TODOS] });
+      queryClient.invalidateQueries({ queryKey: [NOTES] });
+      queryClient.invalidateQueries({ queryKey: [GOALS] });
+      queryClient.invalidateQueries({ queryKey: [TODOS] });
       queryClient.invalidateQueries({ queryKey: [NOTE, payload.id] });
+      queryClient.invalidateQueries({ queryKey: favoritesQueryKeys.all });
     },
   });
 };

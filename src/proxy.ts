@@ -2,12 +2,21 @@ import 'server-only';
 
 import type { NextRequest } from 'next/server';
 
-import { isPublicPath } from '@/lib/navigation/publicPaths';
 import { NextResponse } from 'next/server';
+import { buildCsp } from '@/config/csp';
+import { isAbortError } from '@/lib/auth/isAbortError';
+import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
+import { isPublicPath } from '@/lib/navigation/publicPaths';
+import { getSafeCallbackPath } from '@/lib/navigation/safeCallbackPath';
 
-import { ALLOWED_ORIGINS, API_BASE_URL } from '@/constants/api';
+import { ALLOWED_ORIGINS, API_BASE_URL, API_PROXY_TIMEOUT_MS } from '@/constants/api';
 import { AUTH_CONFIG, isAuthRouteGuardEnabled } from '@/constants/auth-config';
-import { AUTH_MISSING_REFRESH_TOKEN_MESSAGE_KO } from '@/constants/error-message';
+import {
+  AUTH_MISSING_REFRESH_TOKEN_MESSAGE_KO,
+  AUTH_SERVICE_ERROR_MESSAGE_KO,
+} from '@/constants/error-message';
+
+import { originMatchesAllowedEntry } from './utils/origin';
 
 /** 갱신 실패·액세스 토큰 없음 — 백엔드로 무인증 프록시하지 않음 */
 function proxyAuthRequiredResponse(): Response {
@@ -25,75 +34,85 @@ export { isPublicPath, PUBLIC_PATHS } from '@/lib/navigation/publicPaths';
 
 /**
  * @description proxy - Next.js 16 라우트 보호 (proxy.ts = 구 middleware.ts)
- * @note `/` + access·refresh 중 하나라도 있으면 `/dashboard`로 리다이렉트(랜딩 스킵).
+ * @note 세션(access·refresh 중 하나) 있을 때: `/` → `/dashboard`; `/login`·`/signup` → 안전한 `callbackUrl` 또는 `/dashboard`(OAuth 실패 `?error=` 는 로그인/가입만 스킵).
  * @note access만 없고 refresh가 있으면 **통과** — 세션 복구 가능(클라이언트 `POST /api/auth/refresh` 등으로 access 재발급).
  *       둘 다 없을 때만 로그인으로 보냄.
  * @param request - NextRequest
  * @returns {NextResponse} - NextResponse
  */
 export function proxy(request: NextRequest) {
+  const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+  const isDev = process.env.NODE_ENV === 'development';
+  const cspValue = buildCsp({ nonce, isDev });
+
   const accessCookie = request.cookies.get(AUTH_CONFIG.ACCESS_TOKEN_KEY);
   const refreshCookie = request.cookies.get(AUTH_CONFIG.REFRESH_TOKEN_KEY);
   const { pathname } = request.nextUrl;
 
   const hasAccess = Boolean(accessCookie?.value);
   const hasRefresh = Boolean(refreshCookie?.value);
+  const hasSession = hasAccess || hasRefresh;
 
-  /** 랜딩(`/`)은 공개지만, 세션 쿠키가 있으면 대시보드로 (미들웨어에서 `proxy` 호출 시) */
-  if (pathname === '/' && (hasAccess || hasRefresh)) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+  /** 세션 있으면 랜딩·인증 화면 스킵 — OAuth 콜백 실패 `?error=` 는 로그인/가입에서만 리다이렉트 생략 */
+  if (hasSession) {
+    if (pathname === '/') {
+      const res = NextResponse.redirect(new URL('/dashboard', request.url));
+      res.headers.set('Content-Security-Policy', cspValue);
+      return res;
+    }
+    if (
+      (pathname === '/login' || pathname === '/signup') &&
+      !request.nextUrl.searchParams.get('error')?.trim()
+    ) {
+      const nextPath =
+        getSafeCallbackPath(request.nextUrl.searchParams.get('callbackUrl')) ?? '/dashboard';
+      const res = NextResponse.redirect(new URL(nextPath, request.url));
+      res.headers.set('Content-Security-Policy', cspValue);
+      return res;
+    }
   }
 
-  if (isPublicPath(pathname)) {
-    return NextResponse.next();
-  }
-
-  if (!isAuthRouteGuardEnabled()) {
-    return NextResponse.next();
+  if (isPublicPath(pathname) || !isAuthRouteGuardEnabled()) {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-nonce', nonce);
+    requestHeaders.set('Content-Security-Policy', cspValue);
+    const res = NextResponse.next({ request: { headers: requestHeaders } });
+    res.headers.set('Content-Security-Policy', cspValue);
+    return res;
   }
 
   if (!hasAccess && !hasRefresh) {
     const loginUrl = new URL('/login', request.url);
     const returnTo = `${pathname}${request.nextUrl.search}`;
     loginUrl.searchParams.set('callbackUrl', returnTo);
-    return NextResponse.redirect(loginUrl);
+    const res = NextResponse.redirect(loginUrl);
+    res.headers.set('Content-Security-Policy', cspValue);
+    return res;
   }
 
   if (/^\/goals\/\d+\/notes\/new$/.test(pathname)) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.delete('next-url');
-
-    return NextResponse.rewrite(request.nextUrl, {
+    requestHeaders.set('x-nonce', nonce);
+    requestHeaders.set('Content-Security-Policy', cspValue);
+    const res = NextResponse.rewrite(request.nextUrl, {
       request: { headers: requestHeaders },
     });
+    res.headers.set('Content-Security-Policy', cspValue);
+    return res;
   }
 
-  return NextResponse.next();
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-nonce', nonce);
+  requestHeaders.set('Content-Security-Policy', cspValue);
+  const res = NextResponse.next({ request: { headers: requestHeaders } });
+  res.headers.set('Content-Security-Policy', cspValue);
+  return res;
 }
 
 export const config = {
   matcher: ['/((?!_next|api|favicon\\.ico|fonts|images|icons).*)'],
 };
-
-/**
- * `ALLOWED_ORIGINS` 항목이 `Origin` 헤더 값과 맞는지 확인.
- * - 리터럴: `===` 또는 `startsWith(entry + '/')` (기존 동작)
- * - `*` 포함(예: `https://*.ngrok-free.app`): `*` 는 호스트 내 **한 라벨**(점 없음)에 대응
- *
- * @internal 테스트용 export
- */
-export function originMatchesAllowedEntry(allowed: string, candidateOrigin: string): boolean {
-  if (!allowed.includes('*')) {
-    return candidateOrigin === allowed || candidateOrigin.startsWith(allowed + '/');
-  }
-  try {
-    const parts = allowed.split('*');
-    const escaped = parts.map((p) => p.replace(/[.+?^${}()|[\]\\]/g, '\\$&'));
-    return new RegExp(`^${escaped.join('[^.]+')}$`).test(candidateOrigin);
-  } catch {
-    return false;
-  }
-}
 
 /**
  * @description BFF 요청 origin 검증 (cross-site 요청 차단)
@@ -209,5 +228,16 @@ export async function forwardToBackend(request: Request, path: string): Promise<
     }
   }
 
-  return fetch(url, { method, headers, body });
+  try {
+    return await fetchWithTimeout(url, { method, headers, body }, API_PROXY_TIMEOUT_MS);
+  } catch (error) {
+    const status = isAbortError(error) ? 504 : 502;
+    return new Response(
+      JSON.stringify({ success: false, message: AUTH_SERVICE_ERROR_MESSAGE_KO }),
+      {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
+  }
 }

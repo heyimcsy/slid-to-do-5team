@@ -1,11 +1,15 @@
 import 'server-only';
 
+import type { TokenPairBackendResponse } from '@/lib/auth/parseTokenPairFromBackendJson';
 import type { User } from '@/lib/auth/schemas/user';
 
+import { ApiClientError } from '@/lib/apiClient';
+import { apiClientServer } from '@/lib/apiClient.server';
 import { setAuthCookies } from '@/lib/auth/cookies';
+import { isAbortError } from '@/lib/auth/isAbortError';
 import { parseTokenPairFromBackendJson } from '@/lib/auth/parseTokenPairFromBackendJson';
 
-import { API_BASE_URL, API_TIMEOUT_MS } from '@/constants/api';
+import { API_TIMEOUT_MS } from '@/constants/api';
 import { AUTH_CONFIG } from '@/constants/auth-config';
 import {
   AUTH_SERVICE_ERROR_MESSAGE_KO,
@@ -23,31 +27,13 @@ export type CompleteGoogleBackendLoginResult =
 export async function completeGoogleBackendLogin(
   googleAccessToken: string,
 ): Promise<CompleteGoogleBackendLoginResult> {
-  const base = API_BASE_URL?.replace(/\/$/, '') ?? '';
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
-
   try {
-    const response = await fetch(`${base}/oauth/google`, {
+    const data = await apiClientServer<TokenPairBackendResponse>('/oauth/google', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: googleAccessToken }),
-      signal: controller.signal,
+      body: { token: googleAccessToken },
+      timeoutMs: API_TIMEOUT_MS,
+      skipSessionExpiredRedirect: true,
     });
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      if (response.status === 409) {
-        return { ok: false, status: 409, message: DUPLICATE_ACCOUNT_MESSAGE_KO };
-      }
-      const raw =
-        err && typeof err === 'object' && 'message' in err && typeof err.message === 'string'
-          ? err.message
-          : 'Google 로그인 실패';
-      return { ok: false, status: response.status, message: raw };
-    }
-
-    const data = (await response.json()) as Record<string, unknown>;
     const { accessToken: at, refreshToken: rt, user } = parseTokenPairFromBackendJson(data);
 
     if (!at || !rt) {
@@ -58,15 +44,26 @@ export async function completeGoogleBackendLogin(
       };
     }
 
-    await setAuthCookies(at, rt);
+    await setAuthCookies(at, rt, 'google');
     return { ok: true, user };
-  } catch {
+  } catch (error) {
+    if (error instanceof ApiClientError) {
+      if (error.status === 409) {
+        return { ok: false, status: 409, message: DUPLICATE_ACCOUNT_MESSAGE_KO };
+      }
+      return { ok: false, status: error.status, message: error.message || 'Google 로그인 실패' };
+    }
+    if (isAbortError(error)) {
+      return {
+        ok: false,
+        status: 504,
+        message: AUTH_SERVICE_ERROR_MESSAGE_KO,
+      };
+    }
     return {
       ok: false,
       status: 502,
       message: AUTH_SERVICE_ERROR_MESSAGE_KO,
     };
-  } finally {
-    clearTimeout(timeout);
   }
 }

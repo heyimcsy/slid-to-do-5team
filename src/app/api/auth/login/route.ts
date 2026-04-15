@@ -1,5 +1,10 @@
+import type { TokenPairBackendResponse } from '@/lib/auth/parseTokenPairFromBackendJson';
+
 import { NextRequest, NextResponse } from 'next/server';
+import { ApiClientError } from '@/lib/apiClient';
+import { apiClientServer } from '@/lib/apiClient.server';
 import { setAuthCookies } from '@/lib/auth/cookies';
+import { isAbortError } from '@/lib/auth/isAbortError';
 import { parseTokenPairFromBackendJson } from '@/lib/auth/parseTokenPairFromBackendJson';
 import {
   loginBodySchema,
@@ -8,7 +13,7 @@ import {
   resolveLoginFailureHttpStatus,
 } from '@/lib/auth/schemas/login';
 
-import { API_BASE_URL, API_TIMEOUT_MS } from '@/constants/api';
+import { API_TIMEOUT_MS } from '@/constants/api';
 import { AUTH_CONFIG } from '@/constants/auth-config';
 import { AUTH_SERVICE_ERROR_MESSAGE_KO } from '@/constants/error-message';
 
@@ -30,36 +35,40 @@ export async function POST(request: NextRequest) {
 
   const { email, password } = parsedBody.data;
 
-  const base = API_BASE_URL?.replace(/\/$/, '') ?? '';
-
   /** 백엔드 연결 실패·성공 본문 JSON 파싱 실패 등 → 제어된 502 (미처리 시 Route Handler 500) */
-  let data: Record<string, unknown>;
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
-
+  let data: TokenPairBackendResponse;
   try {
-    const response = await fetch(`${base}/auth/login`, {
+    data = await apiClientServer<TokenPairBackendResponse>('/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-      signal: controller.signal,
+      body: { email, password },
+      retry: false,
+      timeoutMs: API_TIMEOUT_MS,
+      skipSessionExpiredRedirect: true,
     });
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      const raw =
-        err && typeof err === 'object' && 'message' in err && typeof err.message === 'string'
-          ? err.message
-          : '로그인 실패';
-      const status = resolveLoginFailureHttpStatus(response.status, err);
+  } catch (error) {
+    if (error instanceof ApiClientError) {
+      const backendError = {
+        status: error.status,
+        code: error.code,
+        message: error.message,
+      };
+      const status = resolveLoginFailureHttpStatus(error.status, backendError);
+      const mappedMessage = mapLoginBackendFailureMessage(error.message);
       return NextResponse.json(
-        { success: false, message: mapLoginBackendFailureMessage(raw) },
+        { success: false, message: mappedMessage || '로그인 실패' },
         { status },
       );
     }
+    if (isAbortError(error)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: AUTH_SERVICE_ERROR_MESSAGE_KO,
+        },
+        { status: 504 },
+      );
+    }
 
-    data = (await response.json()) as Record<string, unknown>;
-  } catch {
     return NextResponse.json(
       {
         success: false,
@@ -67,8 +76,6 @@ export async function POST(request: NextRequest) {
       },
       { status: 502 },
     );
-  } finally {
-    clearTimeout(timeout);
   }
 
   const { accessToken, refreshToken, user } = parseTokenPairFromBackendJson(data);
@@ -87,7 +94,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  await setAuthCookies(accessToken, refreshToken);
+  await setAuthCookies(accessToken, refreshToken, 'password');
 
   return NextResponse.json(user ? { success: true as const, user } : { success: true as const });
 }

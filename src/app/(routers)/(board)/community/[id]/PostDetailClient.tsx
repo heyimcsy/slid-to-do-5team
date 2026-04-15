@@ -14,9 +14,11 @@ import { formatDate } from '@/utils/date';
 
 import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { KebabMenu } from '@/components/common/KebabMenu';
+import { ScrollToTop } from '@/components/common/ScrollToTop';
+import { ErrorFallback } from '@/components/ErrorFallback';
+import { Icon } from '@/components/icon/Icon';
 
-import { useDeletePost, useGetComments, useGetPostById } from '../_api/communityQueries';
-import { PostErrorFallback } from '../_components/PostErrorFallback';
+import { useDeletePost, useGetPostById } from '../_api/communityQueries';
 import { WriterAvatar } from '../_components/WriterAvatar';
 import { extractImagesFromContent } from '../_utils/extractImagesFromContent';
 import { CommentSection } from './_components/CommentSection';
@@ -27,7 +29,6 @@ interface PostDetailClientProps {
 }
 
 export function PostDetailClient({ postId }: PostDetailClientProps) {
-  useGetComments(postId);
   const { data: post, isLoading: isPostLoading, isError, refetch } = useGetPostById(postId);
   const { data: user } = useGetMe();
   const userId = Number(user?.id);
@@ -65,12 +66,12 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
     }
   }, [editor, post, contentWithoutImages]);
 
-  if (isError && !post) return <PostErrorFallback onRetry={refetch} />;
+  if (isError && !post) return <ErrorFallback onRetry={refetch} title="소통 게시판" />;
   if (isPostLoading) return <PostDetailSkeleton />;
-  if (!post) return <PostErrorFallback onRetry={refetch} />;
+  if (!post) return <ErrorFallback onRetry={refetch} title="소통 게시판" />;
   if (!contentReady) return <PostDetailSkeleton />;
 
-  const { title, viewCount, createdAt, writer, commentCount } = post;
+  const { title, viewCount, createdAt, writer } = post;
 
   const kebabItems = [
     { label: '수정하기', onClick: () => router.push(`/community/${postId}/edit`) },
@@ -85,6 +86,12 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
         title="정말 삭제하시겠어요?"
         description="삭제된 게시물은 복구할 수 없습니다."
         onConfirm={() => {
+          if (!isWriter) {
+            toast.error('본인이 작성한 게시물만 삭제할 수 있습니다.');
+            setDeleteDialogOpen(false);
+            return;
+          }
+
           deletePost(postId, {
             onSuccess: () => router.push('/community'),
             onError: () => toast.error('게시물 삭제에 실패했습니다. 다시 시도해주세요.'),
@@ -92,11 +99,21 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
         }}
       />
       <div className="h-full w-full overflow-y-auto bg-gray-100 px-4 py-4 md:px-8 md:py-10 lg:p-14">
+        <ScrollToTop />
         <div className="mx-auto w-full md:max-w-[636px] lg:max-w-[768px]">
           <div className="flex flex-col gap-10 rounded-3xl bg-white px-5 py-6 md:gap-14 md:p-10 lg:p-14">
             <div className="w-full">
-              <div className="flex items-start justify-between gap-2">
-                <h1 className="font-base-semibold md:font-xl-semibold text-gray-800">{title}</h1>
+              <div className="flex items-start gap-2">
+                <button
+                  className="cursor-pointer pt-0.5"
+                  aria-label="목록으로 이동"
+                  onClick={() => router.push('/community')}
+                >
+                  <Icon name="arrow" direction="left" />
+                </button>
+                <h1 className="font-base-semibold md:font-xl-semibold min-w-0 flex-1 pl-1 text-gray-800">
+                  {title}
+                </h1>
                 {isWriter && <KebabMenu items={kebabItems} disabled={isBusy} />}
               </div>
 
@@ -137,7 +154,6 @@ export function PostDetailClient({ postId }: PostDetailClientProps) {
 
             <CommentSection
               postId={postId}
-              totalCount={commentCount}
               userId={userId}
               isPostDeleting={isPostDeleting}
               onPendingChange={setIsCommentBusy}

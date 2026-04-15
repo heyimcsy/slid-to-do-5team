@@ -145,7 +145,7 @@ describe('POST /api/auth/login', () => {
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.success).toBe(true);
-    expect(mockSetAuthCookies).toHaveBeenCalledWith('access', 'refresh');
+    expect(mockSetAuthCookies).toHaveBeenCalledWith('access', 'refresh', 'password');
     expect(globalThis.fetch).toHaveBeenCalledWith(
       expect.stringContaining('/auth/login'),
       expect.objectContaining({

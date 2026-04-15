@@ -2,6 +2,8 @@
 
 import React from 'react';
 
+import { DIALOG_VALUE } from '@/constants/ui-label';
+
 import { Icon } from '@/components/icon/Icon';
 import { Button } from '@/components/ui/button';
 import {
@@ -87,14 +89,14 @@ export function DeleteDialog({
           <DialogClose
             render={
               <Button type="button" variant="ghost" className="w-1/2">
-                취소
+                {DIALOG_VALUE.BUTTON.CANCEL}
               </Button>
             }
           />
           <DialogClose
             render={
               <Button onClick={onConfirm} type="button" variant="default" className="w-1/2">
-                확인
+                {DIALOG_VALUE.BUTTON.CONFIRM}
               </Button>
             }
           />

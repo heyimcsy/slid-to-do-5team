@@ -2,6 +2,8 @@
  * 환경 무관 `createApiClient` 팩토리 — `cookies` / `server-only` import 금지.
  */
 
+import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
+
 import { AUTH_TOKENS_EXPIRED_MESSAGE_KO } from '@/constants/error-message';
 
 /**
@@ -30,6 +32,7 @@ export type ClientPublicApiBase = '/api/proxy' | '/api/auth';
 
 export type ApiClientConfig = Omit<RequestInit, 'body'> & {
   body?: unknown;
+  timeoutMs?: number;
   responseType?: ApiClientResponseType;
   retry?: boolean;
   next?: NextFetchConfig;
@@ -196,6 +199,7 @@ export function createApiClient(deps: CreateApiClientDeps): ApiClientInstance {
   async function request<T = unknown>(endpoint: string, config: ApiClientConfig = {}): Promise<T> {
     const {
       body,
+      timeoutMs,
       responseType = 'json',
       retry = true,
       headers: customHeaders,
@@ -246,10 +250,20 @@ export function createApiClient(deps: CreateApiClientDeps): ApiClientInstance {
     const { url: finalUrl, ...fetchOpts } = requestInput;
 
     const fetchExtra = deps.buildFetchNext?.(nextConfig);
-    const response = await fetch(finalUrl, {
-      ...fetchOpts,
-      ...fetchExtra,
-    });
+    const response =
+      typeof timeoutMs === 'number' && Number.isFinite(timeoutMs) && timeoutMs > 0
+        ? await fetchWithTimeout(
+            finalUrl,
+            {
+              ...fetchOpts,
+              ...fetchExtra,
+            },
+            timeoutMs,
+          )
+        : await fetch(finalUrl, {
+            ...fetchOpts,
+            ...fetchExtra,
+          });
 
     if (response.status === 401 && retry) {
       const refreshed = await attemptRefresh();

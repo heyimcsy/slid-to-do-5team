@@ -10,14 +10,15 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { DeleteDialog } from '@/components/common/DeleteDialog';
+import { MobileFormHeader } from '@/components/formHeader/MobileFormHeader';
 import { DeleteIcon } from '@/components/icon/icons/Delete';
 import { Toolbar } from '@/components/Toolbar';
 import { Spinner } from '@/components/ui/spinner';
 
+import { usePostDraft } from '../_hooks/usePostDraft';
 import { usePostEditor } from '../_hooks/usePostEditor';
 import { usePostImages } from '../_hooks/usePostImages';
 import { DesktopPostHeader } from './DesktopPostHeader';
-import { MobilePostHeader } from './MobilePostHeader';
 
 const TITLE_MAX_LENGTH = 30;
 const CONTENT_MAX_LENGTH = 1000;
@@ -27,7 +28,7 @@ const postSchema = z.object({
     .string()
     .min(1, '제목을 입력해주세요')
     .max(TITLE_MAX_LENGTH, `제목은 최대 ${TITLE_MAX_LENGTH}자까지 입력할 수 있습니다.`),
-  content: z
+  charCount: z
     .number()
     .min(1, '내용을 입력해주세요')
     .max(CONTENT_MAX_LENGTH, `내용은 최대 ${CONTENT_MAX_LENGTH}자까지 입력할 수 있습니다.`),
@@ -55,6 +56,7 @@ export function PostFormClient({
   const router = useRouter();
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
+  const [draftDialogOpen, setDraftDialogOpen] = useState(false);
 
   const { editor, hasEditorContent, hasEditorChanged, charCountWithoutSpaces, charCount } =
     usePostEditor({
@@ -80,14 +82,27 @@ export function PostFormClient({
     formState: { isSubmitting, isDirty, isValid },
   } = useForm<PostFormValues>({
     resolver: zodResolver(postSchema),
-    defaultValues: { title: initialValues?.title ?? '', content: 0 },
+    defaultValues: { title: initialValues?.title ?? '', charCount: 0 },
     mode: 'onChange',
   });
 
   const titleValue = watch('title');
 
+  const { saveDraft, loadDraft, clearDraft, hasDraft } = usePostDraft({
+    mode,
+    titleValue,
+    editor,
+    setValue,
+  });
+
   useEffect(() => {
-    setValue('content', charCount, { shouldValidate: true });
+    if (mode === 'create' && hasDraft()) {
+      setDraftDialogOpen(true);
+    }
+  }, [mode]);
+
+  useEffect(() => {
+    setValue('charCount', charCount, { shouldValidate: true });
   }, [charCount, setValue]);
 
   const hasChanged = isDirty || hasEditorChanged || hasImagesChanged;
@@ -115,6 +130,7 @@ export function PostFormClient({
         .map((item) => item.url);
 
       await onSubmit?.({ title, contentJson }, newFiles, existingUrls);
+      clearDraft();
     } catch (error) {
       console.error(error);
       toast.error(error instanceof Error ? error.message : '게시물 저장에 실패했습니다.');
@@ -142,11 +158,21 @@ export function PostFormClient({
       className="flex h-[calc(100dvh-68px)] w-full flex-col overflow-hidden bg-gray-100 md:h-dvh"
     >
       <DeleteDialog
+        open={draftDialogOpen}
+        onOpenChange={setDraftDialogOpen}
+        title="임시저장된 게시물이 있습니다."
+        description="임시저장된 게시물을 불러오시겠습니까?"
+        onConfirm={loadDraft}
+      />
+      <DeleteDialog
         open={cancelDialogOpen}
         onOpenChange={setCancelDialogOpen}
         title="작성을 취소하시겠습니까?"
-        description="작성 중인 내용이 저장되지 않습니다."
-        onConfirm={() => router.back()}
+        description="작성 중인 내용은 임시저장됩니다."
+        onConfirm={() => {
+          if (mode === 'create') saveDraft();
+          router.back();
+        }}
       />
       <DeleteDialog
         open={submitDialogOpen}
@@ -158,11 +184,12 @@ export function PostFormClient({
           handleFormSubmit();
         }}
       />
-      <MobilePostHeader
+      <MobileFormHeader
         isSubmitDisabled={isSubmitDisabled}
         onCancel={() => setCancelDialogOpen(true)}
         onSubmitClick={() => setSubmitDialogOpen(true)}
         headerTitle={headerTitle}
+        secondaryLabel="취소"
         submitLabel={submitLabel}
         toolbar={toolbar}
       />
@@ -173,6 +200,7 @@ export function PostFormClient({
             onCancel={() => setCancelDialogOpen(true)}
             onSubmitClick={() => setSubmitDialogOpen(true)}
             headerTitle={headerTitle}
+            secondaryLabel="취소"
             submitLabel={submitLabel}
           />
         </div>
@@ -200,7 +228,7 @@ export function PostFormClient({
           </div>
 
           <div
-            className="min-h-0 flex-1 overflow-y-auto px-5 pt-2 md:px-10 [&::-webkit-scrollbar]:hidden"
+            className="min-h-0 flex-1 overflow-y-auto px-5 pt-2 md:px-10"
             onClick={() => editor?.commands.focus()}
           >
             <EditorContent editor={editor} className="text-gray-800" />

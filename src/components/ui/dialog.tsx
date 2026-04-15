@@ -52,7 +52,7 @@ function DialogContent({
         className={cn(
           'fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2',
           'w-full max-w-122',
-          'bg-background ring-foreground/5 rounded-4xl ring-1',
+          'ring-foreground/5 rounded-4xl bg-white ring-1',
           'grid p-4 md:p-8',
           'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95',
           'data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',

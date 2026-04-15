@@ -1,10 +1,30 @@
 import type { SVGProps } from 'react';
 
+type CheckBoxVariant = 'default' | 'ghost';
+
 type CheckIconProps = SVGProps<SVGSVGElement> & {
   checked?: boolean;
+  variant?: CheckBoxVariant;
 };
 
-export const CheckBoxIcon = ({ checked = false, ...props }: CheckIconProps) => {
+export const CheckBoxIcon = ({
+  checked = false,
+  variant = 'default',
+  ...props
+}: CheckIconProps) => {
+  const variantStyles = {
+    default: {
+      fill: '#ffffff',
+      stroke: '#CCCCCC',
+    },
+    ghost: {
+      fill: '#FEEFDC',
+      stroke: 'transparent',
+    },
+  };
+
+  const safeVariant = variant in variantStyles ? variant : 'default';
+
   if (!checked) {
     return (
       <svg
@@ -15,7 +35,15 @@ export const CheckBoxIcon = ({ checked = false, ...props }: CheckIconProps) => {
         xmlns="http://www.w3.org/2000/svg"
         {...props}
       >
-        <rect x="0.5" y="0.5" width="17" height="17" rx="5.5" fill="white" stroke="#CCCCCC" />
+        <rect
+          x="0.5"
+          y="0.5"
+          width="17"
+          height="17"
+          rx="5.5"
+          fill={variantStyles[safeVariant].fill}
+          stroke={variantStyles[safeVariant].stroke}
+        />
       </svg>
     );
   }

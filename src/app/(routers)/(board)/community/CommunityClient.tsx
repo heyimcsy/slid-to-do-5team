@@ -7,12 +7,13 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
+import { ScrollToTop } from '@/components/common/ScrollToTop';
 import { EmptyState } from '@/components/EmptyState';
+import { ErrorFallback } from '@/components/ErrorFallback';
 import { Icon } from '@/components/icon/Icon';
 
-import { useGetPosts } from './_api/communityQueries';
+import { useGetBestPosts, useGetPosts } from './_api/communityQueries';
 import { FeaturedPostCard } from './_components/FeaturedPostCard';
-import { PostErrorFallback } from './_components/PostErrorFallback';
 import { PostListItem } from './_components/PostListItem';
 import { PostListSkeleton } from './_components/PostListSkeleton';
 import { PostSearchBar } from './_components/PostSearchBar';
@@ -35,7 +36,8 @@ export default function CommunityClient() {
     hasNextPage,
     isFetchingNextPage,
     isFetching,
-  } = useGetPosts(sort, !!search);
+  } = useGetPosts(sort, search);
+  const { data: bestPosts } = useGetBestPosts();
 
   const posts: Post[] = useMemo(
     () =>
@@ -49,23 +51,7 @@ export default function CommunityClient() {
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
-    enabled: !search,
   });
-
-  const featuredPosts = useMemo(
-    () => [...posts].sort((a, b) => b.viewCount - a.viewCount).slice(0, 3),
-    [posts],
-  );
-
-  const filteredPosts = useMemo(() => {
-    const lowerSearch = search.toLowerCase();
-
-    return posts.filter(
-      (post) =>
-        post.title.toLowerCase().includes(lowerSearch) ||
-        post.content.toLowerCase().includes(lowerSearch),
-    );
-  }, [posts, search]);
 
   const handleSortChange = (value: SortOption) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -78,29 +64,41 @@ export default function CommunityClient() {
   const handleSearchChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
 
-    params.set('search', value);
+    if (!value) {
+      params.delete('search');
+    } else {
+      params.set('search', value);
+    }
 
-    router.replace(`${pathname}?${params.toString()}`);
+    const query = params.toString();
+    router.push(query ? `${pathname}?${query}` : pathname);
   };
 
   if (isLoading) return <PostListSkeleton />;
-  if (isError && !data) return <PostErrorFallback onRetry={refetch} />;
+  if (isError && !data) return <ErrorFallback onRetry={refetch} title="소통 게시판" />;
 
   return (
     <div className="relative h-full w-full">
       <div className="h-full overflow-y-auto bg-gray-100 px-4 py-6 pb-24 md:px-8 md:py-12 md:pb-20 lg:pb-16">
+        <ScrollToTop />
         <div className="mx-auto w-full max-w-[1200px]">
-          <h1 className="font-xl-semibold md:font-2xl-semibold mb-6 px-2 text-black md:mb-8">
+          <h1 className="font-xl-semibold md:font-2xl-semibold mb-3 px-2 text-black md:mb-4">
             <Link href="/community" className="cursor-pointer">
               소통 게시판
             </Link>
           </h1>
+          <hr className="mb-6 border-gray-300 md:mb-8" />
 
-          {posts.length > 0 && (
-            <div className="mb-6 flex gap-4 overflow-x-auto pb-2 md:mb-8">
-              {featuredPosts.map((post) => (
-                <FeaturedPostCard key={post.id} post={post} />
-              ))}
+          {bestPosts?.posts && bestPosts.posts.length > 0 && (
+            <div className="mb-6 md:mb-8">
+              <h2 className="font-lg-semibold md:font-xl-semibold mb-4 px-2 text-black">
+                인기 게시물
+              </h2>
+              <div className="flex gap-4 overflow-x-auto pb-2">
+                {bestPosts.posts.map((post) => (
+                  <FeaturedPostCard key={post.id} post={post} />
+                ))}
+              </div>
             </div>
           )}
 
@@ -113,24 +111,25 @@ export default function CommunityClient() {
                 onSearchChange={handleSearchChange}
               />
               <div className="flex flex-col items-start self-stretch">
-                {posts.length === 0 ? (
-                  <EmptyState />
-                ) : filteredPosts.length === 0 && !isFetching ? (
-                  <EmptyState message="검색 결과가 없어요." />
+                {posts.length === 0 && !isFetching ? (
+                  search ? (
+                    <EmptyState message="검색 결과가 없어요." />
+                  ) : (
+                    <EmptyState />
+                  )
                 ) : (
-                  filteredPosts.map((post) => <PostListItem key={post.id} post={post} />)
+                  posts.map((post) => <PostListItem key={post.id} post={post} />)
                 )}
               </div>
             </div>
 
             <div ref={observerRef} className="h-4" />
-            {!search && !hasNextPage && posts.length > 0 && (
+            {!hasNextPage && posts.length > 0 && (
               <p className="py-6 text-center text-sm text-gray-400">모든 게시물을 불러왔습니다.</p>
             )}
           </div>
         </div>
       </div>
-
       <Link
         href="/community/new"
         aria-label="게시물 작성하기"

@@ -7,12 +7,17 @@
  *   → **200 OK** + `success: true` + `sessionIssued: false` + `emailVerificationRequired: true`
  * - 가입과 동시에 로그인(토큰 발급)이면 **201 Created** + `sessionIssued: true` + HttpOnly 쿠키 설정.
  */
+import type { TokenPairBackendResponse } from '@/lib/auth/parseTokenPairFromBackendJson';
+
 import { NextRequest, NextResponse } from 'next/server';
+import { ApiClientError } from '@/lib/apiClient';
+import { apiClientServer } from '@/lib/apiClient.server';
 import { setAuthCookies } from '@/lib/auth/cookies';
+import { isAbortError } from '@/lib/auth/isAbortError';
 import { parseTokenPairFromBackendJson } from '@/lib/auth/parseTokenPairFromBackendJson';
 import { signupBodySchema, signupValidationMessage } from '@/lib/auth/schemas/signup';
 
-import { API_BASE_URL } from '@/constants/api';
+import { API_TIMEOUT_MS } from '@/constants/api';
 import {
   AUTH_SERVICE_ERROR_MESSAGE_KO,
   DUPLICATE_ACCOUNT_MESSAGE_KO,
@@ -36,36 +41,36 @@ export async function POST(request: NextRequest) {
 
   const { email, name, password } = parsedBody.data;
 
-  const base = API_BASE_URL?.replace(/\/$/, '') ?? '';
-
-  let data: Record<string, unknown>;
+  let data: TokenPairBackendResponse;
   try {
-    // 백엔드가 다른 경로면 여기만 변경 (예: `/users`, `/auth/register`)
-    const response = await fetch(`${base}/auth/signup`, {
+    data = await apiClientServer<TokenPairBackendResponse>('/auth/signup', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, name, password }),
+      body: { email, name, password },
+      timeoutMs: API_TIMEOUT_MS,
+      skipSessionExpiredRedirect: true,
     });
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      const backendMessage = (err as { message?: string }).message;
-
-      if (response.status === 409) {
+  } catch (error) {
+    if (error instanceof ApiClientError) {
+      if (error.status === 409) {
         return NextResponse.json(
           { success: false, message: DUPLICATE_ACCOUNT_MESSAGE_KO },
           { status: 409 },
         );
       }
-
       return NextResponse.json(
-        { success: false, message: backendMessage ?? '회원가입 실패' },
-        { status: response.status },
+        { success: false, message: error.message || '회원가입 실패' },
+        { status: error.status },
       );
     }
-
-    data = (await response.json()) as Record<string, unknown>;
-  } catch {
+    if (isAbortError(error)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: AUTH_SERVICE_ERROR_MESSAGE_KO,
+        },
+        { status: 504 },
+      );
+    }
     return NextResponse.json(
       {
         success: false,
@@ -89,7 +94,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  await setAuthCookies(accessToken, refreshToken);
+  await setAuthCookies(accessToken, refreshToken, 'password');
 
   return NextResponse.json(
     {

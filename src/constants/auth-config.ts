@@ -9,6 +9,12 @@ export const AUTH_CONFIG = {
   REFRESH_TOKEN_KEY: 'refresh_token',
 
   /**
+   * OAuth로 발급된 세션 구분용 HttpOnly 쿠키.
+   * 값은 `google` | `kakao` 만 허용 — `setAuthCookies` / `getOAuthProvider`에서 검증.
+   */
+  OAUTH_PROVIDER_COOKIE_KEY: 'oauth_provider',
+
+  /**
    * 백엔드 JSON(login/refresh 응답 등)에서 토큰 필드명이 camelCase일 때 대응.
    * 파싱 시 `ACCESS_TOKEN_KEY` / `REFRESH_TOKEN_KEY`를 우선하고, 없으면 아래 키를 사용.
    */

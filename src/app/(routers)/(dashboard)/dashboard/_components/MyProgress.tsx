@@ -1,11 +1,27 @@
+'use client';
+
 import Image from 'next/image';
+import { useGetTodos } from '@/api/todos';
+import { useUserInfo } from '@/hooks/auth/useUserInfo';
 
 import { DonutProgress } from '@/components/common/DonutProgress';
 
-export function MyProgress() {
-  //FIXME: 일단 임시 데이터 넣어두고 추후 백엔드 연동 필요
-  const name = '홍길동';
-  const progress = 49;
+import { ProgressPercentage } from './ProgressPercentage';
+
+export const MyProgress = () => {
+  const user = useUserInfo();
+  const name = user?.name ?? '손';
+  const { data: todos, isLoading, error } = useGetTodos({ limit: 100 });
+  const completedTodos = todos?.todos.filter((todo) => todo.done).length ?? 0;
+  const totalTodos = todos?.todos.length ?? 0;
+  const progress = totalTodos === 0 ? 0 : Number(Math.round((completedTodos / totalTodos) * 100));
+  if (isLoading) return <div>로딩중...</div>;
+  if (error || !todos) return <div>에러</div>;
+  /**
+   * 필요 데이터: name, 전체 완료된 일, 완료되지 않은 할 일 (완료/(완료+미완료))
+   */
+  // const name = '홍길동';
+  // const progress = 49;
   return (
     <div className="my-progress-list flex flex-col gap-4">
       <div className="my-progress-list-header flex justify-between">
@@ -25,7 +41,7 @@ export function MyProgress() {
           </h2>
         </section>
       </div>
-      <div className="relative w-full overflow-hidden rounded-[2.5rem] bg-blue-200 bg-linear-to-b from-transparent to-black/5 dark:bg-blue-300">
+      <div className="relative w-full overflow-hidden rounded-[2.5rem] bg-blue-200 bg-linear-to-b from-transparent to-black/5 transition-shadow duration-300 hover:shadow-[0_10px_40px_0_oklch(0.79_0.128_184.6/0.4)] dark:bg-blue-300">
         <div
           className="pointer-events-none absolute inset-0 z-0 bg-[url('/images/img-progress-mascot.svg')] bg-size-[auto_75%] bg-position-[right_-4%_bottom_0] bg-no-repeat opacity-40 md:bg-size-[auto_85%] lg:bg-size-[auto_90%] dark:opacity-35"
           aria-hidden
@@ -43,12 +59,10 @@ export function MyProgress() {
             <h3 className="font-sm-semibold md:font-sm-semibold lg:font-xl-semibold">
               {name}님의 진행도는
             </h3>
-            <h5 className="display-lg-bold md:display-lg-bold lg:display-xl-bold after:font-xl-medium md:after:font-xl-medium lg:after:font-3xl-medium font-features-['ss01','ss02','ss06','ss08'] after:content-['%']">
-              {progress}
-            </h5>
+            <ProgressPercentage value={progress} />
           </div>
         </div>
       </div>
     </div>
   );
-}
+};

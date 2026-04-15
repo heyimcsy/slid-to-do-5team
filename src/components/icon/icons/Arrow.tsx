@@ -14,7 +14,7 @@ const directionStyles = {
 
 const variantStyles = {
   default: 'var(--color-gray-400)',
-  white: 'white',
+  white: 'var(--color-white)',
 };
 
 export const ArrowIcon = ({

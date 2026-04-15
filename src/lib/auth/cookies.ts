@@ -4,8 +4,12 @@ import type { NextResponse } from 'next/server';
 
 import { cookies } from 'next/headers';
 import { COOKIE_OAUTH_USER_FLASH } from '@/lib/auth/oauth-urls';
+import { oauthProviderCookieSchema } from '@/lib/auth/schemas/oauth';
 
 import { AUTH_CONFIG } from '@/constants/auth-config';
+
+/** 세션 쿠키 설정 시 OAuth provider 쿠키 동작 — `unchanged`는 refresh 시 토큰만 갱신 */
+export type AuthSessionSource = 'unchanged' | 'password' | 'google' | 'kakao';
 
 type CookieOptions = {
   httpOnly: boolean;
@@ -66,8 +70,15 @@ export async function isAccessTokenExpired(): Promise<boolean> {
   return exp <= now;
 }
 
-/** Route Handler에서 인증 쿠키 설정 */
-export async function setAuthCookies(accessToken: string, refreshToken: string): Promise<void> {
+/**
+ * Route Handler에서 인증 쿠키 설정.
+ * @param sessionSource - `google`/`kakao`: OAuth provider 쿠키 설정(만료는 refresh와 동일). `password`: provider 제거. `unchanged`: 토큰만 갱신.
+ */
+export async function setAuthCookies(
+  accessToken: string,
+  refreshToken: string,
+  sessionSource: AuthSessionSource = 'unchanged',
+): Promise<void> {
   const cookieStore = await cookies();
 
   cookieStore.set(
@@ -79,14 +90,34 @@ export async function setAuthCookies(accessToken: string, refreshToken: string):
   cookieStore.set(AUTH_CONFIG.REFRESH_TOKEN_KEY, refreshToken, {
     ...baseCookieOptions(AUTH_CONFIG.REFRESH_TOKEN_MAX_AGE),
   });
+
+  if (sessionSource === 'google' || sessionSource === 'kakao') {
+    cookieStore.set(
+      AUTH_CONFIG.OAUTH_PROVIDER_COOKIE_KEY,
+      sessionSource,
+      baseCookieOptions(AUTH_CONFIG.REFRESH_TOKEN_MAX_AGE),
+    );
+  } else if (sessionSource === 'password') {
+    cookieStore.delete(AUTH_CONFIG.OAUTH_PROVIDER_COOKIE_KEY);
+  }
 }
 
-/** 인증 쿠키 제거 (로그아웃) */
+/** 인증 쿠키·OAuth provider 쿠키 제거 (로그아웃) */
 export async function clearAuthCookies(): Promise<void> {
   const cookieStore = await cookies();
 
   cookieStore.delete(AUTH_CONFIG.ACCESS_TOKEN_KEY);
   cookieStore.delete(AUTH_CONFIG.REFRESH_TOKEN_KEY);
+  cookieStore.delete(AUTH_CONFIG.OAUTH_PROVIDER_COOKIE_KEY);
+}
+
+/** OAuth 세션일 때만 `google` | `kakao`, 그 외·손상 값은 `undefined` */
+export async function getOAuthProvider(): Promise<'google' | 'kakao' | undefined> {
+  const cookieStore = await cookies();
+  const raw = cookieStore.get(AUTH_CONFIG.OAUTH_PROVIDER_COOKIE_KEY)?.value;
+  if (!raw) return undefined;
+  const parsed = oauthProviderCookieSchema.safeParse(raw);
+  return parsed.success ? parsed.data : undefined;
 }
 
 /** Server Component / Route Handler에서 accessToken 읽기 */

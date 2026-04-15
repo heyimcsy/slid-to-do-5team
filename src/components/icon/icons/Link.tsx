@@ -1,12 +1,17 @@
 import type { SVGProps } from 'react';
 
+
+
+
+
 type LinkIconProps = SVGProps<SVGSVGElement> & {
-  variant?: 'default' | 'orange';
+  variant?: 'default' | 'orange' | 'white';
 };
 
 const variantStyles = {
-  default: 'white',
+  default: 'var(--color-white)',
   orange: 'var(--color-orange-alpha-20)',
+  white: 'var(--color-black)', // 다크모드 시 사용하기 위해 black 사용
 };
 
 export const LinkIcon = ({ variant = 'default', ...props }: LinkIconProps) => {

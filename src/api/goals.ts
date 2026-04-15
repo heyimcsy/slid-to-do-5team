@@ -1,8 +1,11 @@
 import type { PaginatedResponse } from '@/api/response';
 import type { QueryClient } from '@tanstack/react-query';
 
+
+
+import { favoritesQueryKeys } from '@/app/(routers)/favorites/_api/favoritesQueryKeys';
 import { apiClient } from '@/lib/apiClient.browser';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 interface TODO {
   id: number;
@@ -80,6 +83,29 @@ export const useGetGoals = ({
   });
 };
 
+type GoalsPageItem = Pick<
+  Goal,
+  'id' | 'teamId' | 'userId' | 'title' | 'todoCount' | 'completedCount' | 'createdAt' | 'updatedAt'
+>;
+
+/** 목표 목록 cursor 기반 무한 스크롤 (페이지당 `limit`개) */
+export const useInfiniteGoals = ({ limit = 2 }: { limit?: number } = {}) => {
+  return useInfiniteQuery({
+    queryKey: [GOALS, 'infinite', { limit }],
+    queryFn: async ({ pageParam }) => {
+      const params = new URLSearchParams();
+      params.append('limit', String(limit));
+      if (pageParam !== null && pageParam !== undefined) {
+        params.append('cursor', String(pageParam));
+      }
+      const url = `${GOALS_URL}?${params.toString()}`;
+      return await apiClient<PaginatedResponse<GoalsPageItem>>(url);
+    },
+    initialPageParam: null as number | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+  });
+};
+
 // 예시를 한 페이지에서 전부 보여주기 위해서 enable 옵션을 사용했는데 , 사용하지 않아도 됩니다.
 // Omit 원하는 값만 제외해서 사용
 export const useGetGoal = ({ id }: { id: number }) => {
@@ -127,6 +153,7 @@ export const useDeleteGoals = (options: { onSuccess?: () => void }) => {
       const id = payload.id;
       queryClient.invalidateQueries({ queryKey: [GOALS] });
       queryClient.invalidateQueries({ queryKey: [GOAL, id] });
+      queryClient.invalidateQueries({ queryKey: favoritesQueryKeys.all });
       options?.onSuccess?.();
     },
   });
@@ -164,6 +191,7 @@ export const usePatchGoals = () => {
     onSettled: (_, __, payload) => {
       queryClient.invalidateQueries({ queryKey: [GOALS] });
       queryClient.invalidateQueries({ queryKey: [GOAL, payload.id] });
+      queryClient.invalidateQueries({ queryKey: favoritesQueryKeys.all });
     },
   });
 };

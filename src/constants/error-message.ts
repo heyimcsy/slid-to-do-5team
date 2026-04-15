@@ -1,3 +1,5 @@
+export const UNKNOWN_ERROR_MESSAGE_KO = '알 수 없는 오류가 발생했습니다.' as const;
+
 /** 백엔드 409(이메일 중복) 시 BFF·OAuth·클라이언트 공통 문구 */
 export const DUPLICATE_ACCOUNT_MESSAGE_KO = '이미 가입된 이메일입니다.' as const;
 export const AUTH_SERVICE_ERROR_MESSAGE_KO =
@@ -15,6 +17,8 @@ export const TOKEN_EXCHANGE_FAILED_MESSAGE_KO =
   'OAuth 승인 토큰 교환에 실패했습니다. 다시 시도해 주세요.' as const;
 export const BACKEND_LOGIN_FAILED_MESSAGE_KO =
   '백엔드 로그인에 실패했습니다. 다시 시도해 주세요.' as const;
+export const OAUTH_START_FAILED_MESSAGE_KO =
+  '소셜 로그인 시작에 실패했습니다. 잠시 후 다시 시도해 주세요.' as const;
 export const GOOGLE_CLIENT_ID_UNSET_MESSAGE_KO =
   'NEXT_PUBLIC_GOOGLE_CLIENT_ID가 설정되지 않았습니다.' as const;
 export const GOOGLE_CLIENT_SECRET_UNSET_MESSAGE_KO =
@@ -59,3 +63,15 @@ export const REFRESH_SESSION_NETWORK_MESSAGE_KO = AUTH_SERVICE_ERROR_MESSAGE_KO;
 /** `reason: invalid_token_body` — 200 본문 JSON 파싱 실패 또는 access/refresh 쌍이 없을 때 */
 export const REFRESH_SESSION_INVALID_TOKEN_BODY_MESSAGE_KO =
   '토큰 갱신 응답에 유효한 토큰이 없습니다. 다시 로그인해 주세요.' as const;
+
+export const NO_GOOGLE_CLIENT_SECRET_MESSAGE_KO =
+  'GOOGLE_CLIENT_SECRET가 설정되지 않았습니다.' as const;
+
+export const NO_KAKAO_CLIENT_SECRET_MESSAGE_KO =
+  'KAKAO_CLIENT_SECRET가 설정되지 않았습니다.' as const;
+
+export const OAUTH_PROVIDER_FETCH_FAILED_FROM_USER_MESSAGE_KO =
+  '사용자의 OAuth Provider 정보 확인에 실패했습니다.' as const;
+
+export const REHYDRATION_COMPLETED_AFTER_CALLBACK_FAILED_MESSAGE_KO =
+  'Rehydration 완료 후 onRehydrated callback 실패' as const;

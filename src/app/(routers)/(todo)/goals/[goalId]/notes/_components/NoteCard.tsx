@@ -1,37 +1,58 @@
 'use client';
 
-import type { Todo } from '@/api/todos';
+import type { NoteCardProps } from '@/app/(routers)/(todo)/goals/[goalId]/notes/types';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import imgNote from '@/../public/images/img-note.svg';
 import { useDeleteNote } from '@/api/notes';
+import { GOALS_TEXT, NOTE_IMAGE } from '@/app/(routers)/(todo)/constants';
 import { cn } from '@/lib';
+
+import { ROUTES } from '@/constants/routes';
+import { DIALOG_VALUE, SELECT_VALUE } from '@/constants/ui-label';
 
 import { formatDate } from '@/utils/date';
 
 import { Chips } from '@/components/common/Chips';
 import { DeleteDialog } from '@/components/common/DeleteDialog';
 import { Icon } from '@/components/icon/Icon';
-import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+} from '@/components/ui/select';
 
-export default function NoteCard({
-  goalId,
-  id,
-  title,
-  todo,
-  createdAt,
-}: {
-  goalId: number;
-  id: number;
-  title: string;
-  todo: Pick<Todo, 'id' | 'title' | 'done'>;
-  createdAt: string;
-}) {
+export default function NoteCard({ goalId, id, title, todo, createdAt }: NoteCardProps) {
+  const selectValue = [
+    { label: SELECT_VALUE.EDIT.LABEL, value: SELECT_VALUE.EDIT.VALUE },
+    { label: SELECT_VALUE.DELETE.LABEL, value: SELECT_VALUE.DELETE.VALUE },
+  ];
+  const router = useRouter();
   const { mutate: deleteNote } = useDeleteNote();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  const handleSelectChange = (value: string | null) => {
+    if (value === null) return;
+
+    if (value === SELECT_VALUE.DELETE.VALUE) {
+      setDeleteDialogOpen(true);
+    } else {
+      router.push(ROUTES.NOTE_EDIT(goalId, id));
+    }
+  };
+
+  const handleDelete = () => {
+    deleteNote({ id });
+  };
+
   return (
     <Link
-      href={`/goals/${goalId}/notes/${id}?todoId=${todo.id}`}
+      href={ROUTES.NOTE_DETAIL(goalId, id, todo.id)}
       className={cn(
         'group flex cursor-pointer flex-col space-y-3 md:space-y-4',
         'h-24 w-full rounded-[16px] bg-white p-4 md:h-[138px] md:px-[38px] md:pt-7 md:pb-8',
@@ -44,38 +65,59 @@ export default function NoteCard({
         <div className="flex items-center space-x-2 md:space-x-4">
           <Image
             src={imgNote}
-            alt="describe note icon"
-            width={40}
-            height={40}
+            alt={NOTE_IMAGE.ALT}
+            width={NOTE_IMAGE.WIDTH}
+            height={NOTE_IMAGE.HEIGHT}
             className="size-8 lg:size-10"
           />
 
           {/* 중단: 노트 제목 */}
-          <p className="font-sm-semibold md:font-xl-semibold line-clamp-2 text-gray-800">{title}</p>
+          <p className="font-sm-semibold group-hover:font-sm-bold md:font-xl-semibold md:group-hover:font-xl-bold line-clamp-2 text-gray-800">
+            {title}
+          </p>
         </div>
-        {/*컴포넌트로 빼기*/}
         <div
           onClick={(e) => {
-            e.stopPropagation(); // 부모로 전파 중지
-            e.preventDefault(); // 링크 이동 중지
+            e.stopPropagation();
+            e.preventDefault();
           }}
         >
+          <Select
+            items={selectValue}
+            onValueChange={handleSelectChange}
+            aria-label={DIALOG_VALUE.DOT_TRIGGER_ALIA_LABEL}
+          >
+            <SelectTrigger size="sm" iconTrigger className="size-[20px]">
+              <Icon
+                name="dotscircle"
+                size={20}
+                className="dark:hidden"
+                aria-label={DIALOG_VALUE.DOT_TRIGGER_ALIA_LABEL}
+              />
+              <Icon
+                name="dotscircle"
+                size={20}
+                variant="ghost"
+                className="hidden dark:block"
+                aria-label={DIALOG_VALUE.DOT_TRIGGER_ALIA_LABEL}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {selectValue.map((item) => (
+                  <SelectItem size="sm" key={item.value} value={item.value}>
+                    {item.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
           <DeleteDialog
-            trigger={
-              <Button
-                variant="icon"
-                size="none"
-                className="hover:bg-orange-800"
-                aria-label="더보기"
-              >
-                <Icon name="dotscircle" size={24} />
-              </Button>
-            }
-            title="정말 삭제하시겠어요?"
-            description="삭제된 노트는 복구할 수 없습니다."
-            onConfirm={() => {
-              deleteNote({ id });
-            }}
+            open={deleteDialogOpen}
+            onOpenChange={setDeleteDialogOpen}
+            title={DIALOG_VALUE.TITLE_DELETE}
+            description={DIALOG_VALUE.DESCRIPTION_DELETE(GOALS_TEXT.TODO_KO)}
+            onConfirm={handleDelete}
           />
         </div>
       </div>

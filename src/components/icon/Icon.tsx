@@ -25,6 +25,7 @@ import { FlagIcon } from './icons/Flag';
 import { FlagLineIcon } from './icons/FlagLine';
 import { GoogleIcon } from './icons/GoogleIcon';
 import { HamburgerIcon } from './icons/Hamburger';
+import { HeartIcon } from './icons/Heart';
 import { ImageIcon } from './icons/Image';
 import { ItalicIcon } from './icons/Italic';
 import { KakaoIcon } from './icons/Kakao';
@@ -75,6 +76,7 @@ const icons = {
   warning: WarningIcon,
   task: TaskIcon,
   hamburger: HamburgerIcon,
+  heart: HeartIcon,
   eye: EyeIcon,
   filter: FilterIcon,
   pencil: PencilIcon,
@@ -105,7 +107,7 @@ type IconProps = {
   size?: number;
   className?: string;
   checked?: boolean;
-  variant?: 'default' | 'orange' | 'white' | 'filled';
+  variant?: 'default' | 'orange' | 'filled' | 'white' | 'ghost';
   direction?: 'left' | 'right' | 'up' | 'down';
   color?: string;
 };
