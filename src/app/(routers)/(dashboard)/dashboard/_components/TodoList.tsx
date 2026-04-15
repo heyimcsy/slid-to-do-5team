@@ -76,7 +76,7 @@ export default function TodoList({
             <p
               className={cn(
                 'font-sm-regular md:font-base-regular lg:font-lg-regular cursor-pointer truncate',
-                enableMarquee ? 'group-hover:hidden' : '',
+                enableMarquee ? 'group-focus-within:hidden group-hover:hidden' : '',
                 done && variant === 'recent' ? 'line-through' : '',
                 done && variant === 'completed' ? 'text-gray-500 line-through dark:text-black' : '',
               )}
@@ -87,7 +87,7 @@ export default function TodoList({
             <div
               className={cn(
                 'hidden w-max min-w-full items-center overflow-hidden',
-                enableMarquee ? 'group-hover:flex' : '',
+                enableMarquee ? 'group-focus-within:flex group-hover:flex' : '',
               )}
             >
               <div className="animate-todo-marquee flex min-w-max">
