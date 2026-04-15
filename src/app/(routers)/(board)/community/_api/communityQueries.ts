@@ -79,14 +79,14 @@ export const useCreatePost = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(post),
       }),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.setQueryData(communityQueryKeys.post(data.id), data);
       queryClient.setQueryData(communityQueryKeys.comments(data.id), {
         pages: [{ comments: [], totalCount: 0, nextCursor: null }],
         pageParams: [undefined],
       });
       queryClient.invalidateQueries({ queryKey: communityQueryKeys.posts() });
-      void updatePosts();
+      await updatePosts();
       router.replace(`/community/${data.id}`);
     },
   });
@@ -104,11 +104,11 @@ export const useUpdatePost = (postId: number) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(postInput),
       }),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.setQueryData(communityQueryKeys.post(data.id), data);
       queryClient.invalidateQueries({ queryKey: communityQueryKeys.posts() });
-      void updatePost(data.id);
-      void updatePosts();
+      await updatePost(data.id);
+      await updatePosts();
       router.replace(`/community/${data.id}`);
     },
   });

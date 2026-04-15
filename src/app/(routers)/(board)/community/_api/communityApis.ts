@@ -30,7 +30,7 @@ const getBestPostsServer = () =>
 const getPostByIdServer = (postId: number) =>
   apiClientServer<Post>(`/posts/${postId}`, {
     retry: false,
-    next: { revalidate: CACHE_TIMES.post, tags: [communityTags.post(postId), communityTags.posts] },
+    next: { revalidate: CACHE_TIMES.post, tags: [communityTags.post(postId)] },
   });
 
 const getCommentsServer = (postId: number) =>
