@@ -19,6 +19,7 @@ export type ImageRemotePattern = {
 export const REMOTE_IMAGE_SOURCES = [
   'https://placehold.co',
   'https://example.com',
+  'https://picsum.photos',
   'https://*.googleusercontent.com',
   'https://*.kakaocdn.net',
   // TODO: Kakao CDN이 현재 HTTP로 이미지를 제공하므로 유지 필요.
