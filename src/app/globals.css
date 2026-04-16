@@ -218,6 +218,19 @@
 }
 
 @layer utilities {
+  @keyframes todo-marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-todo-marquee {
+    animation: todo-marquee 10s linear infinite;
+  }
+
   .safe-padding {
     padding-top: env(safe-area-inset-top);
     padding-right: env(safe-area-inset-right);

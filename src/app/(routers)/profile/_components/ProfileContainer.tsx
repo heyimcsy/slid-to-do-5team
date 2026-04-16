@@ -32,6 +32,7 @@ export default function ProfileContainer() {
     imageUrl,
     isImageChanged,
     handleImageSelect,
+    handleImageDelete,
     submitProfile,
     resetNickNameCheck,
   } = useProfileForm();
@@ -62,8 +63,21 @@ export default function ProfileContainer() {
   };
   return (
     <div className="flex h-fit w-full flex-col items-center rounded-[32px] bg-white p-5 md:px-8 md:py-10">
-      <ProfileImageSection imageUrl={imageUrl} onCropComplete={handleImageSelect} />
-      <div className="mt-8 w-full md:mt-12">
+      <ProfileImageSection
+        imageUrl={imageUrl}
+        onCropComplete={handleImageSelect}
+        oauthProvider={oauthProvider}
+      />
+      {!oauthProvider && (
+        <button
+          type={'button'}
+          className="font-xs-regular mt-2 cursor-pointer text-gray-300"
+          onClick={handleImageDelete}
+        >
+          프로필 이미지 삭제
+        </button>
+      )}
+      <div className="mt-5 w-full md:mt-9">
         <ProfileNameForm
           register={register}
           errors={errors}

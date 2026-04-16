@@ -1,4 +1,4 @@
-import type { Notes } from '@/api/notes';
+import type { Notes, TipTapDoc } from '@/api/notes';
 import type { Todo, TodoResponse } from '@/api/todos';
 import type { OgInfoResponse } from '@/components/common/LinkEmbed';
 import type { Ref } from 'react';
@@ -40,7 +40,7 @@ export interface NoteFormHeaderProps {
 
 export interface NoteEditorProps {
   editor: Editor | null;
-  setLinkUrl: React.Dispatch<React.SetStateAction<string | null>>;
+  toolbar: React.ReactNode;
   title: string;
   onHandleChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   titleLength: number;
@@ -49,6 +49,15 @@ export interface NoteEditorProps {
   linkData: OgInfoResponse | undefined;
   handleLinkDelete: (event: React.MouseEvent<HTMLButtonElement>) => void;
   handleLinkClick: () => void;
+}
+
+export interface NoteCommonFormatProps {
+  type: 'edit' | 'new';
+  noteTitle?: string;
+  noteLinkUrl?: string;
+  noteContent?: TipTapDoc;
+  noteId?: number;
+  todoData: Pick<TodoResponse, 'id' | 'title' | 'done' | 'tags' | 'goal' | 'createdAt'>;
 }
 
 export interface SpeechComponentProps {
@@ -84,8 +93,4 @@ export interface UseNoteDraftProps {
   setTitleLength: React.Dispatch<React.SetStateAction<number>>;
   setLinkUrl: React.Dispatch<React.SetStateAction<string | null>>;
   noteId?: number;
-}
-
-export interface NoteEditContainerProps {
-  noteId: number;
 }

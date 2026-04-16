@@ -19,7 +19,7 @@ export default function NoteFormHeader({
   noteId,
 }: NoteFormHeaderProps) {
   return (
-    <div className="relative flex h-6 w-[343px] items-center justify-between md:h-10 md:w-full">
+    <div className="relative hidden h-6 w-[343px] items-center justify-between md:flex md:h-10 md:w-full">
       <h1 className="font-base-semibold md:font-xl-semibold lg:font-2xl-semibold">
         {edit ? NOTES_TEXT.NOTE_EDIT : NOTES_TEXT.NOTE_CREATE}
       </h1>

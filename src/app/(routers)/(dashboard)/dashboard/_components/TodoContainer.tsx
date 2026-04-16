@@ -1,5 +1,7 @@
 'use client';
 
+import type { Todo } from '@/api/todos';
+
 import { useInfiniteTodos } from '@/api/todos';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
@@ -12,6 +14,10 @@ function matchesTodoSearch(title: string, query: string) {
   return title.toLowerCase().includes(q);
 }
 
+/** usePostTodo 낙관적 업데이트가 goalId/done 필터 없이 모든 TODOS 캐시에 삽입될 수 있어서 대시보드 목표별 뷰에서 잘못된 캐시 항목을 필터링 */
+const filterTodosForGoalColumn = (todos: Todo[], goalId: number, done: boolean) =>
+  todos.filter((t) => t.goalId === goalId && t.done === done);
+
 export function TodoContainer({
   goalId,
   searchQuery = '',
@@ -22,8 +28,16 @@ export function TodoContainer({
   const pendingQuery = useInfiniteTodos({ goalId, done: false, limit: PAGE_LIMIT });
   const doneQuery = useInfiniteTodos({ goalId, done: true, limit: PAGE_LIMIT });
 
-  const pendingTodosRaw = pendingQuery.data?.pages.flatMap((p) => p.todos) ?? [];
-  const doneTodosRaw = doneQuery.data?.pages.flatMap((p) => p.todos) ?? [];
+  const pendingTodosRaw = filterTodosForGoalColumn(
+    pendingQuery.data?.pages.flatMap((p) => p.todos) ?? [],
+    goalId,
+    false,
+  );
+  const doneTodosRaw = filterTodosForGoalColumn(
+    doneQuery.data?.pages.flatMap((p) => p.todos) ?? [],
+    goalId,
+    true,
+  );
 
   const todoList = pendingTodosRaw.filter((item) => matchesTodoSearch(item.title, searchQuery));
   const doneList = doneTodosRaw.filter((item) => matchesTodoSearch(item.title, searchQuery));

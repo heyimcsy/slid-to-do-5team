@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import goalImage from '@/../public/images/small-goal.svg';
 import { useDeleteGoals, usePatchGoals } from '@/api/goals';
 import { GOAL_IMAGE, GOALS_TEXT } from '@/app/(routers)/(todo)/constants';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 
 import { ROUTES } from '@/constants/routes';
 import { DIALOG_VALUE, SELECT_VALUE } from '@/constants/ui-label';
@@ -148,7 +149,7 @@ export default function GoalHeader({ goalId, goalData }: GoalHeaderProps) {
                   type="button"
                   variant="default"
                   className="w-1/2"
-                  disabled={!title.trim() || title === goalData?.title}
+                  disabled={useDebouncedValue(!title.trim() || title === goalData?.title, 300)}
                 >
                   {DIALOG_VALUE.BUTTON.CONFIRM}
                 </Button>
