@@ -2,7 +2,7 @@
 
 import type { VariantProps } from 'class-variance-authority';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDeleteFavorite, usePostFavorite } from '@/api/favorites';
 import { useDeleteTodos } from '@/api/todos';
@@ -48,6 +48,10 @@ export default function ItemActionBar({
   const { mutate: deleteFavorite } = useDeleteFavorite();
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [localFavorite, setLocalFavorite] = useState(favorites);
+  useEffect(() => {
+    setLocalFavorite(favorites);
+  }, [favorites]);
 
   const selectValue = [
     {
@@ -84,13 +88,19 @@ export default function ItemActionBar({
     }
   };
 
-  const handleFavorite = useDebouncedCallback(() => {
-    if (favorites) {
-      deleteFavorite(id);
-    } else {
+  const debouncedFavoriteApi = useDebouncedCallback((nextFavorite: boolean) => {
+    if (nextFavorite) {
       postFavorite(id);
+    } else {
+      deleteFavorite(id);
     }
   }, 500);
+
+  const handleFavorite = () => {
+    const next = !localFavorite;
+    setLocalFavorite(next);
+    debouncedFavoriteApi(next);
+  };
 
   const variantStyle = {
     recent: {
@@ -168,11 +178,11 @@ export default function ItemActionBar({
         }}
         variant="icon"
         size="none"
-        aria-label={favorites ? '찜하기 취소' : '찜하기'}
-        aria-pressed={favorites}
+        aria-label={localFavorite ? '찜하기 취소' : '찜하기'}
+        aria-pressed={localFavorite}
       >
         <Icon
-          name={favorites ? 'filledStar' : 'outlineStar'}
+          name={localFavorite ? 'filledStar' : 'outlineStar'}
           variant={
             resolvedTheme === 'dark'
               ? 'white'
