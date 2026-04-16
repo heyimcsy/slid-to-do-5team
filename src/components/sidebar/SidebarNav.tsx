@@ -66,6 +66,7 @@ const bottomItems: {
 ];
 
 export default function SidebarNav() {
+  const MotionLink = motion.create(Link);
   const { open: openSettings } = useSettingsModal();
   const { data: goalsData, isLoading: isGoalsLoading, refetch: refetchGoals } = useGetGoals();
   const pathname = usePathname();
@@ -197,8 +198,9 @@ export default function SidebarNav() {
           <SidebarMenu className="flex flex-row gap-3 group-data-[collapsible=icon]:hidden">
             {bottomItems.map((item) => (
               <SidebarMenuItem key={item.label} className="w-full">
-                <Link
+                <MotionLink
                   href={item.href}
+                  whileHover="hover"
                   onClick={
                     item.label === '새 목표'
                       ? handleNewGoal
@@ -214,7 +216,7 @@ export default function SidebarNav() {
                   className={`flex flex-row items-center justify-center gap-2 rounded-full border border-orange-500 px-4 py-3 md:flex-col md:rounded-xl md:px-6 md:py-8 ${item.bgClassName}`}
                 >
                   <motion.div
-                    whileHover={{ scale: 1.2 }}
+                    variants={{ hover: { scale: 1.2 } }}
                     transition={{ type: 'spring', stiffness: 400, damping: 15 }}
                   >
                     <Icon name={item.icon} variant={item.variant} size={38} />
@@ -222,7 +224,7 @@ export default function SidebarNav() {
                   <span className={`font-base-semibold md:font-lg-semibold ${item.textClassName}`}>
                     {item.label}
                   </span>
-                </Link>
+                </MotionLink>
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
