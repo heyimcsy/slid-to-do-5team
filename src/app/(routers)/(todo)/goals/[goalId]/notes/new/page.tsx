@@ -1,30 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { usePostNote } from '@/api/notes';
+import { useSearchParams } from 'next/navigation';
 import { useGetTodo } from '@/api/todos';
-import { NOTES_TEXT } from '@/app/(routers)/(todo)/constants';
-import SpeechComponent from '@/app/(routers)/(todo)/goals/[goalId]/notes/_components/SpeechComponent';
-import { useLinkEmbed } from '@/app/(routers)/(todo)/goals/[goalId]/notes/hooks/useLinkEmbed';
-import {
-  NOTE_CREATE,
-  useNoteDraft,
-} from '@/app/(routers)/(todo)/goals/[goalId]/notes/hooks/useNoteDraft';
-import { useOgInfo } from '@/app/(routers)/(todo)/goals/[goalId]/notes/hooks/useOgInfo';
-import { useEditorWithContent } from '@/hooks/editor';
-import { cn } from '@/lib';
 
-import {
-  LinkEmbedOgImage,
-  NewNoteSkeleton,
-  NoteEditor,
-  NoteFormHeader,
-  SaveCheckToast,
-} from '../_components';
+import { NewNoteSkeleton, NoteCommonFormat } from '../_components';
 
 export default function NewNotePage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const todoId: number = Number(searchParams.get('todoId'));
   const {
@@ -32,98 +13,7 @@ export default function NewNotePage() {
     isLoading: todoIsLoading,
     isSuccess: todoIsSuccess,
   } = useGetTodo({ id: todoId });
-  const { mutate: createNote } = usePostNote({
-    onSuccess: () => {
-      router.back();
-    },
-  });
-
-  const [title, setTitle] = useState<string>('');
-  const [titleLength, setTitleLength] = useState<number>(0);
-  const [linkUrl, setLinkUrl] = useState<string | null>(null);
-
-  const { data: linkData, isSuccess: linkSuccess } = useOgInfo(linkUrl);
-
-  const { editor, json } = useEditorWithContent({
-    variant: 'note',
-    placeholder: NOTES_TEXT.NOTE_EDITOR_PLACEHOLDER,
-  });
-
-  const { saveCheck, saveDraft, loadDraft, clearDraft, elapsedSeconds } = useNoteDraft({
-    type: 'note-create',
-    title,
-    linkUrl,
-    editor,
-    setTitle,
-    setTitleLength,
-    setLinkUrl,
-  });
-
-  const { showEmbed, handleLinkDelete, handleLinkClick } = useLinkEmbed({
-    editor,
-    linkData,
-    setLinkUrl,
-  });
-
-  const onHandleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const titleValue = event.target.value;
-    setTitle(titleValue);
-    setTitleLength(titleValue.length);
-  };
-
-  const handleSubmit = () => {
-    if (todoIsSuccess) {
-      createNote({
-        todoId: todoData?.id,
-        title: title,
-        content: JSON.parse(json),
-        linkUrl: linkUrl ?? undefined,
-      });
-      const raw = localStorage.getItem(NOTE_CREATE);
-      if (raw) {
-        clearDraft();
-      }
-    }
-  };
 
   if (todoIsLoading) return <NewNoteSkeleton />;
-  if (todoIsSuccess)
-    return (
-      <div className={cn('h-full w-fit', showEmbed && 'w-full flex-col justify-items-center')}>
-        <div className="relative flex h-full w-full flex-col items-center p-4 md:w-159 md:pt-12 md:pb-7.5 lg:w-192 lg:pt-18 lg:pb-15.5">
-          <NoteFormHeader
-            titleLength={titleLength}
-            clearDraft={clearDraft}
-            loadDraft={loadDraft}
-            saveDraft={saveDraft}
-            handleSubmit={handleSubmit}
-          />
-          <NoteEditor
-            editor={editor}
-            setLinkUrl={setLinkUrl}
-            title={title}
-            onHandleChange={onHandleChange}
-            titleLength={titleLength}
-            todoData={todoData}
-            linkUrl={linkUrl}
-            linkData={linkData}
-            handleLinkDelete={handleLinkDelete}
-            handleLinkClick={handleLinkClick}
-          />
-        </div>
-        <SpeechComponent
-          loadDraft={loadDraft}
-          clearDraft={clearDraft}
-          className="bottom-20 md:hidden"
-        />
-        <SaveCheckToast saveCheck={saveCheck} elapsedSeconds={elapsedSeconds} />
-        <LinkEmbedOgImage
-          showEmbed={showEmbed}
-          linkUrl={linkUrl}
-          linkData={linkData}
-          linkSuccess={linkSuccess}
-          handleLinkClick={handleLinkClick}
-        />
-      </div>
-    );
+  if (todoIsSuccess) return <NoteCommonFormat type={'new'} todoData={todoData} />;
 }

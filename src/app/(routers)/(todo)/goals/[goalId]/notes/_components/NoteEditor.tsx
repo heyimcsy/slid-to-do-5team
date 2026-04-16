@@ -11,12 +11,11 @@ import { EditorContent } from '@tiptap/react';
 import { EDITOR_LABELS } from '@/constants/ui-label';
 
 import { LinkEmbed } from '@/components/common/LinkEmbed';
-import { Toolbar } from '@/components/Toolbar';
 import { Input } from '@/components/ui/input';
 
 export default function NoteEditor({
   editor,
-  setLinkUrl,
+  toolbar,
   title,
   titleLength,
   onHandleChange,
@@ -31,8 +30,8 @@ export default function NoteEditor({
   const withSpace = getText().length;
   const withoutSpace = getText().replace(/\s/g, '').length;
   return (
-    <div className="mt-4 flex w-[343px] flex-1 flex-col overflow-hidden rounded-[24px] bg-white p-4 pb-8 md:w-full">
-      <Toolbar editor={editor} variant="note" onLinkConfirm={(url) => setLinkUrl(url)} />
+    <div className="mt-4 flex w-full min-w-[300px] flex-1 flex-col overflow-hidden rounded-[24px] bg-white p-4 pb-8">
+      <div className="hidden md:block">{toolbar}</div>
       <div className="mt-4 flex h-fit w-full items-center space-x-2 md:mt-7 md:space-x-3">
         <div className="flex w-full items-center space-x-0.5">
           <Image

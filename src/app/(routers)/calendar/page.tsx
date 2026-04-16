@@ -10,7 +10,7 @@ import { getCurrentUser } from '@/lib/auth/getCurrentUser.server';
 export default async function CalendarPage() {
   const userInfo: User | null = await getCurrentUser();
   return (
-    <div className="my-auto h-full w-full pb-16 md:flex md:h-fit md:items-center md:justify-center">
+    <div className="my-auto h-full w-full pb-16 md:flex md:h-fit md:items-center md:justify-center md:py-6 lg:py-10">
       <div className="relative flex h-fit w-full min-w-86 flex-col items-center bg-white md:w-159 md:space-y-6 md:bg-transparent lg:w-320 lg:space-y-4">
         <CalendarPageHead userInfo={userInfo} />
         <ScheduleCalendar />
