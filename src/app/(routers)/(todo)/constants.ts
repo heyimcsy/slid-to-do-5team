@@ -48,6 +48,8 @@ export const NOTES_TEXT = {
   NO_MORE_NOTES: '노트를 더 작성해주세요',
   NOTE_EDIT_SUCCESS: '노트 수정을 완료했습니다.',
   NOTE_EDIT_ERROR: '노트 수정을 실패했습니다.',
+  NOTE_NEW_SUCCESS: '노트 등록을 완료했습니다.',
+  NOTE_NEW_ERROR: '노트 등록을 실패했습니다.',
 } as const;
 
 export const NOTES_SORT = {

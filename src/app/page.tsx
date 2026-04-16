@@ -30,6 +30,7 @@ export default function HomePage() {
             height={720}
             className="h-full w-full max-w-332 min-w-80 object-cover pt-18.5"
             priority
+            fetchPriority="high"
           />
         </FadeInSection>
       </section>

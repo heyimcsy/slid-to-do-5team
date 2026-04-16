@@ -29,9 +29,6 @@ export default function TodosPage() {
     fetchNextPage,
   });
   const allTodos = data?.pages.flatMap((page) => page.todos) ?? [];
-  console.log('pages length:', data?.pages.length);
-  console.log('hasNextPage:', hasNextPage);
-  console.log('마지막 페이지 nextCursor:', data?.pages[data.pages.length - 1]?.nextCursor);
   const handleAddTodo = () => {
     setIsNavigating(true);
     router.push(`/goals/todos/new`);

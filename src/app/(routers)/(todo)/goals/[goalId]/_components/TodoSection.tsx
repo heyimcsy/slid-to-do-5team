@@ -44,7 +44,7 @@ export default function TodoSection({
     done,
     limit: 8,
   });
-
+  const MIN_TODOS_FOR_END_MESSAGE = 10;
   const todos = data?.pages.flatMap((page) => page.todos) ?? [];
 
   const { observerRef } = useInfiniteScroll({
@@ -98,9 +98,8 @@ export default function TodoSection({
                     isFavorite={todo.isFavorite}
                   />
                 ))}
-                {hasNextPage ? (
-                  <div ref={observerRef} className="h-5 w-full flex-shrink-0" />
-                ) : (
+                {hasNextPage && <div ref={observerRef} className="h-5 w-full flex-shrink-0" />}
+                {!hasNextPage && todos.length >= MIN_TODOS_FOR_END_MESSAGE && (
                   <div className="flex h-5 w-full flex-shrink-0 items-center justify-around">
                     <p className="font-sm-regular text-gray-400">{GOALS_TEXT.NO_MORE_TODOS}</p>
                   </div>
