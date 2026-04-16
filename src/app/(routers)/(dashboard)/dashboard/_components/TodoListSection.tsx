@@ -76,7 +76,7 @@ export function TodoListSection({
   return (
     <section
       className={cn(
-        'flex min-h-0 flex-1 flex-col rounded-2xl p-4 md:p-4 lg:p-6',
+        'flex min-h-0 min-w-0 flex-1 flex-col rounded-2xl p-4 md:min-w-0 md:flex-1 md:p-4 lg:min-w-0 lg:flex-1 lg:p-6',
         variant === 'completed'
           ? ''
           : 'bg-orange-100 text-black dark:bg-orange-300 dark:text-black',

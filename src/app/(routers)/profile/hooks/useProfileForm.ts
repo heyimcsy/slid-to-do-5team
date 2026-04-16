@@ -19,6 +19,7 @@ export function useProfileForm() {
   const queryClient = useQueryClient();
   const { data: userData } = useGetMe();
   const { mutateAsync: patchProfile } = usePatchProfile();
+  const originalImage = useRef<string | null>(null);
   const originalName = useRef('');
 
   const {
@@ -34,20 +35,28 @@ export function useProfileForm() {
   useEffect(() => {
     if (userData) {
       setValue(NAME, userData.name);
+      originalImage.current = userData.image;
       originalName.current = userData.name;
     }
   }, [userData, setValue]);
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [isImageDeleted, setIsImageDeleted] = useState(false);
   const firstImageUrl = useRef<string | null>(null);
 
   const handleImageSelect = (file: File) => {
     setImageFile(file);
+    setIsImageDeleted(false);
     const previewUrl = URL.createObjectURL(file);
     setImageUrl(previewUrl);
   };
-  const isImageChanged = imageFile !== null;
+  const handleImageDelete = () => {
+    setImageUrl(null);
+    setImageFile(null);
+    setIsImageDeleted(true);
+  };
+  const isImageChanged = isImageDeleted || imageFile !== null;
 
   useEffect(() => {
     if (userData?.image) {
@@ -77,9 +86,12 @@ export function useProfileForm() {
   const submitProfile = async () => {
     if (!isNameChanged && !isImageChanged) return;
 
-    const payload: { name?: string; image?: string } = {};
+    const payload: { name?: string; image?: string | null } = {};
     if (isNameChanged) payload.name = nameValue;
-
+    if (isImageDeleted) {
+      payload.image = null;
+      setIsImageDeleted(false);
+    }
     // 저장 시점에 S3 업로드
     if (isImageChanged && imageFile) {
       const uploadedUrl = await uploadImage(imageFile);
@@ -105,6 +117,7 @@ export function useProfileForm() {
     imageUrl,
     isImageChanged,
     handleImageSelect,
+    handleImageDelete,
     submitProfile,
     resetNickNameCheck: () => setNickNameCheck(false),
   };

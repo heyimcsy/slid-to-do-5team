@@ -35,11 +35,16 @@ export default function TodoItem({ task }: TodoItemProps) {
   const [hovered, setHovered] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  // 체크박스 UI 상태관리
+
+  const [isDone, setIsDone] = useState(task.done);
+  const isDoneRef = useRef(task.done);
+
   // 찜하기 아이콘 Ui 상태 관리
   const [isFavorite, setIsFavorite] = useState(task.isFavorite);
   const isFavoriteRef = useRef(task.isFavorite);
 
-  const [isNavigating, setIsNavigating] = useState(false); // 추가
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const { mutate: patchTodo } = usePatchTodos();
   const { mutate: deleteTodo } = useDeleteTodos();
@@ -47,12 +52,15 @@ export default function TodoItem({ task }: TodoItemProps) {
   const { mutate: deleteFavorite } = useDeleteFavorite();
 
   // 체크박스 클릭 시 완료 여부 토글
-  const handleToggle = () => {
+  const handleToggle = useDebouncedCallback(() => {
+    const next = !isDoneRef.current;
+    isDoneRef.current = next;
+    setIsDone(next); // UI 즉각 반영
     patchTodo({
       id: task.id,
-      done: !task.done,
+      done: next,
     });
-  };
+  }, 300);
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   // 할 일 삭제 처리
@@ -98,7 +106,7 @@ export default function TodoItem({ task }: TodoItemProps) {
       {isNavigating && <Spinner text="로딩 중" />}
       {/* 체크박스 */}
       <button onClick={handleToggle} className="shrink-0 cursor-pointer">
-        {task.done ? (
+        {isDone ? (
           <Icon name="checkBox" size={18} checked={true} />
         ) : (
           <Icon name="checkBox" size={18} />
@@ -110,7 +118,7 @@ export default function TodoItem({ task }: TodoItemProps) {
         <span
           className={cn(
             'font-sm-medium md:font-base-medium min-w-0 flex-1 truncate',
-            task.done && 'text-orange-500',
+            isDone && 'text-orange-500',
           )}
         >
           {task.title}

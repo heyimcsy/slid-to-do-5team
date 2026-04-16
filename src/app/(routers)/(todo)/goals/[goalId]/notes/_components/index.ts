@@ -7,3 +7,4 @@ export { default as NoteCard } from './NoteCard';
 export { NoteList } from './NoteList';
 export { default as NoteContainerSkeleton } from './NoteContainerSkeleton';
 export { default as NotesContainer } from './NotesContainer';
+export { default as NoteCommonFormat } from './NoteCommonFormat';

@@ -2,6 +2,7 @@
 
 import type { TodoListProps } from '@/app/(routers)/(todo)/goals/types';
 
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePatchTodos } from '@/api/todos';
 import { ItemActionBar } from '@/app/(routers)/(todo)/goals/[goalId]/_components/index';
@@ -23,10 +24,25 @@ export default function TodoList({
   isFavorite,
 }: TodoListProps) {
   const { mutate: checkTodo } = usePatchTodos();
+  const [localCheckTodo, setLocalCheckTodo] = useState<boolean>(done);
 
-  const checkButton = useDebouncedCallback(() => {
-    checkTodo({ id: id, done: !done });
+  const debouncedCheckButton = useDebouncedCallback((next: boolean) => {
+    if (next) {
+      checkTodo(
+        { id: id, done: !done },
+        {
+          onError: () => setLocalCheckTodo(done),
+        },
+      );
+    }
   }, 300);
+
+  const handleCheckButton = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const next = !done;
+    setLocalCheckTodo(next);
+    debouncedCheckButton(next);
+  };
 
   return (
     <div
@@ -36,8 +52,8 @@ export default function TodoList({
       )}
     >
       <div className="flex w-full min-w-0 items-center space-x-1 md:space-x-2">
-        <Button variant="icon" size="none" onClick={checkButton}>
-          <Icon name="checkBox" size={18} className="shrink-0" checked={done} />
+        <Button variant="icon" size="none" onClick={handleCheckButton}>
+          <Icon name="checkBox" size={18} className="shrink-0" checked={localCheckTodo} />
         </Button>
 
         <Link

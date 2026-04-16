@@ -15,6 +15,7 @@ export interface ProfileNameFormProps {
 export interface ProfileImageSectionProps {
   imageUrl: string | null;
   onCropComplete: (file: File) => void;
+  oauthProvider: boolean;
 }
 export interface PasswordFormProps {
   control: Control<PasswordFormValues>;

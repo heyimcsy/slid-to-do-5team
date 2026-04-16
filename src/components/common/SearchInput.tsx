@@ -19,7 +19,8 @@ function SearchInput({
   return (
     <InputGroup
       className={cn(
-        'h-fit min-h-12 w-full min-w-fit justify-between rounded-full bg-transparent',
+        // min-w-0: 그리드/flex 자식이 셀을 넘지 않게 (Safari에서 min-w-fit 시 다음 열과 겹침 방지)
+        'h-fit min-h-12 w-full min-w-0 justify-between rounded-full bg-transparent',
         className,
       )}
     >

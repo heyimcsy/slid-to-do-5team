@@ -5,11 +5,13 @@ import type { TodoListProps } from '@/app/(routers)/(todo)/goals/types';
 import Link from 'next/link';
 import { usePatchTodos } from '@/api/todos';
 import { useDebouncedCallback } from '@/hooks/useDebounceCallback';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from '@/lib';
 
 import { Icon } from '@/components/icon/Icon';
 import { Button } from '@/components/ui/button';
 
+import { shouldMarquee } from '../_constants/todos';
 import ItemActionBar from './ItemActionBar';
 
 /**
@@ -32,6 +34,11 @@ export default function TodoList({
   isFavorite,
   variant,
 }: TodoListPropsWithVairant) {
+  const isMdUp = useMediaQuery('(min-width: 768px)');
+  const isLgUp = useMediaQuery('(min-width: 1628px)');
+  const currentBreakpoint = isLgUp ? 'lg' : isMdUp ? 'md' : 'sm';
+  const enableMarquee = shouldMarquee(title, currentBreakpoint);
+
   /**
    * @description variant 값에 따라 스타일을 다르게 적용합니다
    */
@@ -59,25 +66,57 @@ export default function TodoList({
         variantStyle[variant].container,
       )}
     >
-      <div className="flex w-full min-w-0 items-center space-x-1 md:space-x-2">
+      <div className="flex min-w-0 flex-1 items-center space-x-1 md:space-x-2">
         <Button variant="icon" size="none" onClick={checkButton}>
           <Icon name="checkBox" size={18} variant="ghost" className="shrink-0" checked={done} />
         </Button>
 
-        <Link
-          href={`/goals/${goalId}/todos/${id}`}
-          className="flex min-w-0 flex-1 items-center space-x-1 md:space-x-2"
-        >
-          <p
-            className={cn(
-              'font-sm-regular md:font-base-regular lg:font-lg-regular cursor-pointer truncate',
-              'hover:font-sm-semibold hover:md:font-base-semibold hover:lg:font-lg-semibold hover:truncate',
-              done && variant === 'recent' ? 'line-through' : '',
-              done && variant === 'completed' ? 'text-gray-500 line-through dark:text-black' : '',
-            )}
-          >
-            {title}
-          </p>
+        <Link href={`/goals/${goalId}/todos/${id}`} className="flex min-w-0 flex-1 items-center">
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <p
+              className={cn(
+                'font-sm-regular md:font-base-regular lg:font-lg-regular cursor-pointer truncate',
+                enableMarquee ? 'group-focus-within:hidden group-hover:hidden' : '',
+                done && variant === 'recent' ? 'line-through' : '',
+                done && variant === 'completed' ? 'text-gray-500 line-through dark:text-black' : '',
+              )}
+            >
+              {title}
+            </p>
+
+            <div
+              className={cn(
+                'hidden w-max min-w-full items-center overflow-hidden',
+                enableMarquee ? 'group-focus-within:flex group-hover:flex' : '',
+              )}
+            >
+              <div className="animate-todo-marquee flex min-w-max">
+                <span
+                  className={cn(
+                    'font-sm-semibold md:font-base-semibold lg:font-lg-semibold pr-10 whitespace-nowrap',
+                    done && variant === 'recent' ? 'line-through' : '',
+                    done && variant === 'completed'
+                      ? 'text-gray-500 line-through dark:text-black'
+                      : '',
+                  )}
+                >
+                  {title}
+                </span>
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'font-sm-semibold md:font-base-semibold lg:font-lg-semibold pr-10 whitespace-nowrap',
+                    done && variant === 'recent' ? 'line-through' : '',
+                    done && variant === 'completed'
+                      ? 'text-gray-500 line-through dark:text-black'
+                      : '',
+                  )}
+                >
+                  {title}
+                </span>
+              </div>
+            </div>
+          </div>
         </Link>
       </div>
       <ItemActionBar
