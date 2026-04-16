@@ -3,6 +3,7 @@ import type { PaginatedResponse } from '@/api/response';
 import type { TagColor } from '@/utils/tag';
 import type { InfiniteData } from '@tanstack/react-query';
 
+import { GOALS } from '@/api/goals';
 import { NOTIFICATIONS } from '@/api/notifications';
 import { favoritesQueryKeys } from '@/app/(routers)/favorites/_api/favoritesQueryKeys';
 import { apiClient } from '@/lib/apiClient.browser';
@@ -154,7 +155,7 @@ export const usePatchTodos = () => {
   return useMutation({
     mutationFn: async (payload: PatchTodoPayload) => {
       const { id, ...rest } = payload;
-      const body = Object.fromEntries(Object.entries(rest).filter(([_, v]) => v !== undefined));
+      const body = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined));
       return await apiClient(`${TODOS_URL}/${id}`, { method: 'PATCH', body });
     },
     onMutate: async (payload: PatchTodoPayload) => {
@@ -203,6 +204,7 @@ export const usePatchTodos = () => {
       // 성공/실패 상관없이 최종적으로 서버 데이터로 동기화
       queryClient.invalidateQueries({ queryKey: [TODOS] });
       queryClient.invalidateQueries({ queryKey: [TODO, payload.id] });
+      queryClient.invalidateQueries({ queryKey: [GOALS] });
       queryClient.invalidateQueries({ queryKey: favoritesQueryKeys.all });
       queryClient.invalidateQueries({ queryKey: [NOTIFICATIONS] });
     },
@@ -255,6 +257,7 @@ export const useDeleteTodos = () => {
     onSettled: (_, __, payload) => {
       queryClient.invalidateQueries({ queryKey: [TODOS] });
       queryClient.invalidateQueries({ queryKey: [TODO, payload.id] });
+      queryClient.invalidateQueries({ queryKey: [GOALS] });
       queryClient.invalidateQueries({ queryKey: favoritesQueryKeys.all });
     },
   });
@@ -326,6 +329,7 @@ export const usePostTodo = () => {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [TODOS] });
+      queryClient.invalidateQueries({ queryKey: [GOALS] });
       queryClient.invalidateQueries({ queryKey: favoritesQueryKeys.all });
     },
   });
