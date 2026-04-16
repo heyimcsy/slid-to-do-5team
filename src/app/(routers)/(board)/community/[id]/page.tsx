@@ -15,7 +15,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const postId = Number(id);
   if (!Number.isInteger(postId) || postId <= 0) notFound();
 
-  const perf = new PerfRecorder({ route: `/community/${postId}`, warnThreshold: 300 });
+  const perf = new PerfRecorder({ route: '/community/[id]', warnThreshold: 300 });
   const queryClient = new QueryClient();
 
   try {

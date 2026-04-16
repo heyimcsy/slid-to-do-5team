@@ -21,7 +21,7 @@ import { usePostImages } from '../_hooks/usePostImages';
 import { DesktopPostHeader } from './DesktopPostHeader';
 
 const TITLE_MAX_LENGTH = 30;
-const CONTENT_MAX_LENGTH = 1000;
+const CONTENT_MAX_LENGTH = 500;
 
 const postSchema = z.object({
   title: z
@@ -149,7 +149,14 @@ export function PostFormClient({
         onImageSizeExceeded={handleImageSizeExceeded}
       />
     ),
-    [editor, images.length, handleImageSelected, handleImageLimitExceeded],
+    [
+      editor,
+      IMAGE_LIMIT,
+      images.length,
+      handleImageSelected,
+      handleImageLimitExceeded,
+      handleImageSizeExceeded,
+    ],
   );
 
   return (
