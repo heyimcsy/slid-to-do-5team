@@ -204,8 +204,8 @@
   --blue-200: oklch(0.79 0.128 184.6);
   --blue-300: oklch(0.897 0.053 190.5);
 
-  --red-400: oklch(0.740 0.191 22.216);
-  --red-500: oklch(0.680 0.237 25.331);
+  --red-400: oklch(0.74 0.191 22.216);
+  --red-500: oklch(0.68 0.237 25.331);
 }
 
 * {
@@ -229,6 +229,12 @@
 
   .animate-todo-marquee {
     animation: todo-marquee 10s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-todo-marquee {
+      animation: none;
+    }
   }
 
   .safe-padding {
