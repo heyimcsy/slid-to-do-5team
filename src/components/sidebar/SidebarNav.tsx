@@ -50,7 +50,7 @@ const bottomItems: {
 }[] = [
   {
     label: '새 목표',
-    href: '/goals',
+    href: '',
     icon: 'flagLine',
     variant: 'white',
     textClassName: 'text-white',
