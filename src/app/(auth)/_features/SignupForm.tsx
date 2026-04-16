@@ -4,13 +4,13 @@ import type { SignupBody } from '@/lib/auth/schemas/signup';
 import type { User } from '@/lib/auth/schemas/user';
 import type { FieldErrors } from 'react-hook-form';
 
+import { useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { apiClient, ApiClientError } from '@/lib/apiClient';
 import { toastRhfValidationErrors } from '@/lib/auth/rhfToastValidationError';
 import { signupBodySchema } from '@/lib/auth/schemas/signup';
 import { authUserStore } from '@/stores/authUserStore';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/navigation';
-import { useCallback } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -24,7 +24,7 @@ import { AuthRHFTextField } from '../_components/AuthRHFTextField';
 function SignupFormBody() {
   const router = useRouter();
 
-  const { control, handleSubmit } = useForm<SignupBody>({
+  const { control, handleSubmit, trigger, getFieldState } = useForm<SignupBody>({
     resolver: zodResolver(signupBodySchema),
     defaultValues: { name: '', email: '', password: '', passwordConfirm: '' },
     mode: 'onSubmit',
@@ -35,9 +35,16 @@ function SignupFormBody() {
     toastRhfValidationErrors(errors, { toastId: 'signup-rhf-validation' });
   }, []);
 
-  const runValidationToast = useCallback(() => {
-    void handleSubmit(() => {}, toastInvalid)();
-  }, [handleSubmit, toastInvalid]);
+  const runValidationToast = useCallback(async () => {
+    const valid = await trigger(undefined, { shouldFocus: false });
+    if (valid) return;
+    const errors: FieldErrors<SignupBody> = {};
+    for (const name of ['name', 'email', 'password', 'passwordConfirm'] as const) {
+      const { error } = getFieldState(name);
+      if (error) errors[name] = error;
+    }
+    toastInvalid(errors);
+  }, [trigger, getFieldState, toastInvalid]);
 
   const onSubmit = async (data: SignupBody) => {
     try {
