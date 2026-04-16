@@ -34,7 +34,7 @@ export default function HomePage() {
           />
         </FadeInSection>
       </section>
-      <div className="relative z-10 flex flex-col bg-white">
+      <div className="relative z-10 flex flex-col bg-white dark:bg-black">
         <section className="features flex w-full flex-col items-center bg-orange-500 text-white lg:flex-row lg:items-center lg:justify-center lg:gap-6 dark:bg-orange-300 dark:text-black">
           {/* Features Section */}
           <aside className="mt-11 ml-7 w-full md:ml-18 lg:mt-0 lg:ml-[-152px] lg:flex lg:flex-1 lg:flex-col lg:items-end">
