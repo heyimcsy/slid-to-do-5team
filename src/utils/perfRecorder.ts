@@ -23,7 +23,7 @@ export class PerfRecorder {
 
   async flush(): Promise<void> {
     const duration = performance.now() - this.pageStartTime;
-    const category = this.route.split('/')[1] ?? 'unknown';
+    const category = this.route.split('/')[1] || 'unknown';
 
     if (process.env.NODE_ENV === 'production') {
       Sentry.metrics.distribution('ssr.duration', duration, {
