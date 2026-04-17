@@ -4,7 +4,12 @@
 export type { QueryPersistStorageType } from '@/constants/query';
 export { AppProviders } from '@/providers/AppProviders';
 export type { AppProvidersProps } from '@/providers/AppProviders';
-export { clearQueryPersistStorage, createQueryPersister } from '@/providers/createQueryPersister';
+export {
+  clearQueryPersistStorage,
+  createQueryPersister,
+  getRegisteredQueryPersister,
+  registerQueryPersister,
+} from '@/providers/createQueryPersister';
 export { PersistRehydrationProvider } from '@/providers/PersistRehydrationProvider';
 export type {
   PersistRehydrationProviderProps,
