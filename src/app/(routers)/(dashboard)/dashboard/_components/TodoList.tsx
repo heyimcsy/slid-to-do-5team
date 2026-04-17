@@ -1,7 +1,9 @@
 'use client';
 
 import type { TodoListProps } from '@/app/(routers)/(todo)/goals/types';
+import type { MouseEvent } from 'react';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePatchTodos } from '@/api/todos';
 import { useDebouncedCallback } from '@/hooks/useDebounceCallback';
@@ -55,9 +57,21 @@ export default function TodoList({
     },
   };
   const { mutate: checkTodo } = usePatchTodos();
-  const checkButton = useDebouncedCallback(() => {
-    checkTodo({ id: id, done: !done });
-  }, 1000);
+  const [localDone, setLocalDone] = useState(done);
+  useEffect(() => {
+    setLocalDone(done);
+  }, [done]);
+
+  const debouncedPatchDone = useDebouncedCallback((nextDone: boolean) => {
+    checkTodo({ id, done: nextDone });
+  }, 300);
+
+  const handleCheckClick = (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    const next = !localDone;
+    setLocalDone(next);
+    debouncedPatchDone(next);
+  };
   return (
     <div
       className={cn(
@@ -67,8 +81,14 @@ export default function TodoList({
       )}
     >
       <div className="flex min-w-0 flex-1 items-center space-x-1 md:space-x-2">
-        <Button variant="icon" size="none" onClick={checkButton}>
-          <Icon name="checkBox" size={18} variant="ghost" className="shrink-0" checked={done} />
+        <Button variant="icon" size="none" onClick={handleCheckClick}>
+          <Icon
+            name="checkBox"
+            size={18}
+            variant="ghost"
+            className="shrink-0"
+            checked={localDone}
+          />
         </Button>
 
         <Link href={`/goals/${goalId}/todos/${id}`} className="flex min-w-0 flex-1 items-center">
@@ -77,8 +97,10 @@ export default function TodoList({
               className={cn(
                 'font-sm-regular md:font-base-regular lg:font-lg-regular cursor-pointer truncate',
                 enableMarquee ? 'group-focus-within:hidden group-hover:hidden' : '',
-                done && variant === 'recent' ? 'line-through' : '',
-                done && variant === 'completed' ? 'text-gray-500 line-through dark:text-black' : '',
+                localDone && variant === 'recent' ? 'line-through' : '',
+                localDone && variant === 'completed'
+                  ? 'text-gray-500 line-through dark:text-black'
+                  : '',
               )}
             >
               {title}
@@ -94,8 +116,8 @@ export default function TodoList({
                 <span
                   className={cn(
                     'font-sm-semibold md:font-base-semibold lg:font-lg-semibold pr-10 whitespace-nowrap',
-                    done && variant === 'recent' ? 'line-through' : '',
-                    done && variant === 'completed'
+                    localDone && variant === 'recent' ? 'line-through' : '',
+                    localDone && variant === 'completed'
                       ? 'text-gray-500 line-through dark:text-black'
                       : '',
                   )}
@@ -106,8 +128,8 @@ export default function TodoList({
                   aria-hidden="true"
                   className={cn(
                     'font-sm-semibold md:font-base-semibold lg:font-lg-semibold pr-10 whitespace-nowrap',
-                    done && variant === 'recent' ? 'line-through' : '',
-                    done && variant === 'completed'
+                    localDone && variant === 'recent' ? 'line-through' : '',
+                    localDone && variant === 'completed'
                       ? 'text-gray-500 line-through dark:text-black'
                       : '',
                   )}

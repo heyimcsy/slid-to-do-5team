@@ -27,14 +27,12 @@ export default function TodoList({
   const [localCheckTodo, setLocalCheckTodo] = useState<boolean>(done);
 
   const debouncedCheckButton = useDebouncedCallback((next: boolean) => {
-    if (next) {
-      checkTodo(
-        { id: id, done: !done },
-        {
-          onError: () => setLocalCheckTodo(done),
-        },
-      );
-    }
+    checkTodo(
+      { id: id, done: next },
+      {
+        onError: () => setLocalCheckTodo(done),
+      },
+    );
   }, 300);
 
   const handleCheckButton = (e: React.MouseEvent) => {

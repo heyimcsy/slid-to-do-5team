@@ -18,7 +18,8 @@ import { Button } from '@/components/ui/button';
 export default function ProfileContainer() {
   const userInfo = localStorage.getItem(LOCAL_STORAGE_KEYS.USER_INFO);
   const parsedUser = userInfo ? JSON.parse(userInfo) : null;
-  const oauthProvider: boolean = !!parsedUser.state.user.oauthProvider;
+  /** 로그아웃 직후 등 `user-info`가 없거나 `state.user`가 null이면 oauth 아님으로 취급 */
+  const oauthProvider: boolean = !!parsedUser?.state?.user?.oauthProvider;
 
   const queryClient = useQueryClient();
   const {

@@ -1,21 +1,16 @@
 import type { User } from '@/lib/auth/schemas/user';
 
-
-
 import { applyOauthProviderToUser, fetchAuthSessionMeta } from '@/lib/auth/authSessionMeta';
 import { oauthProviderCookieSchema } from '@/lib/auth/schemas/oauth';
 import { userSchema } from '@/lib/auth/schemas/user';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-
-
-import { OAUTH_PROVIDER_FETCH_FAILED_FROM_USER_MESSAGE_KO, UNKNOWN_ERROR_MESSAGE_KO } from '@/constants/error-message';
+import {
+  OAUTH_PROVIDER_FETCH_FAILED_FROM_USER_MESSAGE_KO,
+  UNKNOWN_ERROR_MESSAGE_KO,
+} from '@/constants/error-message';
 import { LOCAL_STORAGE_KEYS } from '@/constants/localStorageKeys';
-
-
-
-
 
 type AuthUserState = {
   user: User | null;
