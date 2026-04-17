@@ -1,9 +1,5 @@
 import type { SVGProps } from 'react';
 
-
-
-
-
 type LinkIconProps = SVGProps<SVGSVGElement> & {
   variant?: 'default' | 'orange' | 'white';
 };
