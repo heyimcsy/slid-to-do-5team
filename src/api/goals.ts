@@ -1,8 +1,6 @@
 import type { PaginatedResponse } from '@/api/response';
 import type { QueryClient } from '@tanstack/react-query';
 
-
-
 import { favoritesQueryKeys } from '@/app/(routers)/favorites/_api/favoritesQueryKeys';
 import { apiClient } from '@/lib/apiClient.browser';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';

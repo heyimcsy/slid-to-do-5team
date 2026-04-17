@@ -1,7 +1,7 @@
 'use client';
 
-import { cn } from '@/lib';
 import Link from 'next/link';
+import { cn } from '@/lib';
 
 import { buttonVariants } from '@/components/ui/button';
 

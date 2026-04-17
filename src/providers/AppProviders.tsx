@@ -5,10 +5,10 @@ import type { PersistStore } from '@/providers/PersistRehydrationProvider';
 import type { DehydratedState } from '@tanstack/react-query';
 import type { ComponentType } from 'react';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useOAuthUserFlashSync } from '@/hooks/auth/useOAuthUserFlashSync';
 import { useTokenRefreshOnMount } from '@/hooks/auth/useTokenRefreshOnMount';
-import { createQueryPersister } from '@/providers/createQueryPersister';
+import { createQueryPersister, registerQueryPersister } from '@/providers/createQueryPersister';
 import { PersistRehydrationProvider } from '@/providers/PersistRehydrationProvider';
 import { reconcileAuthSessionOAuthFromServer } from '@/stores/authUserStore';
 import { HydrationBoundary, QueryClient } from '@tanstack/react-query';
@@ -71,10 +71,17 @@ export function AppProviders({
   );
 
   /**
-   * @description QueryClient persist용 Persister 생성.
-   * @returns Persister (서버: no-op, 클라이언트: queryPersistStorage에 지정된 storage(localStorage or sessionStorage))
+   * Persister 인스턴스를 렌더마다 새로 만들지 않음.
+   * `PersistQueryClientProvider`의 persist 구독은 마운트 시점 persister에 묶이는데, 매 렌더마다
+   * 다른 인스턴스를 넘기면 쓰기 스로틀·로그아웃 시 `getRegisteredQueryPersister()`와 엇갈릴 수 있다.
    */
-  const persister = createQueryPersister(queryPersistStorage);
+  const persister = useMemo(() => createQueryPersister(queryPersistStorage), [queryPersistStorage]);
+
+  /** 로그아웃에서 `persistQueryClientSave`에 넘길 persister와 실제 Provider가 동일 객체인지 보장 */
+  useEffect(() => {
+    registerQueryPersister(persister);
+    return () => registerQueryPersister(null);
+  }, [persister]);
 
   /**
    * @description 자식 컴포넌트 렌더링
